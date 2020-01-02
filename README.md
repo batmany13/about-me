@@ -1,8 +1,8 @@
 # About me
 
-My name is Bruce and I am a [software engineering leader](https://www.linkedin.com/in/batmany13/), who has built and lead many successful and high performing teams.  I am currently an Engineering Director @ Netflix in the PES (Production Edge Systems) group leading the API systems team.
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and leadership roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the API systems team.
 
-This is a guide about me and my personal leadership philosophy.  I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
+This is a guide to my leadership philosophy and a little about me.
 
 ## My Leadership Framework
 
@@ -14,7 +14,7 @@ This is a guide about me and my personal leadership philosophy.  I adapted this 
 
 ### I care deeply
 
-I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person and your gorwth but that there's an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.  This is also why [1x1s](1x1s.md) are so important.  This is where you can give the time and energy to your teammates and help each other grow.
+I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person and your growth but that I help create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
 
 ### I like trying new ideas all the time
 
@@ -23,6 +23,8 @@ I am an entrepreneuer at heart which means, I love ideas, but I also know implem
 ### I am transparent about work and my own fallibility
 
 I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am fairly an open book and am very comfortable with being vulnerable and saying "I don't know".
+
+I adapted the above from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
 
 ### What past bosses have said about me
 
