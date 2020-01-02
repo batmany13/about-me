@@ -12,8 +12,8 @@ This is a quick guideline about my personal leadership philosophy
 [Getting Naked, A business Fable by Patrick Lencioni](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
 
 [Netflix Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsiblity, be candid and encourage independent thinking    
-[What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety
-
+[What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams
+[The Competitive Imperative of Learning by Amy Edmondson](https://hbr.org/2008/07/the-competitive-imperative-of-learning) - Execution for Learning over Execution for Efficiency   
 
 Here's also a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read over the past
 
