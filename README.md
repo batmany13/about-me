@@ -1,6 +1,42 @@
 # About me
 
-This is a quick guideline about my personal leadership philosophy
+My name is Bruce and I am a [software engineering leader](https://www.linkedin.com/in/batmany13/), who has built and lead many successful and high performing teams.  I am currently an Engineering Director @ Netflix in the PES (Production Edge Systems) group leading the API systems team.
+
+This is a guide about me and my personal leadership philosophy.  I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
+
+## My Leadership Framework
+
+<img width=50% height=50% src=https://trello-attachments.s3.amazonaws.com/5c682520f6d8a07482e12970/1078x765/d21d65a8818d6d392c3e27e69fd699e3/image.jpeg.jpg>
+
+```Create a learning environment by promoting psychological safety, autonomy and transparency.  Teams should have a purpose, and a growth mindset and a perpensity for action and delivering customer value.```
+
+## About Me Personally
+
+### I care deeply
+
+I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person and your gorwth but that there's an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.  This is also why [1x1s](1x1s.md) are so important.  This is where you can give the time and energy to your teammates and help each other grow.
+
+### I like trying new ideas all the time
+
+I am an entrepreneuer at heart which means, I love ideas, but I also know implementing them is the only way to know if it'll actually work.  Thus, I learn towards action and executing.  I might read an article, and then apply the concepts the next day (I consider this my superpower).  Its not that I am "fickle", its I want to see if I can apply what I learn.  Also, if I see something works, I'll continue to use it and refine it.
+
+### I am transparent about work and my own fallibility
+
+I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am fairly an open book and am very comfortable with being vulnerable and saying "I don't know".
+
+### What past bosses have said about me
+
+From PK
+* Encourage the entrepreneurial spirit, balance with prioritization and honing what to focus on now vs later
+* Coach on when to make the call on someone not working out in their role versus continuing to try and grow them
+
+From DW
+* He's most effective when he's a player coach. Bruce is best when he gets to roll up his leaves, get into the codebase, one of the best debuggers he has seen.
+* Bruce just needs to be oriented and supported and then get out of his way. He's a doer, doesn't do well with a lot of bureaucracy. Focus him on execution.
+
+From ST
+* Bruce's super power is his contagious optimism. What many thought of as risks Bruce reframed as opportunities.
+* Growth area is to be open with your critiques.
 
 ### Books or Articles that's shaped me
 
@@ -16,8 +52,3 @@ This is a quick guideline about my personal leadership philosophy
 [The Competitive Imperative of Learning by Amy Edmondson](https://hbr.org/2008/07/the-competitive-imperative-of-learning) - Execution for Learning over Execution for Efficiency   
 
 Here's also a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read over the past
-
-### Things I've written
-
-[Caring makes or breaks an organization](https://goshippo.com/blog/caring-makes-an-engineering-organization/)
-[Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit)    
