@@ -12,9 +12,11 @@ This is a guide to my leadership philosophy and a little about me.
 
 ## About Me Personally
 
-### I care deeply
+### I care deeply about the whole self
 
-I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person and your growth but that I help create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
+I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person, your history and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
+
+Toolbelt - [1x1s](1x1s.md)
 
 ### I like trying new ideas all the time
 
