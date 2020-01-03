@@ -26,7 +26,7 @@ Toolbelt: Team mission exercise
 
 Information is not a weapon to use or to hoard but a powerful unifier that unlocks your teams autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
-Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Also [1x1s](1x1s.md) are very important for this
 
 ### Reward learning
 
@@ -48,8 +48,6 @@ I adapted this from the [Finding my ideal leader exercise](https://docs.google.c
 
 I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your history and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
 
-Toolbelt - [1x1s](1x1s.md)
-
 ### I like trying new ideas all the time
 
 I am an entrepreneuer at heart which means I love ideas and know implementing them is the only way to know if it'll actually work.  Thus, I learn towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  Its not that I am "fickle", its I want to see if I can apply what I learn.  And if I see something works, I'll continue to use and refine it.
@@ -57,6 +55,10 @@ I am an entrepreneuer at heart which means I love ideas and know implementing th
 ### I am transparent about work and my own fallibility
 
 I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am fairly an open book and am very comfortable with being vulnerable and saying "I don't know".
+
+### I am an eternal optimist and like creating a fun environment
+
+I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with the team, and many times I end up being friends with people I work with.  I am also an eternal optimist so difficult situations at work doesn't get me down and I always look for a positive light.  While everything thinks I am an outgoing fun-loving extrovert I am secretly an introvert and enjoy being alone every so often to re-charge.
 
 ### What past bosses have said about me
 
