@@ -10,11 +10,43 @@ This is a guide to my leadership philosophy and a little about me.
 
 ```Create a learning environment by promoting psychological safety, autonomy and transparency.  Teams should have a purpose, and a growth mindset and a perpensity for action and delivering customer value.```
 
+### Start with safety
+
+Everything begins and ends with psychological safety.  Without it, people will lack caring, be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.
+
+Toolbelt: Model Vulnerability and ask a lot of questions
+
+### Set a purpose
+
+No matter the size of team, setting a purpose and having a vision of what you want is really important.  It's the sense of direction that people want, will energize the team and most importantly, serve as a guidepost on what you should and shouldn't be working on.
+
+Toolbelt: Team mission exercise
+
+### Share with the team openly
+
+Information is not a weapon to use or to hoard but a powerful unifier that unlocks your teams autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
+
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.
+
+### Reward learning
+
+Giving your team autonomy, which is agency over their decisions and ability to decide on the best course of action is very critical to your success.  But what's just as important is giving the time and space for it.  If you're too focused on executing towards a deadline, you might not have any time or room for learning and trying new things.  Finally, celebrate the learnings, don't frame them as "failures" but as learnings to do better and more next time.  A growth mindset comes with its own investments!
+
+Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipping not an arbitrary deadline
+
+### Measure your goals
+
+Having goals and making progress against them is great.  It will tell you how you're doing individually and as a team.  It also allows you to prioritize and know if you're doing the right thing.
+
+Toolbelt: Use OKRs (objectives and key results) to help you track your progress
+
 ## About Me Personally
+
+I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
 
 ### I care deeply about the whole self
 
-I think "caring" is so important, I wrote an [article](https://goshippo.com/blog/caring-makes-an-engineering-organization/) about it.  It's not just that I care about you as a person, your history and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
+I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your history and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
 
 Toolbelt - [1x1s](1x1s.md)
 
@@ -25,8 +57,6 @@ I am an entrepreneuer at heart which means I love ideas and know implementing th
 ### I am transparent about work and my own fallibility
 
 I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am fairly an open book and am very comfortable with being vulnerable and saying "I don't know".
-
-I adapted the above from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
 
 ### What past bosses have said about me
 
