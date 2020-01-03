@@ -82,9 +82,10 @@ From ST
 [Team of Teams by General Stanely McCrystal](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) - be a humble gardener instead of a heroic leader, have common purpose, shared consciousness and empowered execution (very similar to Drive)    
 [Radical Candor by Kim Scott](https://www.amazon.com/Radical-Candor-Revised-Kick-Ass-Humanity-ebook/dp/B07P9LPXPT/ref=sr_1_3?keywords=radical+candor&qid=1577990458&s=digital-text&sr=1-3) - Care deeply, challenge directly    
 [Getting Naked, A business Fable by Patrick Lencioni](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
+[The Lean Startup by Eric Ries](https://www.amazon.com/Lean-Startup-Entrepreneurs-Continuous-Innovation-ebook/dp/B004J4XGN6/ref=sr_1_3?keywords=lean+startup&qid=1578010494&s=digital-text&sr=1-3) - Prove your startup assumptions and iterate or pivot    
 
 [Netflix Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsiblity, be candid and encourage independent thinking    
-[What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams
+[What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
 [The Competitive Imperative of Learning by Amy Edmondson](https://hbr.org/2008/07/the-competitive-imperative-of-learning) - Execution for Learning over Execution for Efficiency   
 
 Here's also a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read over the past
