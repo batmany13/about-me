@@ -4,11 +4,11 @@ My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in
 
 This is a guide to my leadership philosophy and a little about me.
 
-## My Leadership Philosophy
+## Leadership Philosophy
 
 <img width=50% height=50% src=https://trello-attachments.s3.amazonaws.com/5c682520f6d8a07482e12970/1078x765/d21d65a8818d6d392c3e27e69fd699e3/image.jpeg.jpg>
 
-```Create a learning environment by promoting psychological safety, autonomy and transparency.  Teams should have a purpose, and a growth mindset and a perpensity for action and delivering customer value.```
+```Create a learning environment by promoting psychological safety, autonomy and transparency. Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery of customer value.```
 
 ### Start with safety
 
@@ -20,13 +20,13 @@ Toolbelt: Model Vulnerability and ask a lot of questions
 
 No matter the size of team, setting a purpose and having a vision of what you want is really important.  It's the sense of direction that people want, will energize the team and most importantly, serve as a guidepost on what you should and shouldn't be working on.
 
-Toolbelt: Team mission exercise
+Toolbelt: Team mission exercise, identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
 
 ### Share with the team openly
 
 Information is not a weapon to use or to hoard but a powerful unifier that unlocks your teams autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
-Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Also [1x1s](1x1s.md) are very important for this
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other
 
 ### Reward learning
 
