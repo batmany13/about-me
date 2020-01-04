@@ -50,11 +50,11 @@ I think "caring" is so important, I wrote an [article](https://medium.com/@batma
 
 ### I like trying new ideas all the time
 
-I am an entrepreneuer at heart which means I love trying out new ideas and see if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  Its not that I am "fickle", its I want to see if I can apply what I learn.  And if I see something works, I'll continue to use and refine it.
+I am an entrepreneuer at heart which means I love trying out new ideas and see if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  It's not that I am fickle, I just want to see if I can apply what I learn quickly.  And if an idea works, I will continue to iterate and refine it over time.
 
 ### I am transparent about work and my own fallibility
 
-I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am fairly an open book and am very comfortable with being vulnerable and saying "I don't know".
+I believe sharing information is the key to our success.  I think the only way we can act with autonomy is to have all the necessary information to make decisions.  This also bleeds into who I am as a person, and I am an open book and am very comfortable with being vulnerable and saying "I don't know" or "I messed up".
 
 ### I am an eternal optimist and like creating a fun environment
 
