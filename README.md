@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and leadership roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the API systems team (DNA and Studio).
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the API systems team (DNA and Studio).
 
 This is a guide to my leadership philosophy and a little about me.
 
