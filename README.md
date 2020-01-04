@@ -26,19 +26,19 @@ Toolbelt: Team mission exercise, identify ["3 uniques"](https://blog.eosworldwid
 
 Information is not a weapon to use or to hoard but a powerful unifier that unlocks your teams autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
-Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other.
 
-### Reward learning
+### Reward empowered learning
 
-Giving your team autonomy, which is agency over their decisions and ability to decide on the best course of action is very critical to your success.  But what's just as important is giving the time and space for it.  If you're too focused on executing towards a deadline, you might not have any time or room for learning and trying new things.  Finally, celebrate the learnings, don't frame them as "failures" but as learnings to do better and more next time.  A growth mindset comes with its own investments!
+Giving your team autonomy, which is agency over their decisions and having "[freedom and responsibility](https://jobs.netflix.com/culture)" is very critical to their success.  But what's just as important is giving the time and space for it.  If you're too focused on executing towards a deadline, you might not have any time or room for learning and trying new things.  Finally, celebrate the learnings, don't frame them as "failures" but as learnings to do better and more next time.  A growth mindset comes with its own investments!
 
-Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipping not an arbitrary deadline
+Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipping not an arbitrary deadline.  Celebrate wins and learnings!  Use post mortems to diagnosis incidents and learn from them.
 
 ### Measure your goals
 
 Having goals and making progress against them is great.  It will tell you how you're doing individually and as a team.  It also allows you to prioritize and know if you're doing the right thing.
 
-Toolbelt: Use OKRs (objectives and key results) to help you track your progress
+Toolbelt: Use OKRs (objectives and key results) to focus the team and track your progress
 
 ## About Me Personally
 
