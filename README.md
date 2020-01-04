@@ -44,13 +44,13 @@ Toolbelt: Use OKRs (objectives and key results) to focus the team and track your
 
 I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
 
-### I care deeply about the whole self
+### I care deeply about how much you care
 
 I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your background and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
 
 ### I like trying new ideas all the time
 
-I am an entrepreneuer at heart which means I love ideas and know implementing them is the only way to know if it'll actually work.  Thus, I learn towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  Its not that I am "fickle", its I want to see if I can apply what I learn.  And if I see something works, I'll continue to use and refine it.
+I am an entrepreneuer at heart which means I love trying out new ideas and see if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  Its not that I am "fickle", its I want to see if I can apply what I learn.  And if I see something works, I'll continue to use and refine it.
 
 ### I am transparent about work and my own fallibility
 
@@ -58,11 +58,15 @@ I believe sharing information is the key to our success.  I think the only way w
 
 ### I am an eternal optimist and like creating a fun environment
 
-I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with the team, and many times I end up being friends with people I work with.  I am also an eternal optimist so difficult situations at work doesn't get me down and I always look for a positive light.  While everything thinks I am an outgoing fun-loving extrovert I am secretly an introvert and enjoy being alone every so often to re-charge.
+I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down and I always look for a positive light.  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
+
+### I like to ask why
+
+I need to reconcile what I (or the team) is doing with the company or team's mission.  Values means something to me, and I like to know why I am doing anything.  If there's dissonance between values/goals/mission and actual actions, I will push back.  I also like to understand underlying assumptions of any project and determine if we're achieving the benefits we set out to gain.
 
 ### What past bosses have said about me
 
-My current boss @ Netflix did a reference check on me, but only after he offered me the job and for the express purpose to see how he can enable me to succeed.  His checks and the response he sent me was so telling and accurate, I thought I'd put it here.
+My current boss @ Netflix did a reference check on me, but only after he offered me the job and for the express purpose to see how he can enable me to succeed.  He sent me a summary of responses from my former bosses and they were so telling and accurate, I thought I'd put it here.
 
 From PK
 * Encourage the entrepreneurial spirit, balance with prioritization and honing what to focus on now vs later
