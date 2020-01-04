@@ -4,7 +4,7 @@ For the first 10 years of my career, I focused on software development and worke
 
 ## Creating and maintaining the culture
 
-``` “Culture is ultimately defined by the desired behaviors that leadership clearly and consistently communicates and then holds themselves and their employees accountable towards.”``
+```Culture is ultimately defined by the desired behaviors that leadership clearly and consistently communicates and then holds themselves and their employees accountable towards.```
 
 So what behaviors do you want to model?  What is your leadership philosophy?  A team or company's culture is set at the top and then realized by the individuals.  Thus, it's critical to come up with your own [philosophy](https://github.com/batmany13/about-me#leadership-philosophy) and then create a set of behaviors that model that philosophy and then hold your team accountable for it.  You have to hire, grow and let go of people based on it to really reinforce it.
 
