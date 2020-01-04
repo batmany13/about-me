@@ -6,7 +6,7 @@ This is a guide to my leadership philosophy and a little about me.
 
 ## Leadership Philosophy
 
-<img width=50% height=50% src=https://trello-attachments.s3.amazonaws.com/5c682520f6d8a07482e12970/1078x765/d21d65a8818d6d392c3e27e69fd699e3/image.jpeg.jpg>
+<a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=https://trello-attachments.s3.amazonaws.com/5c682520f6d8a07482e12970/1078x765/d21d65a8818d6d392c3e27e69fd699e3/image.jpeg.jpg></a>
 
 ```Create a learning environment by promoting psychological safety, autonomy and transparency. Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery of customer value.```
 
