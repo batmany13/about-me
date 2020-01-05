@@ -14,7 +14,7 @@ This is a guide to my leadership philosophy and a little about me.
 
 Everything begins and ends with psychological safety.  Without it, people will lack caring, be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.
 
-Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions from all members of the team, hire for diversity and inclusion.
+Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions from all members of the team, hire for diversity and inclusion.  No tolerance for brilliant jerks.
 
 ### Set a purpose
 
