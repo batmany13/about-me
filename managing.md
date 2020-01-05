@@ -6,7 +6,7 @@ For the first 10 years of my career, I focused on software development and worke
 
 ```Culture is ultimately defined by the desired behaviors that leadership clearly and consistently communicates and then holds themselves and their employees accountable towards.```
 
-So what behaviors do you want to model?  What is your leadership philosophy?  A team or company's culture is set at the top and then realized by the individuals.  Thus, it's critical to come up with your own [philosophy](https://github.com/batmany13/about-me#leadership-philosophy) and then create a set of behaviors that model that philosophy and then hold your team accountable for it.  You have to hire, grow and let go of people based on it to really reinforce it.
+So what behaviors do you want to model?  What is your [leadership philosophy](https://github.com/batmany13/about-me#leadership-philosophy)?  A team or company's culture is set at the top and then realized by the individuals.  Thus, it's critical to come up with your own philosophy and then create a set of behaviors that model that philosophy and then hold your team accountable for it.  You have to hire, grow and let go of people based on it to really reinforce it.  Sometimes, companies have amazingly transparent and open [cultures](https://jobs.netflix.com/culture) so it'll be easy to model your team culture based on things the company believes, but nonetheless, implementing and realizing a company culture takes work.
 
 ## Growing People
 
@@ -17,17 +17,17 @@ I took a [management development](https://drive.google.com/file/d/1i9ZCQmXaVpOEJ
 * Productivity and Prioritization
 * Effective 1x1s
 
-I won't be able to effectively communicate all the lessons and learnings from this multi-day, multi-hour lesson plan, but suffice to say, these are definitely the four areas that really matter when leading people.  Coaching, feedback and effective 1x1s are all sort of tied together, and I consider this the core to growing people.  1x1s are where the coaching and feedback takes place, and being able to "coach" instead of "tell" will help drive autonomy and learning.  Feedback is central to it all because if you can't give specific, timely feedback for positive and negative things, its going be hard to grow anyone.  Finally, productivity and prioritization is something you as a leader will have to do but also make sure your teams does well, and this really will help them execute effectively on projects.
+I won't be able to effectively communicate all the lessons and learnings from this multi-day, multi-hour course, but suffice to say, these are definitely the four areas that really matter when leading people.  Coaching, feedback and effective 1x1s are all tied together, and I consider this the core to growing people.  1x1s are where the coaching and feedback takes place, and being able to "coach" instead of "tell" will help drive autonomy and learning.  Feedback is central to it all because if you can't give specific, timely positive and critical feedback, its going be hard to grow anyone.  Finally, productivity and prioritization is something you as a leader will have to do but also make sure your teams does well, and this really will help them execute effectively on projects and meet the team's goals.
 
 ## Hiring People
 
 This is the entire process of finding talented people that can be effective at a specific role within your organization.  It takes a lot of work, and in many organizations is considered the most critical thing a people leader does.  Some people falsely assume that HR or Recruiting will just do this for you, but in reality, the burden is on the hiring manager (and the team) to do the work.  Below are the steps you need to do well to hire well
 
-* Define
-* Source
-* Recruit
-* Interview
-* Onboard
+* Define - what is the role and what are you looking for?
+* Source - where will you find people with the skills you need?
+* Recruit - Most likely, the people you want, others want too, so you'll need to sell them on the role and company
+* Interview - What's the process to vet the skills and attributes you're looking for?  How will you craft the questions and panel to find the right fit?
+* Onboard - Once they're hired, how will you ensure they're effective from day one and provide them the support and instruction they need.
 
 ## Finding the right fit for people
 
