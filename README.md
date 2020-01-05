@@ -6,7 +6,7 @@ This is a guide to my leadership philosophy and a little about me.
 
 ## Leadership Philosophy
 
-<a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=learning_zone.jpg></a>
+<a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
 ```Create a learning environment by promoting psychological safety, autonomy and transparency. Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery of customer value.```
 
@@ -42,7 +42,7 @@ Toolbelt: Use OKRs (objectives and key results) to focus the team and track your
 
 ## About Me Personally
 
-<img src=bat_signal.jpg>
+<img src=rsrc/bat_signal.jpg>
 
 I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did.
 
