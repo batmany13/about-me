@@ -1,5 +1,9 @@
 # Product Edge Systems (PES)
 
+AIM (Access & Identity Management)    
+PBLEC (Playback, Licensing and Encryption)    
+API Systems (DNA and Studio)    
+
 ## Background
 
 [Edge architecture](https://www.youtube.com/watch?v=5ju4W9KAzcY)    
