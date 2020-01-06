@@ -82,7 +82,11 @@ From ST
 * Bruce's super power is his contagious optimism. What many thought of as risks Bruce reframed as opportunities.
 * Growth area is to be open with your critiques.
 
-#### [My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0) (WIP)
+### Misc Things
+
+[My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0) (WIP)    
+My Pet Peeves - laptops at meetings, meetings without agendas   
+My Failings - Not talk as much or dominate a conversation, being late to meetings    
 
 ## Books or Articles that's shaped me
 
