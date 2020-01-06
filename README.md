@@ -52,7 +52,7 @@ I think "caring" is so important, I wrote an [article](https://medium.com/@batma
 
 ### I like to try new ideas frequently
 
-I am an entrepreneuer at heart which means I love trying out new ideas and see if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  It's not that I am fickle, I just want to see if I can apply what I learn quickly.  And if an idea works, I will continue to iterate and refine it over time.
+I am an entrepreneuer at heart which means I love trying out new ideas and seeing if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  It's not that I am fickle, I just want to see if I can apply what I learn quickly.  And if an idea works, I will continue to iterate and refine it over time.
 
 ### I am transparent about work and my own fallibility
 
