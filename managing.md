@@ -15,9 +15,18 @@ I took a [management development](https://drive.google.com/file/d/1i9ZCQmXaVpOEJ
 * Coaching
 * Feedback
 * Productivity and Prioritization
-* Effective 1x1s
+* Effective 1x1s (which includes career development)
 
 I won't be able to effectively communicate all the lessons and learnings from this multi-day, multi-hour course, but suffice to say, these are definitely the four areas that really matter when leading people.  Coaching, feedback and effective 1x1s are all tied together, and I consider this the core to growing people.  1x1s are where the coaching and feedback takes place, and being able to "coach" instead of "tell" will help drive autonomy and learning.  Feedback is central to it all because if you can't give specific, timely positive and critical feedback, its going be hard to grow anyone.  Finally, productivity and prioritization is something you as a leader will have to do but also make sure your teams does well, and this really will help them execute effectively on projects and meet the team's goals.
+
+## Retaining People
+
+Creating a fantastic culture and growing people will go a long way in retaining them, however, there's a whole other set of things you need to do to ensure people stay and continue to be happy and thriving.  They are:
+
+* Performance Evaluation
+* Compensation
+* Appreciation
+* Career Growth
 
 ## Hiring People
 
@@ -29,9 +38,9 @@ This is the entire process of finding talented people that can be effective at a
 * Interview - What's the process to vet the skills and attributes you're looking for?  How will you craft the questions and panel to find the right fit?
 * Onboard - Once they're hired, how will you ensure they're effective from day one and provide them the support and instruction they need.
 
-## Finding the right fit for people
+## Parting Ways
 
-This might be an euphemism for firing someone, but it really comes down to fit and timing.  If you've spent the time vetting people and then growing them, it is unlikely that they are incapable of doing the work, but more likely struggling with the specific role or the organization and culture.  Or maybe something in their personal life has changed, and its made it difficult for them to execute the way they used to.  In the end, doing this the right way, making sure proper, direct feedback and coaching have been given and then doing it in a timely and just manner is best.  It will undoubtably be unpleasant and wear on you, but making sure people end up at the right place is the best for them, and your team and of course yourself.  I still find this the hardest thing to do as a people leader and something I'll never get used to (and probably shouldn't).
+If you've spent the time hiring, growing and retaining people, it is unlikely that they are incapable of doing the work, but more likely struggling with the specific role or the organization and culture.  Or maybe something in their personal life has changed, and its made it difficult for them to execute the way they used to.  In the end, doing this the right way, making sure proper, direct feedback and coaching has been given and then doing it in a authentic, honest and timely manner is best.  Someone should *never* be surprised when you part ways with them.  It will undoubtably be unpleasant and wear on you, but making sure people end up at the right place is the best for them, your team and of course yourself.  I still find this the hardest thing to do as a people leader and something I'll never get used to (and probably shouldn't).
 
 ### Articles
 
