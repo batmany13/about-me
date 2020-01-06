@@ -82,9 +82,7 @@ From ST
 * Bruce's super power is his contagious optimism. What many thought of as risks Bruce reframed as opportunities.
 * Growth area is to be open with your critiques.
 
-### [My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0)
-
-This is still a WIP but something I put together to help organize my time
+#### [My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0) (WIP)
 
 ## Books or Articles that's shaped me
 
