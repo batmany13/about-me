@@ -48,7 +48,7 @@ I adapted this from the [Finding my ideal leader exercise](https://docs.google.c
 
 ### I care deeply about how much you care
 
-I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your background and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
+I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your background and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about your company, teammates and yourself is what drives the most of it out of people.
 
 ### I like to try new ideas frequently
 
