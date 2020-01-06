@@ -50,7 +50,7 @@ I adapted this from the [Finding my ideal leader exercise](https://docs.google.c
 
 I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your background and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about what you do is what drives the most of it out of people.
 
-### I like trying new ideas all the time
+### I like to try new ideas frequently
 
 I am an entrepreneuer at heart which means I love trying out new ideas and see if it'll actually work.  Thus, I lean towards action and executing.  I might read an article, synthesize the learnings and then apply the concepts the very next day (I consider this my superpower).  It's not that I am fickle, I just want to see if I can apply what I learn quickly.  And if an idea works, I will continue to iterate and refine it over time.
 
@@ -81,6 +81,10 @@ From DW
 From ST
 * Bruce's super power is his contagious optimism. What many thought of as risks Bruce reframed as opportunities.
 * Growth area is to be open with your critiques.
+
+### [My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0)
+
+This is still a WIP but something I put together to help organize my time
 
 ## Books or Articles that's shaped me
 
