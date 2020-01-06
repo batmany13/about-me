@@ -49,3 +49,4 @@ If you've spent the time hiring, growing and retaining people, it is unlikely th
 [A Voight Kampff Test for identifying engineering managers](https://medium.com/hackernoon/a-voight-kampff-test-for-identifying-engineering-managers-bb8512c70857)    
 [A Practical Approach to Engineering Leadership](https://medium.com/swlh/a-practical-approach-to-engineering-leadership-e6b0af1ad5dd?source=userActivityShare-ed519409635d-1573746679)    
 [Why company culture has become more critical to company success](https://medium.com/@jproco/why-company-culture-has-become-more-critical-to-company-success-c91c93535d3f)    
+[What is Servant Leadership](https://medium.com/swlh/what-is-servant-leadership-4afe6fa8abf2)    
