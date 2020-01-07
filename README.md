@@ -86,7 +86,10 @@ From ST
 
 [My Work Schedule](https://docs.google.com/spreadsheets/d/1S568XygokAiaEjVSBHlHmtsCaJ9GdkhcvK0-uSVq9Gw/edit#gid=0) (WIP)    
 My Pet Peeves - laptops at meetings, meetings without agendas   
-My Failings - Talking too much or dominating a conversation, being late to meetings    
+My Failings - Talking too much or dominating a conversation, being late to meetings, prioritizing work    
+Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
+Fav Dessert - creme bruele, egg tart
+
 
 ## Books or Articles that's shaped me
 
