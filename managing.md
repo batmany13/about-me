@@ -45,22 +45,22 @@ This is the entire process of finding talented people that can be effective at a
 
 If you've spent the time hiring, growing and retaining people, it is unlikely that they are incapable of doing the work, but more likely struggling with the specific role or the organization and culture.  Or maybe something in their personal life has changed, and its made it difficult for them to execute the way they used to.  In the end, doing this the right way, making sure proper, direct feedback and coaching has been given and then doing it in a authentic, honest and timely manner is best.  Someone should *never* be surprised when you part ways with them.  It will undoubtably be unpleasant and wear on you, but making sure people end up at the right place is the best for them, your team and of course yourself.  I still find this the hardest thing to do as a people leader and something I'll never get used to (and probably shouldn't).
 
-### Amazing quote
-From [FB VP](https://hbr.org/2016/06/how-facebook-tries-to-prevent-office-politics)
+## Articles
+
+Great quote From [FB VP](https://hbr.org/2016/06/how-facebook-tries-to-prevent-office-politics)
 
 ```
-Take the incentive out of "climbing the ladder."  People don't fight for management roles as much when 
-management is not an end goal. Most people think "success" happens when you get the big job with the 
-big title — that you're not growing unless you're moving up. At Facebook, moving into management is not 
-a promotion. It's a lateral move, a parallel track. Managers are there to support people and to remove 
-barriers to getting things done. Managers focus on building a great team, creating a vision for how
-that team will execute its goals, and helping the people on that team develop in their careers. They
-are put in those positions because of their strong people skills. They aren't there to tell teams 
-what to do. This viewpoint has become so effective that some managers at our company have even gone so
-far as to stop saying things like "my team," instead opting for things like "the team I support."
+Take the incentive out of "climbing the ladder."  People don't fight for management roles as much
+when management is not an end goal. Most people think "success" happens when you get the big job
+with the big title — that you're not growing unless you're moving up. At Facebook, moving into 
+management is not a promotion. It's a lateral move, a parallel track. Managers are there to support
+people and to remove barriers to getting things done. Managers focus on building a great team, 
+creating a vision for how that team will execute its goals, and helping the people on that team 
+develop in their careers. They are put in those positions because of their strong people skills. 
+They aren't there to tell teams what to do. This viewpoint has become so effective that some 
+managers at our company have even gone so far as to stop saying things like "my team," instead 
+opting for things like "the team I support."
 ```
-
-### Articles
 
 [Engineering leadership at Netflix](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/)    
 [What is an engineering manager](https://aws.amazon.com/blogs/startups/what-is-an-engineering-manager/)    
