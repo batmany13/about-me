@@ -4,7 +4,10 @@ For the first 10 years of my career, I focused on software development and worke
 
 ## Creating and/or sustaining the culture
 
-```Culture is ultimately defined by the desired behaviors that leadership clearly and consistently communicates and then holds themselves and their employees accountable towards.```
+```
+Culture is ultimately defined by the desired behaviors that leadership clearly and consistently
+communicates and then holds themselves and their employees accountable towards.
+```
 
 So what behaviors do you want to model?  What is your [leadership philosophy](https://github.com/batmany13/about-me#leadership-philosophy)?  A team or company's culture is set at the top and then realized by the individuals.  Thus, it's critical to come up with your own philosophy and then create a set of behaviors that model that philosophy and then hold your team accountable for it.  You have to hire, grow and let go of people based on it to really reinforce it.  Sometimes, companies have amazingly transparent and open [cultures](https://jobs.netflix.com/culture) so it'll be easy to model your team culture based on things the company believes, but nonetheless, implementing and realizing a company culture takes work.
 
@@ -45,7 +48,17 @@ If you've spent the time hiring, growing and retaining people, it is unlikely th
 ### Amazing quote
 From [FB VP](https://hbr.org/2016/06/how-facebook-tries-to-prevent-office-politics)
 
-```Take the incentive out of "climbing the ladder." People don't fight for management roles as much when management is not an end goal. Most people think "success" happens when you get the big job with the big title — that you're not growing unless you're moving up. At Facebook, moving into management is not a promotion. It's a lateral move, a parallel track. Managers are there to support people and to remove barriers to getting things done. Managers focus on building a great team, creating a vision for how that team will execute its goals, and helping the people on that team develop in their careers. They are put in those positions because of their strong people skills. They aren't there to tell teams what to do. This viewpoint has become so effective that some managers at our company have even gone so far as to stop saying things like "my team," instead opting for things like "the team I support."```
+```
+Take the incentive out of "climbing the ladder."  People don't fight for management roles as much when 
+management is not an end goal. Most people think "success" happens when you get the big job with the 
+big title — that you're not growing unless you're moving up. At Facebook, moving into management is not 
+a promotion. It's a lateral move, a parallel track. Managers are there to support people and to remove 
+barriers to getting things done. Managers focus on building a great team, creating a vision for how
+that team will execute its goals, and helping the people on that team develop in their careers. They
+are put in those positions because of their strong people skills. They aren't there to tell teams 
+what to do. This viewpoint has become so effective that some managers at our company have even gone so
+far as to stop saying things like "my team," instead opting for things like "the team I support."
+```
 
 ### Articles
 
