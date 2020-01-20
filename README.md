@@ -8,7 +8,11 @@ This is a guide to my leadership philosophy and a little about me.
 
 <a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
-```Create a learning environment by promoting psychological safety, autonomy and transparency. Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery of customer value.```
+```
+Create a learning environment by promoting psychological safety, autonomy and transparency. 
+Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery
+of customer value.
+```
 
 ### Start with safety
 
@@ -20,7 +24,7 @@ Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions
 
 No matter the size of team, setting a purpose and having a vision of what you want is really important.  It's the sense of direction that people want, will energize the team and most importantly, serve as a guidepost on what you should and shouldn't be working on.
 
-Toolbelt: Team mission exercise, identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
+Toolbelt: Team mission exercise or The Advantage's [6 questions](https://www.tablegroup.com/downoad/develop-a-playbook/), or identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
 
 ### Share with the team openly
 
