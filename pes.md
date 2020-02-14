@@ -4,6 +4,10 @@ AIM (Access & Identity Management)
 Playback Systems (licensing, encryption etc)   
 API Systems (DNA and Studio)    
 
+### Rallying Cry for 2020
+
+``` Catalyze Product Evolution ``` (CAPE)
+
 ## Api Systems
 
 ```To enable rapid evolution and reliable product experiences across consumer and studio via resilient API orchestration layers and engaged partner interactions ```
