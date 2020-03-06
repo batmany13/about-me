@@ -24,7 +24,7 @@ Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions
 
 No matter the size of team, setting a purpose and having a vision of what you want is really important.  It's the sense of direction that people want, will energize the team and most importantly, serve as a guidepost on what you should and shouldn't be working on.
 
-Toolbelt: Use [OKRs](https://www.whatmatters.com/faqs/company-wide-okr-ideas-examples), Team mission exercise like The Advantage's [6 questions](https://www.tablegroup.com/downoad/develop-a-playbook/), or identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
+Toolbelt: Team mission exercise like The Advantage's [6 questions](https://www.tablegroup.com/downoad/develop-a-playbook/), or identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
 
 ### Share with the team openly
 
@@ -42,7 +42,7 @@ Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipp
 
 Having goals and making progress against them is great.  It will tell you how you're doing individually and as a team.  It also allows you to prioritize and know if you're doing the right thing.
 
-Toolbelt: Use OKRs (objectives and key results) to focus the team and track your progress
+Toolbelt: Use [OKRs](https://www.whatmatters.com/faqs/company-wide-okr-ideas-examples) (objectives and key results) to focus the team and track your progress.  Roughly track your bigger goals via JIRA Epics or Trello boards or Airtable.
 
 ## About Me Personally
 
