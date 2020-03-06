@@ -36,7 +36,7 @@ Toolbelt: Have meetings and lunches together, talk about what's going on in an i
 
 Giving your team autonomy, which is agency over their decisions and having "[freedom and responsibility](https://jobs.netflix.com/culture)" is very critical to their success.  But what's just as important is giving the time and space for it.  If you're too focused on executing towards a deadline, you might not have any time or room for learning and trying new things.  Finally, celebrate the learnings, don't frame them as "failures" but as learnings to do better and more next time.  A growth mindset comes with its own investments!
 
-Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipping not an arbitrary deadline.  Celebrate wins and learnings!  Use post mortems to diagnosis incidents and learn from them.
+Toolbelt: Try Kanban, limit your work in progress and focus on quality and shipping not an arbitrary deadline.  Celebrate wins and learnings!  Use [retrospectives](https://www.retrium.com/) to diagnosis issues and learn from them.
 
 ### Measure your goals
 
