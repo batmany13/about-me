@@ -16,7 +16,7 @@ of customer value.
 
 ### Start with safety
 
-Everything begins and ends with psychological safety.  Without it, people will lack caring, be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.
+Everything begins and ends with psychological safety.  Without it, people will lack [caring](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327), be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.
 
 Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions from all members of the team, hire for diversity and inclusion.  No tolerance for brilliant jerks.
 
