@@ -64,7 +64,7 @@ I believe sharing information is the key to our success.  I think the only way w
 
 ### I am an eternal optimist and like creating a fun environment
 
-I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down and I always look for a positive light.  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
+I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down (as much) and I always look the positive angle.  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
 
 ### I like to ask why
 
