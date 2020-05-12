@@ -2,6 +2,8 @@
 
 ``` To enable the best Netflix experience by authorizing, integrating, and delivering API orchestration, access management, and critical edge services at scale. ```
 
+Read our [overview](https://www.linkedin.com/pulse/netflixs-edge-systems-delighting-customers-through-bad-fisher-ogden/)
+
 AIM (Access & Identity Management)    
 Playback Systems (licensing, encryption etc)   
 API Systems (DNA and Studio)    
