@@ -5,8 +5,8 @@
 Read our [overview](https://www.linkedin.com/pulse/netflixs-edge-systems-delighting-customers-through-bad-fisher-ogden/)
 
 AIM (Access & Identity Management)    
-Playback Systems (licensing, encryption etc)   
-API Systems (DNA and Studio)    
+Playback Systems (viewing history, bookmarks, licensing, encryption etc)   
+API Systems   
 
 ### Rallying Cry for 2020
 
@@ -21,6 +21,17 @@ Org Responsibilities:
 * Maintain an end-to-end development workflow for our APIs and providing multiple entry points into our core aggregation layer
 * Maintain a massively scalable, resilient API aggregation layer that 
 
+### Netflix API Team
+
+aka: DNA
+
+This team focuses on building the aggregation tier that stitches together hundreds of backend services and libraries into a single unified data model and schema.  This is then materialized in a variety of ways, through REST APIs, our custom Groovy execution engine (.NEXT), Graph based API (DNA API) and soon to be GraphQL.  The team manages a complex dependency pipeline and sophisticated data model, and operates a Tier 1 service at Netflix.
+
+### Federated API Gateway Team
+
+aka: BFG
+
+This team develops a scalable API platform that accommodates rapid iteration across mid-tier and backend teams while providing a unified, discoverable API to clients.  The current scope includes the GraphQL gateway, schema registry and federation sdk.   Our current focus areas are Studio Edge, the unified GraphQL API for our content/studio applications and Consumer Edge, unifying our MemberUIs (TVUI, Web, iOS, and Android) on a single GraphQL API.  Additionally, our team is a key contributor to advancing GraphQL adoption across Netflix.
 
 ## Background
 
