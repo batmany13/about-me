@@ -14,9 +14,13 @@ API Systems (DNA and Studio)
 
 ## Api Systems
 
-```To enable rapid evolution and reliable product experiences across consumer and studio via resilient API orchestration layers and engaged partner interactions ```
+API Systems encompasses two core areas, the Netflix API and Products’ Edge.  The Netflix API enables signup, content discovery, and partner experiences on 1000+ device types. The team creates a unified abstraction and aggregation layer over disparate Netflix mid-tier systems, enabling device teams to build innovative user experiences through a consistent API layer.  The Products’ Edge focuses on applications behind the scenes that power a variety of our internal workflows.  An example is Studio Edge, an unified GraphQL API that is federated across 60+ backend services and powers our entire content engineering workflow from pitch to play utilized by Netflix employees, vendors, contractors and creative talent.
 
-This team builds the API Orchestration layer at Netflix.  This powers our consumer and studio products.  Consumer side handles 2M RPS and connects 1000+ devices to the hundreds of mid-tier services we have.  On the studio side, we are modernizing the content production process from "pitch to post" and it is very data intensive and based on a GraphQL federation architecture (which we're pioneering with Apollo).
+Org Responsibilities:
+* Expose a singular API to client devices to navigate our Netflix experience
+* Maintain an end-to-end development workflow for our APIs and providing multiple entry points into our core aggregation layer
+* Maintain a massively scalable, resilient API aggregation layer that 
+
 
 ## Background
 
