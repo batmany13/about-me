@@ -31,3 +31,13 @@ Tips to help achieve true clarity
 * Pair program!  Using something like [Tuple](https://tuple.app/) can make it easy for your developers to learn and grow together.
 * Document major technical and organizational changes with something like [RFCs](https://en.wikipedia.org/wiki/Request_for_Comments).  This allows you to memorialize the changes in your team and invites all to comment and dissent.
 * Normalize trying new things.  Make sure you experiment with new techniques for your teams to learn. Make failures a learning opportunity so your next initiative will improve.
+
+### Growing individuals
+
+* Learn the strengths and areas of improvement for each individual member.  Find projects to draw on those strengths and shore up their gaps.
+* [Diversity of thought](https://www.mckinsey.com/business-functions/organization/our-insights/why-diversity-matters) is critical to increasing impact.  Ensure all voices are heard. Impact could come from a variety of sources and it doesn’t always have to be Big Bang projects.
+* Use the power of [1x1s](https://github.com/batmany13/about-me/blob/master/1x1s.md) to learn more about your teammates’ goals, what motivates them, and to provide coaching and feedback.  Ensure you are providing positive feedback as well!
+* Build a feedback culture by [asking for feedback](https://www.strategy-business.com/article/Using-Neuroscience-to-Make-Feedback-Work-and-Feel-Better)!
+* Make sure you have a clear model of impact for your team.  Realize that impact can come in many forms and is not always easy to measure.
+* Treat each team member’s career path individually and make sure it’s their plan and not yours.  Sometimes this means you’ll lose a stunning colleague to another team or company.
+* If you are exiting a person from the business, make you sure you’ve provided clear and actionable feedback.  Also ensure that your team structure or culture (e.g. lack of training, poor inclusion, lack of safety to speak up)  is not the real root cause of their challenges.
