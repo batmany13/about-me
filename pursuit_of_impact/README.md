@@ -22,3 +22,12 @@ Tips to help achieve true clarity
 * Create a hiring decision doc to answer questions like what they bring to the team and what you would need to coach them on.  This will sharpen your thinking on what you are looking for and how that person aligns with that.
 * Go beyond your own network  and reach out to folks that you may not typically talk to or are familiar with.  Building a diverse pipeline is how you can find your next stunning hire
 * Stamp out inadvertent biases in your process.  This could be anything from sourcing from a limited pool to having technical interviews that bias towards people with more free time.  Ensure that it is [fair and equitable](https://hbr.org/2017/06/7-practical-ways-to-reduce-bias-in-your-hiring-process)
+
+### Creating a learning environment
+
+* Have a clear onboarding plan for new hires.  Set reasonable targets and provide time and space for someone to ramp up.  Frame it as a path to comfortability vs a set  of tasks to finish
+* Build a team guide or [handbook](https://about.gitlab.com/handbook/).  It’s important to keep this up to date as your processes evolve.  
+* Again, [create margin](https://www.linkedin.com/pulse/creating-margin-karen-casella/) for your team to learn and grow.  Ensure your roadmap gives sufficient time for learning initiatives. You must prioritize this equally to product requests and infra changes.
+* Pair program!  Using something like [Tuple](https://tuple.app/) can make it easy for your developers to learn and grow together.
+* Document major technical and organizational changes with something like [RFCs](https://en.wikipedia.org/wiki/Request_for_Comments).  This allows you to memorialize the changes in your team and invites all to comment and dissent.
+* Normalize trying new things.  Make sure you experiment with new techniques for your teams to learn. Make failures a learning opportunity so your next initiative will improve.
