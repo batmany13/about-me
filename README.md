@@ -28,7 +28,7 @@ Toolbelt: Team mission exercise like The Advantage's [6 questions](https://www.t
 
 ### Share with the team openly
 
-Information is not a weapon to use or to hoard but a powerful unifier that unlocks your teams autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
+Information is not a weapon to use or to hoard but a powerful unifier that unlocks your team's autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
 Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other.
 
