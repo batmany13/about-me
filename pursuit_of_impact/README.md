@@ -1,4 +1,6 @@
-## Pursuit of Impact Tips
+## The Pursuit of Impact Tips
+
+Here are tips I am continuously curating related to my blog post and conference talk.
 
 ### Designing your team
 
