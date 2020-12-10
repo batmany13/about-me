@@ -36,7 +36,7 @@ Tips to help achieve true clarity
 
 ### Growing individuals
 
-* Learn the strengths and areas of improvement for each individual member.  Find projects to draw on those strengths and shore up their gaps.
+* Learn the strengths and areas of improvement for each individual member.  Find projects to draw on those strengths or allow them to stretch and grow.
 * [Diversity of thought](https://www.mckinsey.com/business-functions/organization/our-insights/why-diversity-matters) is critical to increasing impact.  Ensure all voices are heard. Impact could come from a variety of sources and it doesn’t always have to be Big Bang projects.
 * Use the power of [1x1s](https://github.com/batmany13/about-me/blob/master/1x1s.md) to learn more about your teammates’ goals, what motivates them, and to provide coaching and feedback.  Ensure you are providing positive feedback as well!
 * Build a feedback culture by [asking for feedback](https://www.strategy-business.com/article/Using-Neuroscience-to-Make-Feedback-Work-and-Feel-Better)!
