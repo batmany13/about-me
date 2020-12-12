@@ -1,6 +1,6 @@
 ## The Pursuit of Impact Tips
 
-Here are tips I am continuously curating related to my blog post and conference talk.
+Here are tips I am continuously curating related to my [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) post and conference talk.
 
 ### Designing your team
 
@@ -24,6 +24,7 @@ Tips to help achieve true clarity
 * Create a hiring decision doc to answer questions like what they bring to the team and what you would need to coach them on.  This will sharpen your thinking on what you are looking for and how that person aligns with that.
 * Go beyond your own network  and reach out to folks that you may not typically talk to or are familiar with.  Building a diverse pipeline is how you can find your next stunning hire
 * Stamp out inadvertent biases in your process.  This could be anything from sourcing from a limited pool to having technical interviews that bias towards people with more free time.  Ensure that it is [fair and equitable](https://hbr.org/2017/06/7-practical-ways-to-reduce-bias-in-your-hiring-process)
+* Consider both technical and non-technical additive skills.  Look deeper for things like risk-aversion vs risk-taker, or pessmistic or optimistic outlook.  Its good to ensure you have a mix of people, and if you skew one way, adding someone who's different will really help blend out the team.
 
 ### Creating a learning environment
 
@@ -37,7 +38,7 @@ Tips to help achieve true clarity
 ### Growing individuals
 
 * Learn the strengths and areas of improvement for each individual member.  Find projects to draw on those strengths or allow them to stretch and grow.
-* [Diversity of thought](https://www.mckinsey.com/business-functions/organization/our-insights/why-diversity-matters) is critical to increasing impact.  Ensure all voices are heard. Impact could come from a variety of sources and it doesn’t always have to be Big Bang projects.
+* [Diversity of thought](https://www.mckinsey.com/business-functions/organization/our-insights/why-diversity-matters) is critical to increasing impact.  Ensure all voices are heard. Impact could come from a variety of sources and it doesn’t always have to be Big Bang projects.  This is also by the earlier point of hiring for additive skills is key, bringing in different perspectives makes a difference
 * Use the power of [1x1s](https://github.com/batmany13/about-me/blob/master/1x1s.md) to learn more about your teammates’ goals, what motivates them, and to provide coaching and feedback.  Ensure you are providing positive feedback as well!
 * Build a feedback culture by [asking for feedback](https://www.strategy-business.com/article/Using-Neuroscience-to-Make-Feedback-Work-and-Feel-Better)!
 * Make sure you have a clear model of impact for your team.  Realize that impact can come in many forms and is not always easy to measure.
