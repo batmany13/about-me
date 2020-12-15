@@ -1,6 +1,6 @@
 ## The Pursuit of Impact Tips
 
-Here are tips I am continuously curating related to my [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) post and conference talk.
+Here are tips I am continuously curating related to my [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) post and [conference talk](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3).
 
 ### Designing your team
 
