@@ -89,7 +89,7 @@ From ST
 ### Misc Things
 
 [My Mentorship Page](https://www.platohq.com/our-mentors/bruce-wang)    
-[My Calendly](https://calendly.com/batmany13)    
+[My Calendly](https://calendly.com/batmany13/mentor)    
 My Pet Peeves - laptops at meetings, meetings without agendas   
 My Failings - Talking too much or dominating a conversation, being late to meetings, prioritizing work    
 Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
