@@ -2,7 +2,7 @@
 
 My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the [API systems](https://github.com/batmany13/about-me/blob/master/pes.md#api-systems) team (Consumer and Content/Studio).
 
-This is a guide to my leadership philosophy and a little about me.
+This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
 
 ## Leadership Philosophy
 
@@ -69,22 +69,6 @@ I like to create a fun environment because what we do can be pretty stressful.  
 ### I like to ask why
 
 I need to reconcile what I (or the team) is doing with the company or team's mission.  Values means something to me, and I like to know why I am doing anything.  If there's dissonance between values/goals/mission and actual actions, I will push back.  I also like to understand underlying assumptions of any project and determine if we're achieving the benefits we set out to gain.
-
-### What past bosses have said about me
-
-My current boss @ Netflix did a reference check on me, but only after he offered me the job and for the express purpose to see how he can enable me to succeed.  He sent me a summary of responses from my former bosses and they were so telling and accurate, I thought I'd put it here.
-
-From PK
-* Encourage the entrepreneurial spirit, balance with prioritization and honing what to focus on now vs later
-* Coach on when to make the call on someone not working out in their role versus continuing to try and grow them
-
-From DW
-* He's most effective when he's a player coach. Bruce is best when he gets to roll up his leaves, get into the codebase, one of the best debuggers he has seen.
-* Bruce just needs to be oriented and supported and then get out of his way. He's a doer, doesn't do well with a lot of bureaucracy. Focus him on execution.
-
-From ST
-* Bruce's super power is his contagious optimism. What many thought of as risks Bruce reframed as opportunities.
-* Growth area is to be open with your critiques.
 
 ### Misc Things
 
