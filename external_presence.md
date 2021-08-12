@@ -22,6 +22,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 [Plato Mentor Page](https://www.platohq.com/mentors/bruce-wang)     
 [LeadDev Page](https://leaddev.com/community/bruce-wang)    
 [Medium Page](https://medium.com/@batmany)    
+[LinkedIn Articles](https://www.linkedin.com/in/batmany13/detail/recent-activity/posts/)    
 
 ### Micro-networking Events
 
