@@ -92,6 +92,7 @@ Fav Dessert - creme bruele, egg tart
 [Winning now, Winning Later by David M. Cote](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) - How companies can succeed in the short term, while investing for the long term.   
 
 [Netflix Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsiblity, be candid and encourage independent thinking    
+[https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/) - how a manager thinks about vision, people, technical, execution   
 [What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
 [The Competitive Imperative of Learning by Amy Edmondson](https://hbr.org/2008/07/the-competitive-imperative-of-learning) - Execution for Learning over Execution for Efficiency   
 [Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, have a diverse group does
