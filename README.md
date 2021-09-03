@@ -24,7 +24,7 @@ Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions
 
 No matter the size of team, setting a purpose and having a vision of what you want is really important.  It's the sense of direction that people want, will energize the team and most importantly, serve as a guidepost on what you should and shouldn't be working on.
 
-Toolbelt: Team mission exercise like The Advantage's [6 questions](https://www.tablegroup.com/downoad/develop-a-playbook/), or identify ["3 uniques"](https://blog.eosworldwide.com/blog/96514/traction-thoughts/uniques/) of the team
+Toolbelt: Team mission exercise like The Advantage's [6 questions](https://www.tablegroup.com/thoughts-from-the-field_-issue-10-capitalizing-on-clarity/). or identify ["3 uniques"](https://www.eosworldwide.com/blog/96514-traction-thoughts-uniques) of the team
 
 ### Share with the team openly
 
