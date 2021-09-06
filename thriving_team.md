@@ -1,6 +1,6 @@
 ## Thriving Team Skills
 
-We often talk about the key non-technical skills for engineers.  Sometimes this is referred as "soft skills", but this is a misnomer.  These are "hard skills" you should have if you want to be a successful engineer at any organization, large or small.  Reframing these as as "thriving team skills" should highlight its importance.  These are skills that not only lead individual success but really empower your team and ultimately lead to a high performance organization.  Here are some examples:
+We often talk about the key non-technical skills for engineers.  Sometimes this is referred as "soft skills", but this is a misnomer.  These are "hard skills" you should have if you want to be a successful engineer at any organization, large or small.  These are skills not only lead to individual success but empowers your team and creates a high performance culture.  Here are some examples:
 
 * __Exceptional x-functional partner__ - Balancing the needs of the team, others and the company.  Sheperding ideas through, surfacing dissent yet being able to move projects along.
 * __Excellent verbal and written communicator__ - Ability to convey ideas in succint and concise manner.  Distill complex ideas into simple to understand concepts.  Effective at communicating with folks of varying technical expertise.
