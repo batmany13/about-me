@@ -1,3 +1,14 @@
+## Thriving Team
+From this [article](https://www.linkedin.com/pulse/maximize-team-impact-minimal-growth-philip-fisher-ogden/) by Philip
+
+__A sufficiently staffed [full-cycle dev](https://netflixtechblog.com/full-cycle-developers-at-netflix-a08c31f83249) team is able to:__
+* Exceed expectations on partner needs
+* Invest in internal initiatives, for example system redesigns and tech debt reduction
+* Explore new ideas and approaches, as wandering spurs innovation
+* Operate our systems without burning out our people
+* Advance the state of the art by sharing our tech stories via blog posts and conference talks
+* Recharge through balancing time-off with time-on
+
 ## Thriving Team Skills
 
 A software engineer requires both technical and non-technical skills to be successful.  These aren't just nice-to-have "soft skills" you are born with but hard skills you can cultivate and develop throughout your career.  These skills not only lead to individual success but empowers your team and helps create a high performance culture.  Here are some examples:
