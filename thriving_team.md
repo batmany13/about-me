@@ -1,5 +1,5 @@
 ## Thriving Team
-From this [article](https://www.linkedin.com/pulse/maximize-team-impact-minimal-growth-philip-fisher-ogden/) by Philip
+From this [article](https://www.linkedin.com/pulse/maximize-team-impact-minimal-growth-philip-fisher-ogden/)
 
 __A sufficiently staffed [full-cycle dev](https://netflixtechblog.com/full-cycle-developers-at-netflix-a08c31f83249) team is able to:__
 * Exceed expectations on partner needs
