@@ -1,4 +1,4 @@
-# OKRs - Objective and Key Results
+# OKRs - Objectives and Key Results
 
  * Measure
  * Focus
