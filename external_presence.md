@@ -2,6 +2,7 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
+[Sept 2021] [Enrich Conversations](https://www.joinenrich.com/events/2021/9/29/enrich-conversations-best-practices-for-engineering-org-structure) - Best Practices for Engineering Orgs    
 [June 2021] Plato Elevate Summer 2021 Panel - How to Foster a high performance culture ([video](https://www.youtube.com/watch?v=uYo4D8GlUyI))    
 [May 2021] [Enrich AMA](https://lu.ma/lzu80v76) - Pitfalls of a High Performance Culture ([presentation](https://docs.google.com/presentation/d/1mknWGnHi-BDED4KKMJ7F8TnWp3nBuve-kFr_lW1-t5I/edit))    
 [May 2021] [LeadDev Panel](https://leaddev.com/communication-relationships/building-tools-cross-team-communication) - Building the tools for cross-team communication ([video](https://www.youtube.com/watch?v=bTeC53i4TX0))    
