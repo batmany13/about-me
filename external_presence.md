@@ -2,6 +2,8 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
+[Oct 2021] Disclosed - Interview and Reviewing Resumes for New Grads (video)    
+[Oct 2021] [Enrich Conversation](https://lu.ma/o8ji8sk8) - Promotions and Comp Panel with Alana Karen, Shanshan Song
 [Sept 2021] [Enrich Conversations](https://www.joinenrich.com/events/2021/9/29/enrich-conversations-best-practices-for-engineering-org-structure) - Best Practices for Engineering Orgs    
 [June 2021] Plato Elevate Summer 2021 Panel - How to Foster a high performance culture ([video](https://www.youtube.com/watch?v=uYo4D8GlUyI))    
 [May 2021] [Enrich AMA](https://lu.ma/lzu80v76) - Pitfalls of a High Performance Culture ([presentation](https://docs.google.com/presentation/d/1mknWGnHi-BDED4KKMJ7F8TnWp3nBuve-kFr_lW1-t5I/edit))    
@@ -19,6 +21,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 [May 2019] First time I became a CTO ([blog](https://www.platohq.com/resources/the-first-time-i-became-a-cto))    
 [Mar 2017] APIs, a deeper look in the developer's mindset ([blog](https://medium.com/synq/apis-a-deeper-look-5bcf2a76c7af))    
 [Feb 2017] Why APIs are eating the world ([blog](https://www.linkedin.com/pulse/why-apis-eating-world-bruce-wang/))    
+[Oct 2016] DevOps KPIs with Elixir and Geckoboard ([blog](https://medium.com/brightergy-engineering/operational-dashboards-with-geckoboard-2dc9d6d3c326))   
 
 [Plato Mentor Page](https://www.platohq.com/mentors/bruce-wang)     
 [LeadDev Page](https://leaddev.com/community/bruce-wang)    
