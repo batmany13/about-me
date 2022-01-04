@@ -2,6 +2,7 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
+[Feb 2022] LeadDev - "Articulating Strategy" as part of the Strategy module (link | video)    
 [Oct 2021] Disclosed - Interview and Reviewing Resumes for New Grads (video)    
 [Oct 2021] [Enrich Panel](https://lu.ma/o8ji8sk8) - Promotions and Comp with Alana Karen, Shanshan Song    
 [Sept 2021] [Enrich Conversations](https://www.joinenrich.com/events/2021/9/29/enrich-conversations-best-practices-for-engineering-org-structure) - Best Practices for Engineering Orgs    
