@@ -90,6 +90,7 @@ Fav Dessert - creme bruele, egg tart
 [Getting Naked, A business Fable by Patrick Lencioni](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
 [The Lean Startup by Eric Ries](https://www.amazon.com/Lean-Startup-Entrepreneurs-Continuous-Innovation-ebook/dp/B004J4XGN6/ref=sr_1_3?keywords=lean+startup&qid=1578010494&s=digital-text&sr=1-3) - Prove your startup assumptions and iterate or pivot    
 [Winning now, Winning Later by David M. Cote](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) - How companies can succeed in the short term, while investing for the long term.   
+[Think Again by Adam Grant](https://adamgrant.net/book/think-again/) - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
 
 [Netflix Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsiblity, be candid and encourage independent thinking    
 [What makes a great engineering manager](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/) - how a manager thinks about vision, people, technical, execution   
