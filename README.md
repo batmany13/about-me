@@ -6,13 +6,13 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ## Leadership Philosophy
 
+### _Trusting teams, seeking excellence, driving customer delight_
+
 <a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
-```
-Create a learning environment by promoting psychological safety, autonomy and transparency. 
-Teams should have a clear purpose, a growth mindset, and a propensity for action and delivery
-of customer value.
-```
+The big challenge of any leader is how do you create a learning environment?  How do you push for psychological safety, autonomy, inclusivity and transparency?  How do you provide teams a clear purpose, a growth mindset, and a propensity for action and delivery
+of customer value?  How do you hold your team and yourself accountable for delivering excellence __sustainably__ by avoiding burnout and toxic, self-serving cultures?  How do you do this while taking into account of your business and company environment?  This is my philosophy on how to achieve that!
+
 
 ### Start with safety
 
