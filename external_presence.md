@@ -3,8 +3,9 @@
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
 __Upcoming__   
-[June 2022] Enrich "Measuring Engineering Productivity" AMA (again).   
-[May 2022] IDG Korea - Netflix APIs, An Unexpected Journey   
+[Q1 2023] LeadDev TBD    
+[June 2022] Enrich "Measuring Engineering Productivity" AMA (rd 2)    
+[May 2022] IDG Korea - Netflix APIs, An Unexpected Journey | video | pdf   
 
 __Completed__   
 [Feb 2022] LeadDev - "Writing an effective technical strategy" as part of the Articulating Strategy module ([link](https://events.leaddev.com/2022-S3-articulating-strategy) | video)    
