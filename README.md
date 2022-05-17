@@ -74,7 +74,7 @@ Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-No
 
 ## About Me Personally
 
-<img src=rsrc/garden.jpg>
+<img src=rsrc/garden.jpg width=35% height=35%>
 
 I like to think of myself as a "humble gardener" (from the book Team of Teams), the idea of a leader who helps toil the soil, water the plants, and relishes in watching the team thrive and grow.  My proudest moments is when I see my team or folks I mentor succeed in their own ambitions, knowing I had a small part in that.
 
