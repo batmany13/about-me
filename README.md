@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the [API systems](https://github.com/batmany13/about-me/blob/master/pes.md#api-systems) team (Consumer and Content/Studio).
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the [API systems](https://github.com/batmany13/about-me/blob/master/pes.md#api-systems) team (Consumer, Enterprise and Content/Studio).
 
 This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
 
