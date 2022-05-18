@@ -52,7 +52,7 @@ Accountability is essential to a learning environment, thus having goals and mak
 
 Toolbelt: Use [OKRs](https://www.whatmatters.com/faqs/company-wide-okr-ideas-examples) (objectives and key results) to focus the team and track your progress.  Roughly track your bigger goals via JIRA Epics or Trello boards or Airtable.
 
-### High-performing teams by definition is sustainable
+### High-performing teams by definition are sustainable
 
 Excellence can only be achieved if its sustainable.  You need to rush and get a project out once in a while, fine, thats understandable.  But if you have to constantly sprint and burnout your entire team, that won't work for the long term.  As described in [The Making of a Corporate Athlete](https://hbr.org/2001/01/the-making-of-a-corporate-athlete), it is not the stress that hurts the individual, but its inability to recover.
 
