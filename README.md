@@ -78,6 +78,8 @@ Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-No
 
 I like to think of myself as a "humble gardener" (from the book Team of Teams), the idea of a leader who helps toil the soil, water the plants, and relishes in watching the team thrive and grow.  My proudest moments are when my teammates or folks I mentor succeed in their own ambitions, knowing I had a small part in that.
 
+(I adapted the below from the [Finding my ideal leader](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) exercise)
+
 ### I care deeply about how much you care
 
 I think "caring" is so important, I wrote an [article](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327) about it.  It's not just that I care about you as a person, your background and your growth but I also care that I create an environment to allow your caring to flourish.  There is a concept of "discretionary effort" and I believe caring about your company, teammates and yourself is what drives the most of it out of people.
@@ -92,13 +94,13 @@ I believe sharing information is the key to our success.  I think the only way w
 
 ### I am an eternal optimist and like creating a fun environment
 
-I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down (as much) and I always look the positive angle.  Positive psychology is a thing as detailed in [The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/).  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
+I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down (as much) and I always look the positive angle.  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
+
+_As it turns out, a positive mindset is a strategic advantage as detailed in [The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)._
 
 ### I like to ask why
 
 I need to reconcile what I (or the team) is doing with the company or team's mission.  Values means something to me, and I like to know why I am doing anything.  If there's dissonance between values/goals/mission and actual actions, I will push back.  I also like to understand underlying assumptions of any project and determine if we're achieving the benefits we set out to gain.
-
-_I adapted this from the [Finding my ideal leader exercise](https://docs.google.com/document/d/1S4DSgLhlAS2ods_mVqBh8v-55zPRjshBSkfmojmlz2A/edit) I did._
 
 ### Misc Things
 
