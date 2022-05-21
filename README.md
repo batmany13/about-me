@@ -70,13 +70,13 @@ Just like building a high performance team through sustainable methods, a busine
 
 You must deliver on immediate goals while planting seeds for the future.  Challenge yourself to think about how you can do both?  Do not compromise on either
 
-Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David Cote for inspiration.  If a Fortune 100 CEO can turn around a company, while delivering on quarterly numbers AND investing in the future, you can do too!
+Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David Cote for inspiration.  If a Fortune 100 CEO can turn around a company, while delivering on quarterly numbers AND investing in the future, you can do it too!
 
 ## About Me Personally
 
 <img src=rsrc/garden.jpg width=35% height=35%>
 
-I like to think of myself as a "humble gardener" (from the book Team of Teams), the idea of a leader who helps toil the soil, water the plants, and relishes in watching the team thrive and grow.  My proudest moments is when I see my team or folks I mentor succeed in their own ambitions, knowing I had a small part in that.
+I like to think of myself as a "humble gardener" (from the book Team of Teams), the idea of a leader who helps toil the soil, water the plants, and relishes in watching the team thrive and grow.  My proudest moments are when my teammates or folks I mentor succeed in their own ambitions, knowing I had a small part in that.
 
 ### I care deeply about how much you care
 
@@ -92,7 +92,7 @@ I believe sharing information is the key to our success.  I think the only way w
 
 ### I am an eternal optimist and like creating a fun environment
 
-I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down (as much) and I always look the positive angle.  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
+I like to create a fun environment because what we do can be pretty stressful.  I enjoy building a jovial rapport with my team, and spark joy in their work.  I am also an eternal optimist so difficult situations at work doesn't get me down (as much) and I always look the positive angle.  Positive psychology is a thing as detailed in [The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/).  While many people think I am an outgoing fun-loving extrovert, I am really an introvert (or maybe ambivert) and enjoy being alone every so often to re-charge.
 
 ### I like to ask why
 
@@ -112,26 +112,26 @@ Fav Dessert - creme bruele, egg tart, tiramisu
 ## Books or Articles that's shaped me
 
 __Teams__   
-[Drive by Daniel Pink](https://www.amazon.com/Drive-Surprising-Truth-About-Motivates-ebook/dp/B004P1JDJO/ref=sr_1_1?keywords=drive&qid=1577990354&s=digital-text&sr=1-1) - Autonomy, Mastery, Purpose are the key motivators    
-[Team of Teams by General Stanely McCrystal](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) - be a humble gardener instead of a heroic leader, have common purpose, shared consciousness and empowered execution (very similar to Drive)    
+[Drive](https://www.amazon.com/Drive-Surprising-Truth-About-Motivates-ebook/dp/B004P1JDJO/ref=sr_1_1?keywords=drive&qid=1577990354&s=digital-text&sr=1-1) by Daniel Pink - Autonomy, Mastery, Purpose are the key motivators    
+[Team of Teams](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) by General Stanely McCrystal - be a humble gardener instead of a heroic leader, have common purpose, shared consciousness and empowered execution (very similar to Drive)    
 [What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
-[The Competitive Imperative of Learning by Amy Edmondson](https://hbr.org/2008/07/the-competitive-imperative-of-learning) - Execution for Learning over Execution for Efficiency   
+[The Competitive Imperative of Learning](https://hbr.org/2008/07/the-competitive-imperative-of-learning) by Amy Edmondson - Execution for Learning over Execution for Efficiency   
 [Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, have a diverse group does    
 
 __Execution__   
-[Measure what Matters by John Doerr](https://www.amazon.com/Measure-What-Matters-Google-Foundation-ebook/dp/B078FZ9SYB/ref=sr_1_2?keywords=measure+what+matters&qid=1577990515&s=digital-text&sr=1-2) - OKRs to help focus, align, measure and stretch     
-[The Lean Startup by Eric Ries](https://www.amazon.com/Lean-Startup-Entrepreneurs-Continuous-Innovation-ebook/dp/B004J4XGN6/ref=sr_1_3?keywords=lean+startup&qid=1578010494&s=digital-text&sr=1-3) - Prove your startup assumptions and iterate or pivot    
-[Winning now, Winning Later by David M. Cote](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) - How companies can succeed in the short term, while investing for the long term.   
+[Measure what Matters](https://www.amazon.com/Measure-What-Matters-Google-Foundation-ebook/dp/B078FZ9SYB/ref=sr_1_2?keywords=measure+what+matters&qid=1577990515&s=digital-text&sr=1-2) by John Doerr - OKRs to help focus, align, measure and stretch, CFRs continuous, feedback, rewards to re-inforce the goals     
+[The Lean Startup](https://www.amazon.com/Lean-Startup-Entrepreneurs-Continuous-Innovation-ebook/dp/B004J4XGN6/ref=sr_1_3?keywords=lean+startup&qid=1578010494&s=digital-text&sr=1-3)  by Eric Ries - Prove your startup assumptions and iterate or pivot    
+[Winning now, Winning Later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David M. Cote - How companies can succeed in the short term, while investing for the long term.   
 [Netflix's "Seeking Excellence" Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsibility, be candid and encourage independent thinking    
 [What makes a great engineering manager](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/) - how a manager thinks about vision, people, technical, execution   
 
 __Personal Growth__   
-[Happiness Advantage by Shawn Achor](https://www.shawnachor.com/books/happiness-advantage/) - positive psychology have shown that happiness fuels success, not the other way around
+[The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)  by Shawn Achor - positive psychology have shown that happiness fuels success, not the other way around
 [Making of a Corporate Athelte](https://hbr.org/2001/01/the-making-of-a-corporate-athlete) - Need oscillation cycles of stress and recovery, how to increase your physical, emotional, mental, and spirtual capacity.    
-[Think Again by Adam Grant](https://adamgrant.net/book/think-again/) - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
-[Getting Naked, A business Fable by Patrick Lencioni](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
-[Radical Candor by Kim Scott](https://www.amazon.com/Radical-Candor-Revised-Kick-Ass-Humanity-ebook/dp/B07P9LPXPT/ref=sr_1_3?keywords=radical+candor&qid=1577990458&s=digital-text&sr=1-3) - Care deeply, challenge directly    
-[Give and Take by Adam Grant](https://www.amazon.com/Give-Take-Helping-Others-Success-ebook/dp/B00AFPTSI0/ref=sr_1_2?keywords=give+and+take&qid=1577990366&s=digital-text&sr=1-2) - Be "Otherish", helping others while taking care of oneself's needs    
+[Think Again](https://adamgrant.net/book/think-again/) by Adam Grant - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
+[Getting Naked, A business Fable](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) by Patrick Lencioni - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
+[Radical Candor](https://www.amazon.com/Radical-Candor-Revised-Kick-Ass-Humanity-ebook/dp/B07P9LPXPT/ref=sr_1_3?keywords=radical+candor&qid=1577990458&s=digital-text&sr=1-3) by Kim Scott - Care deeply, challenge directly    
+[Give and Take](https://www.amazon.com/Give-Take-Helping-Others-Success-ebook/dp/B00AFPTSI0/ref=sr_1_2?keywords=give+and+take&qid=1577990366&s=digital-text&sr=1-2) by Adam Grant - Be "Otherish", helping others while taking care of oneself's needs    
 
 
 _Here's also a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read over the past_
