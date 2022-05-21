@@ -136,4 +136,4 @@ __Personal Growth__
 [Give and Take](https://www.amazon.com/Give-Take-Helping-Others-Success-ebook/dp/B00AFPTSI0/ref=sr_1_2?keywords=give+and+take&qid=1577990366&s=digital-text&sr=1-2) by Adam Grant - Be "Otherish", helping others while taking care of oneself's needs    
 
 
-_Here's also a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read over the past_
+_Here's a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read_
