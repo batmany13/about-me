@@ -18,7 +18,7 @@ Creating a learning environment in your team or company is a journey.  Its diffi
 
 To build a trusting team, you have to start with the leader.  Establishing trust starts with listening as a leader.  Your innate drive to be "action oriented" (like myself) could actually hinder your ability to learn from the team and grow with the team.  I believe that any team has the solution within itself, yet may lack the agency, inertia or steps to get them there.  You as a leader can shine a light on these issues and help guide the team to success.
 
-Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.
+Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.  Write down what's important to a ["thriving team"](thriving_team.md).
 
 ### Build safety
 
@@ -64,11 +64,13 @@ Let's not forget we are all in this for our customers.  None of this matters if 
 
 ### Business is an infinite game
 
-Just like building a high performance team through sustainable methods, a business's goal can not just be about the enrichment of its leaders and shareholders, it has take a very long view.  How do you ensure what you do can be sustained for the long term and last beyond your own tensure or goals.   Approach leadership in this way too, are you leaving the team in a better place than you came into it?
+Just like building a high performance team through sustainable methods, a business's goal can not just be about the enrichment of its leaders and shareholders, it has take a very long view.  How do you ensure what you do can be sustained for the long term and last beyond your own tenure or goals.   Approach leadership in this way too, are you leaving the team in a better place than you came into it?
+
+Toolbelt: Read Simon Sinek's Infinite Game or Leaders Eat Last.  Create a succession plan.  Do you have a team "diaster recovery plan" in case one or more folks leave the team?
 
 ### Win now and win later
 
-You must deliver on immediate goals while planting seeds for the future.  Challenge yourself to think about how you can do both?  Do not compromise on either
+You must deliver on immediate goals while planting seeds for the future.  Challenge yourself to think about how you can do both?  Can you hold your growth flat, yet still achieve your team's goals?  Can you remove that piece of debt and deliver new features?  Can you use the new major project to push your architecture forward instead of serially applying it?  How do you push changes quickly and provide safety to your systems?  Every decision is about the nuance of the balance, and many times we tend to default to the near term.
 
 Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David Cote for inspiration.  If a Fortune 100 CEO can turn around a company, while delivering on quarterly numbers AND investing in the future, you can do it too!
 
@@ -114,6 +116,7 @@ Fav Dessert - creme bruele, egg tart, tiramisu
 ## Books or Articles that's shaped me
 
 __Teams__   
+
 [Drive](https://www.amazon.com/Drive-Surprising-Truth-About-Motivates-ebook/dp/B004P1JDJO/ref=sr_1_1?keywords=drive&qid=1577990354&s=digital-text&sr=1-1) by Daniel Pink - Autonomy, Mastery, Purpose are the key motivators    
 [Team of Teams](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) by General Stanely McCrystal - be a humble gardener instead of a heroic leader, have common purpose, shared consciousness and empowered execution (very similar to Drive)    
 [What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
@@ -121,6 +124,7 @@ __Teams__
 [Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, have a diverse group does    
 
 __Execution__   
+
 [Measure what Matters](https://www.amazon.com/Measure-What-Matters-Google-Foundation-ebook/dp/B078FZ9SYB/ref=sr_1_2?keywords=measure+what+matters&qid=1577990515&s=digital-text&sr=1-2) by John Doerr - OKRs to help focus, align, measure and stretch, CFRs continuous, feedback, rewards to re-inforce the goals     
 [The Lean Startup](https://www.amazon.com/Lean-Startup-Entrepreneurs-Continuous-Innovation-ebook/dp/B004J4XGN6/ref=sr_1_3?keywords=lean+startup&qid=1578010494&s=digital-text&sr=1-3)  by Eric Ries - Prove your startup assumptions and iterate or pivot    
 [Winning now, Winning Later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David M. Cote - How companies can succeed in the short term, while investing for the long term.   
@@ -128,6 +132,7 @@ __Execution__
 [What makes a great engineering manager](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/) - how a manager thinks about vision, people, technical, execution   
 
 __Personal Growth__   
+
 [The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)  by Shawn Achor - positive psychology have shown that happiness fuels success, not the other way around
 [Making of a Corporate Athelte](https://hbr.org/2001/01/the-making-of-a-corporate-athlete) - Need oscillation cycles of stress and recovery, how to increase your physical, emotional, mental, and spirtual capacity.    
 [Think Again](https://adamgrant.net/book/think-again/) by Adam Grant - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
