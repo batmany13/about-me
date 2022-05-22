@@ -10,7 +10,7 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 <a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
-Creating a learning environment in your team or company is a journey.  Its difficulty is predicated on the current culture and state of the business, and is different for each company.  This doc is a meer guide of the things that I think is important, but needs to be mixed and tinkered with to adapt to your current situation.  No two teams or companies are alike!
+Building and sustaining a learning culture in your team or company is a journey.  Its difficulty is predicated on the current culture and state of the business, and is different for each company.  This doc is a meer guide of the things that I think is important, but should be tailored to fit your current situation.  The ideals may be everlasting, but the tactics and how you get there will be different for each team or company!
 
 ## Trusting Teams
 
