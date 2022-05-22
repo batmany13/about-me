@@ -64,7 +64,7 @@ Let's not forget we are all in this for our customers.  None of this matters if 
 
 ### Business is an infinite game
 
-Just like building a high performance team through sustainable methods, a business's goal can not just be about the enrichment of its leaders and shareholders, it has take a very long view.  How do you ensure what you do can be sustained for the long term and last beyond your own tenure or goals.   Approach leadership in this way too, are you leaving the team in a better place than you came into it?
+Just like building a high performance team through sustainable methods, a business's goal can not just be about the enrichment of its leaders and shareholders.  It has take a take into account other stakeholders like customers, employees and the community.  It also is not about one quarter or yearly performance but to last for generations.  How do you ensure what you do can be sustained for years and last beyond your own personal tenure or goals?   Approach leadership in this way too, are you leaving the team in a better place than you came into it?
 
 Toolbelt: Read Simon Sinek's Infinite Game or Leaders Eat Last.  Create a succession plan.  Do you have a team "diaster recovery plan" in case one or more folks leave the team?
 
