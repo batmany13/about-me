@@ -4,7 +4,8 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 __Upcoming__   
 [Q1 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
-[Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [event](https://edgecomputing-expo.com/northamerica/)    
+[Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [event](https://edgecomputing-expo.com/northamerica/)   
+[Sept 27th, 2022] Apollo GraphQL Webinar - Netflix APIs, An Unexpected Journey    
 
 __Completed__   
 [June 2022] Enrich "Measuring Engineering Productivity" AMA (rd 2| [link](https://lu.ma/xdm5jy71))    
