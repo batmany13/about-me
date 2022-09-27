@@ -7,7 +7,7 @@ __Upcoming__
 [Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [event](https://edgecomputing-expo.com/northamerica/)   
 
 __Completed__   
-[Sept 27th, 2022] Apollo GraphQL Webinar - Netflix APIs, An Unexpected Journey | [webinar](https://www.apollographql.com/events/champions-corner/register/netflixs-unexpected-journey-to-the-supergraph/)    
+[Sept 27th, 2022] Apollo GraphQL Webinar - Netflix APIs, An Unexpected Journey | [webinar](https://www.apollographql.com/events/champions-corner/register/netflixs-unexpected-journey-to-the-supergraph/) | [recording](https://apollographql.wistia.com/medias/px9f2gynv5)    
 [June 2022] Enrich "Measuring Engineering Productivity" AMA (rd 2| [link](https://lu.ma/xdm5jy71))    
 [May 2022] IDG Korea - Netflix APIs, An Unexpected Journey | video | [pdf](https://github.com/batmany13/about-me/blob/bed1047562c9f7790a244f0128a20e3a8da8b4f2/rsrc/%5BExternal%5D%20Netflix%20APIs,%20An%20Unexpected%20Journey.pdf) | [event](https://conf.idg.co.kr/event/home?conference_seq=384)   
 [Feb 2022] LeadDev - "Writing an effective technical strategy" as part of the Articulating Strategy module ([link](https://events.leaddev.com/2022-S3-articulating-strategy) | video)    
