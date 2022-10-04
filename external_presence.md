@@ -3,7 +3,8 @@
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
 __Upcoming__   
-[Q1 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
+[Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
+[Oct 2022] Grow Podcast   
 [Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [event](https://edgecomputing-expo.com/northamerica/)   
 
 __Completed__   
