@@ -4,6 +4,8 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 __Upcoming__   
 [Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
+[March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times.   
+[Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [signup](https://lu.ma/dyn5g4so)   
 
 __Completed__   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
