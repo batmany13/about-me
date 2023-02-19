@@ -3,11 +3,10 @@
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
 __Upcoming__   
-[Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
 [March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times.   
-[Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [signup](https://lu.ma/dyn5g4so)   
 
 __Completed__   
+[Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
 [Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [APIs talk](https://edgecomputing-expo.com/northamerica/track/day-one/) | [Roadmap to happy workforce panel](https://www.digitaltransformation-week.com/northamerica/track/digital-transformation-week-track-1-day-1/)   
 [Sept 27th, 2022] Apollo GraphQL Webinar - Netflix APIs, An Unexpected Journey | [webinar](https://www.apollographql.com/events/champions-corner/thank-you/netflixs-unexpected-journey-to-the-supergraph/?utm_campaign=2022-10-04_netflix-webinar-ondemand-attendees&utm_medium=email&utm_source=marketo&mkt_tok=MDU4LUpGVS04NTEAAAGHQrLt9qxJwr1txWGKSgZe8N6iilSsQbcJIADbt4XO6P2sjhLw8dnIIr7cZKTn8MkyUMWVmQqFsBzKRxPQgpplP7L0tlYY4GWVRqGmpHa65w) | [recording](https://apollographql.wistia.com/medias/px9f2gynv5)    
@@ -39,6 +38,11 @@ __Completed__
 [LeadDev Page](https://leaddev.com/community/bruce-wang)    
 [Medium Page](https://medium.com/@batmany)    
 [LinkedIn Articles](https://www.linkedin.com/in/batmany13/detail/recent-activity/posts/)    
+
+__Cancelled / Delayed__
+
+[Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
+
 
 ### Micro-networking Events
 
