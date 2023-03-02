@@ -2,18 +2,29 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
+
+## 2023
 __Upcoming__   
 [March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times | [event](https://leaddev.com/leadingeng-new-york)   
 
 __Completed__   
-[March 3rd, 2023] KU I2S Student Research Symposium (ISRS) Keynote (schedule)[https://i2s-research.ku.edu/isrs] - What makes a great engineer? | [slides](https://docs.google.com/presentation/d/1pkB6UyM_OW7utoqU-JO-s9OXtNK9BmETtdFQgjaTRRM/edit#slide=id.g1f5d3ea0465_0_0)   
+[March 3rd, 2023] KU I2S Student Research Symposium (ISRS) Keynote ([schedule](https://i2s-research.ku.edu/isrs)) - What makes a great engineer? | [slides](https://docs.google.com/presentation/d/1pkB6UyM_OW7utoqU-JO-s9OXtNK9BmETtdFQgjaTRRM/edit#slide=id.g1f5d3ea0465_0_0)   
 [Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
+
+__Cancelled / Delayed__
+[Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
+
+
+## 2022
 [Oct 5th 2022] Edge Compute Expo (Edge Compute, Digital Transformation) | [APIs talk](https://edgecomputing-expo.com/northamerica/track/day-one/) | [Roadmap to happy workforce panel](https://www.digitaltransformation-week.com/northamerica/track/digital-transformation-week-track-1-day-1/)   
 [Sept 27th, 2022] Apollo GraphQL Webinar - Netflix APIs, An Unexpected Journey | [webinar](https://www.apollographql.com/events/champions-corner/thank-you/netflixs-unexpected-journey-to-the-supergraph/?utm_campaign=2022-10-04_netflix-webinar-ondemand-attendees&utm_medium=email&utm_source=marketo&mkt_tok=MDU4LUpGVS04NTEAAAGHQrLt9qxJwr1txWGKSgZe8N6iilSsQbcJIADbt4XO6P2sjhLw8dnIIr7cZKTn8MkyUMWVmQqFsBzKRxPQgpplP7L0tlYY4GWVRqGmpHa65w) | [recording](https://apollographql.wistia.com/medias/px9f2gynv5)    
 [June 2022] Enrich "Measuring Engineering Productivity" AMA (rd 2| [link](https://lu.ma/xdm5jy71))    
 [May 2022] IDG Korea - Netflix APIs, An Unexpected Journey | video | [pdf](https://github.com/batmany13/about-me/blob/bed1047562c9f7790a244f0128a20e3a8da8b4f2/rsrc/%5BExternal%5D%20Netflix%20APIs,%20An%20Unexpected%20Journey.pdf) | [event](https://conf.idg.co.kr/event/home?conference_seq=384)   
 [Feb 2022] LeadDev - "Writing an effective technical strategy" as part of the Articulating Strategy module | [paywall link](https://events.leaddev.com/2022-S3-articulating-strategy](https://leaddev.com/leaddev-together/writing-your-technical-strategy))    
+
+## 2021
+
 [Oct 2021] Disclosed - Interview and Reviewing Resumes for New Grads (video)    
 [Oct 2021] [Enrich Panel](https://lu.ma/o8ji8sk8) - Promotions and Comp with Alana Karen, Shanshan Song    
 [Sept 2021] [Enrich Conversations](https://www.joinenrich.com/events/2021/9/29/enrich-conversations-best-practices-for-engineering-org-structure) - Best Practices for Engineering Orgs    
@@ -24,10 +35,16 @@ __Completed__
 [March 2021] [Better Monday Podcast Ep 15](https://www.sofokus.com/podcast/episodes/15-bruce-wang-netflix-how-to-succeed-as-a-leader/) - How to succeed as a leader    
 [Feb 2021] Pursuit of Impact (plato [story](https://www.platohq.com/resources/the-pursuit-of-impact-my-first-year-at-netflix-1830976174))    
 [Jan 2021] [LeadDev Panel](https://leaddev.com/mentoring-coaching-feedback/strategies-influencing-without-exerting-authority) - Strategies for influencing without exerting authority    
+
+## 2020 
+
 [Dec 2020] The Pursuit of Impact [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) ([detailed tips](https://github.com/batmany13/about-me/tree/master/pursuit_of_impact)) | Plato Winter 2020 Talk - [recording](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3)   
 [Aug 2020] [GDG Singapore](https://gdg.community.dev/events/details/google-gdg-singapore-presents-full-cycle-people-leadership/) - Full Cycle Leadership ([video](https://www.youtube.com/watch?v=-hksiU_WoiU))    
 [Aug 2020] [Enrich Fireside](https://lu.ma/brucetalk) - Managing the Lifecycle of Your Team ([q&a doc](https://docs.google.com/document/d/1EhTQfpLB_iyHZEFX6xCUAbJmfXFnIYOc_rokOpvOcgU/edit#heading=h.amobz93acu52))    
 [March 2020] [Better Monday Podcast Ep 7](https://www.sofokus.com/podcast/episodes/recruiting-and-organizational-culture-at-netflix/) - Recruiting, Organizational Culture    
+
+## 2019 or earlier
+
 [Oct 2019] [API World 2019](https://www.devnetwork.com/presentations/api-world-2019/) - Lessons Learned Moving Microservces @ Scale ([pdf](https://files.devnetwork.cloud/APIWorld/presentations/2019/Bruce_Wang.pdf))    
 [Oct 2019] Caring makes or breaks an organization ([blog](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327), [org](https://goshippo.com/blog/caring-makes-an-engineering-organization/) post)     
 [May 2019] First time I became a CTO ([blog](https://www.platohq.com/resources/the-first-time-i-became-a-cto))    
@@ -40,10 +57,7 @@ __Completed__
 [Medium Page](https://medium.com/@batmany)    
 [LinkedIn Articles](https://www.linkedin.com/in/batmany13/detail/recent-activity/posts/)    
 
-__Cancelled / Delayed__
-
-[Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
-
+## Others
 
 ### Micro-networking Events
 
