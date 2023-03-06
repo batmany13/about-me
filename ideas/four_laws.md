@@ -6,4 +6,4 @@
 
 ## People & Culture Matter
 
-## Business Success Cures many ills
+## Product Success Cures many ills
