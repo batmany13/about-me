@@ -114,7 +114,7 @@ My Failings - Talking too much or dominating a conversation, being late to meeti
 Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
 Fav Dessert - creme bruele, egg tart, tiramisu
 
-## Books or Articles that's shaped me
+## Books, Articles, Podcasts that's shaped me
 
 __Teams__   
 
@@ -122,7 +122,7 @@ __Teams__
 [Team of Teams](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) by General Stanely McCrystal - be a humble gardener instead of a heroic leader, have common purpose, shared consciousness and empowered execution (very similar to Drive)    
 [What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
 [The Competitive Imperative of Learning](https://hbr.org/2008/07/the-competitive-imperative-of-learning) by Amy Edmondson - Execution for Learning over Execution for Efficiency   
-[Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, have a diverse group does    
+[Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, having a diverse team does    
 
 __Execution__   
 
@@ -134,7 +134,8 @@ __Execution__
 
 __Personal Growth__   
 
-[The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)  by Shawn Achor - positive psychology have shown that happiness fuels success, not the other way around
+[From Strength to Strength](https://arthurbrooks.com/from-strength-to-strength) by Arthur C Brooks - how to think about success and happiness in the second half of your life, especially poginant for strivers and overachievers.  Thinking about moving fluid intelligence to Crystallized intelligence  (and also explains why I so enjoy mentoring).   
+[The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)  by Shawn Achor - positive psychology have shown that happiness fuels success, not the other way around.   
 [Making of a Corporate Athelte](https://hbr.org/2001/01/the-making-of-a-corporate-athlete) - Need oscillation cycles of stress and recovery, how to increase your physical, emotional, mental, and spirtual capacity.    
 [Think Again](https://adamgrant.net/book/think-again/) by Adam Grant - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
 [Getting Naked, A business Fable](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) by Patrick Lencioni - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
