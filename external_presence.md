@@ -5,9 +5,13 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 ### 2023
 __Upcoming__   
-[March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times | [event](https://leaddev.com/leadingeng-new-york)   
+[April 2023] Enrich Conversations - Tech Debt is a forever problem   
+[May 2023] Enrich Conversations - People & Culture Matter   
+[July 2023] Enrich Conversations - Product Success Cures Many Ills   
+
 
 __Completed__   
+[March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times | [event](https://leaddev.com/leadingeng-new-york)   
 [March 3rd, 2023] KU I2S Student Research Symposium (ISRS) Keynote ([schedule](https://i2s-research.ku.edu/isrs)) - What makes a great engineer? | [slides](https://docs.google.com/presentation/d/1pkB6UyM_OW7utoqU-JO-s9OXtNK9BmETtdFQgjaTRRM/edit#slide=id.g1f5d3ea0465_0_0)   
 [Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
