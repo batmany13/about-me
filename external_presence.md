@@ -5,7 +5,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 ### 2023
 __Upcoming__   
-[April 2023] Enrich Conversations - Tech Debt is a forever problem   
+[April 2023] Enrich Conversations - Tech Debt is a forever problem | [event](https://lu.ma/64juqcy3)   
 [May 2023] Enrich Conversations - People & Culture Matter   
 [July 2023] Enrich Conversations - Product Success Cures Many Ills   
 
