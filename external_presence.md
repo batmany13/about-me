@@ -16,7 +16,12 @@ __Completed__
 [Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
 
-__Cancelled / Delayed__
+__Pending Blog/Podcast/Video Release__
+
+[Feb 9, 2023] Grow Leadership Roadtable   
+
+__Cancelled / Delayed__   
+
 [Q3 2023] [LeadDev Together: Measuring Success](https://events.leaddev.com/together-program-achieving-velocity)   As part of the "Achieving Velocity" series.   
 
 
