@@ -1,4 +1,4 @@
-# Product Edge Systems (PES)
+# (Legacy as of May 2023) Product Edge Systems (PES)
 
 ``` To enable the best Netflix experience by authorizing, integrating, and delivering API orchestration, access management, and critical edge services at scale. ```
 
