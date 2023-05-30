@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the PES (Product Edge Systems) group leading the [API systems](https://github.com/batmany13/about-me/blob/master/pes.md#api-systems) team (Consumer, Enterprise and Content/Studio).
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Consumer Server Foundations team group leading the [Product Platform Systems](https://github.com/batmany13/about-me/blob/master/csf.md#pps) team (APIs, Product Data Systems and Technology Lifecycle Innovation)
 
 This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
 
@@ -10,7 +10,7 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 <a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
-Building and sustaining a learning culture in your team or company is a journey.  Its difficulty is predicated on the current culture and state of the business, and is different for each company.  This doc is a meer guide of the things that I think is important, but should be tailored to fit your current situation.  The ideals may be everlasting, but the tactics and how you get there will be different for each team or company!
+Building and sustaining a learning culture in your team or company is a journey.  Its difficulty is predicated on the current culture and state of the business, and is different for each company.  This doc is a mere guide of the things that I think is important, but should be tailored to fit your current situation.  The ideals may be everlasting, but the tactics and how you get there will be different for each team or company!
 
 ## Trusting Teams
 
