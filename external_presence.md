@@ -2,15 +2,17 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
+### 2024
+[June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - likely talk about "4 laws of software engineering"
 
 ### 2023
 __Upcoming__   
+[August - Sept 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
+
+__Completed__   
 [April 7th, 2023] Enrich Conversations - How to handle tech debt | [event](https://lu.ma/64juqcy3)   
 [May 2023] Enrich Conversations - People & Culture Matter   
 [July 2023] Enrich Conversations - Product Success Cures Many Ills   
-
-
-__Completed__   
 [March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times | [event](https://leaddev.com/leadingeng-new-york)   
 [March 3rd, 2023] KU I2S Student Research Symposium (ISRS) Keynote ([schedule](https://i2s-research.ku.edu/isrs)) - What makes a great engineer? | [slides](https://docs.google.com/presentation/d/1pkB6UyM_OW7utoqU-JO-s9OXtNK9BmETtdFQgjaTRRM/edit#slide=id.g1f5d3ea0465_0_0)   
 [Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
