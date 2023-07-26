@@ -1,6 +1,27 @@
 # Feedback
 This section details the feedback I've received in the past.
 
+## 2023 Netflix 360s Themes
+
+🎉  partnerships, vision, context sharing, strong memo game    
+🚧  more concise verbal comms, think about how to step back more (especially around API)    
+🆘 Reign in my ideas, push on how it fits to my current priorities    
+
+## 2022 Netflix 360s
+
+__More__
+* Connect the dots
+* Partnerships, relationships
+* API Champion, empathetic leader
+
+__Differently__
+* Less but better (less ideas, and push more)
+* Share context better
+* Share leadership thinking better
+* Summarize, improve comms
+* Delegate more
+
+
 ## 2021 Netflix 360s
 Netflix has a feedback culture, and we do 360s every year (we skipped 2020 due to the pandemic).  We focused on "Top Strengths / Do More" and "Do better / Do Different".  I took all the feedback I received (20+) and compiled some themes
 
