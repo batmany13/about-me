@@ -7,6 +7,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 ### 2023
 __Upcoming__   
+[November 7,8 2023] Elevate 2023 - dealing with technology migration trap | [signup](https://www.platohq.com/events/elevate-2023)    
 [August - Sept 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 
 __Completed__   
