@@ -141,6 +141,7 @@ __Personal Growth__
 [Getting Naked, A business Fable](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) by Patrick Lencioni - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
 [Radical Candor](https://www.amazon.com/Radical-Candor-Revised-Kick-Ass-Humanity-ebook/dp/B07P9LPXPT/ref=sr_1_3?keywords=radical+candor&qid=1577990458&s=digital-text&sr=1-3) by Kim Scott - Care deeply, challenge directly    
 [Give and Take](https://www.amazon.com/Give-Take-Helping-Others-Success-ebook/dp/B00AFPTSI0/ref=sr_1_2?keywords=give+and+take&qid=1577990366&s=digital-text&sr=1-2) by Adam Grant - Be "Otherish", helping others while taking care of oneself's needs    
+[The Working Genius](https://www.goodreads.com/en/book/show/61128912)   - Six types of working genius, Wonder, Invention, Discernment, Galavnizing, Enablement, Tenacity.  Here's [mine](rsrc/working_genius_bruce.png).
 
 
 _Here's a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read_
