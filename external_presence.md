@@ -11,6 +11,7 @@ __Upcoming__
 [August - Sept 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 
 __Completed__   
+[October 11th, 2023] Fireside Chat at GraphQL Summit | [agenda](https://summit.graphql.com/event/c51538f6-4b76-44e3-871e-54180c77cad8/websitePage:aa37bf00-dba5-4e19-912a-01aad46f7426)    
 [April 7th, 2023] Enrich Conversations - How to handle tech debt | [event](https://lu.ma/64juqcy3)   
 [May 2023] Enrich Conversations - People & Culture Matter   
 [July 2023] Enrich Conversations - Product Success Cures Many Ills   
