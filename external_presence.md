@@ -7,8 +7,8 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 ### 2023
 __Upcoming__   
-[November 7,8 2023] Elevate 2023 - dealing with technology migration trap | [signup](https://www.platohq.com/events/elevate-2023)    
-[August - Sept 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
+[November 7 2023] Elevate 2023 - How Netflix tries to avoid the technology migration trap | [signup](https://www.platohq.com/events/elevate-2023)    
+[August - Oct 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 
 __Completed__   
 [October 11th, 2023] Fireside Chat at GraphQL Summit | [agenda](https://summit.graphql.com/event/c51538f6-4b76-44e3-871e-54180c77cad8/websitePage:aa37bf00-dba5-4e19-912a-01aad46f7426)    
