@@ -144,4 +144,4 @@ __Personal Growth__
 [The Working Genius](https://www.goodreads.com/en/book/show/61128912)   - Six types of working genius: Wonder, Invention, Discernment, Galavnizing, Enablement, Tenacity.  I am an [Evangelizing Innovator](rsrc/working_genius_bruce.png).
 
 
-_Here's a [giant collection](https://trello.com/b/LZ4pww7N/dev-leadership-articles) of articles I've read_
+_Here's my trello [collection](https://trello.com/b/veRdxZDg/dev-leadership-articles) of leadership articles_
