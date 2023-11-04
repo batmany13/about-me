@@ -8,9 +8,10 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 ### 2023
 __Upcoming__   
 [November 7 2023] Elevate 2023 - How Netflix tries to avoid the technology migration trap | [signup](https://www.platohq.com/events/elevate-2023)    
-[August - Oct 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 
 __Completed__   
+[October 25th, 2023] Enrich conversation on Perpetual Migrations | [link](https://lu.ma/7rl4hesz), [LinkedIn Post](https://www.linkedin.com/posts/batmany13_enrich-conversations-this-week-perpetual-activity-7122609677858729984-Fbre?utm_source=share&utm_medium=member_desktop)    
+[August - Oct 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 [October 11th, 2023] Fireside Chat at GraphQL Summit | [agenda](https://summit.graphql.com/event/c51538f6-4b76-44e3-871e-54180c77cad8/websitePage:aa37bf00-dba5-4e19-912a-01aad46f7426)    
 [April 7th, 2023] Enrich Conversations - How to handle tech debt | [event](https://lu.ma/64juqcy3)   
 [May 2023] Enrich Conversations - People & Culture Matter   
