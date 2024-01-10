@@ -3,13 +3,12 @@
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
 ### 2024
-[June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - likely talk about "4 laws of software engineering"
+[June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - TBD
 
 ### 2023
-__Upcoming__   
-[November 7 2023] Elevate 2023 - How Netflix tries to avoid the technology migration trap | [signup](https://www.platohq.com/events/elevate-2023)    
 
 __Completed__   
+[November 7 2023] Elevate 2023 - How Netflix tries to avoid the technology migration trap | [slides](https://docs.google.com/presentation/d/16c_SdnvRGemMbuiAUioqHXJ4ZGnCEO9QfW4zRO0T1M0/edit) , [recording](https://www.youtube.com/watch?v=pLK4NNMq2Ww&t=8s&pp=ygUYdGhlIG1pZ3JhdGlvbiB0cmFwIHBsYXRv)    
 [October 25th, 2023] Enrich conversation on Perpetual Migrations | [link](https://lu.ma/7rl4hesz), [LinkedIn Post](https://www.linkedin.com/posts/batmany13_enrich-conversations-this-week-perpetual-activity-7122609677858729984-Fbre?utm_source=share&utm_medium=member_desktop)    
 [August - Oct 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
 [October 11th, 2023] Fireside Chat at GraphQL Summit | [agenda](https://summit.graphql.com/event/c51538f6-4b76-44e3-871e-54180c77cad8/websitePage:aa37bf00-dba5-4e19-912a-01aad46f7426)    
