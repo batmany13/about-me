@@ -5,7 +5,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 ### 2024
 __Coming up__
 
-[Jan/Feb 2024] Traction Podcast with Llyod Lobos    
+[Jan/Feb 2024] [Traction Podcast](https://podcasts.apple.com/us/podcast/traction/id1595806788) with Lloyed Lobo    
 [June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - TBD
 
 __Completed__
