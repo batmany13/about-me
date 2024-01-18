@@ -3,11 +3,16 @@
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
 ### 2024
+__Coming up__
+
+[Jan/Feb 2024] Traction Podcast with Llyod Lobos    
 [June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - TBD
 
-### 2023
+__Completed__
 
-__Completed__   
+[Jan 18th, 2024] How to avoid the migration trap | [blog](https://platocommunity.substack.com/p/how-to-avoid-the-migration-trap-bruce)    
+
+### 2023
 [November 7 2023] Elevate 2023 - How Netflix tries to avoid the technology migration trap | [slides](https://docs.google.com/presentation/d/16c_SdnvRGemMbuiAUioqHXJ4ZGnCEO9QfW4zRO0T1M0/edit) , [recording](https://www.youtube.com/watch?v=pLK4NNMq2Ww&t=8s&pp=ygUYdGhlIG1pZ3JhdGlvbiB0cmFwIHBsYXRv)    
 [October 25th, 2023] Enrich conversation on Perpetual Migrations | [link](https://lu.ma/7rl4hesz), [LinkedIn Post](https://www.linkedin.com/posts/batmany13_enrich-conversations-this-week-perpetual-activity-7122609677858729984-Fbre?utm_source=share&utm_medium=member_desktop)    
 [August - Oct 2023] Seek Engineering Excellence - dealing with Tech Debt | [circle](https://www.platohq.com/circles/seeking-engineering-excellence---dealing-with-tech-debt-hiwy6ybko86)    
