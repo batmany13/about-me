@@ -10,6 +10,7 @@ __Coming up__
 
 __Completed__
 
+[Jan 19th, 2024] Lightbulb moments | [blog](https://tyandel.com/2024/01/19/lightbulb-moments-with-bruce-wang/)    
 [Jan 18th, 2024] How to avoid the migration trap | [blog](https://platocommunity.substack.com/p/how-to-avoid-the-migration-trap-bruce)    
 
 ### 2023
