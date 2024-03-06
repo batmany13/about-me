@@ -9,7 +9,7 @@ __Coming up__
 
 __Completed__
 
-[Jan/Feb 2024] [Traction Podcast](https://podcasts.apple.com/us/podcast/traction/id1595806788) with Lloyed Lobo - Building Engineering Excellence ([recording](https://youtu.be/SR2DwEh2Wnk?si=kGBxsdFlMbRHDGMg))    
+[Feb 5th, 2024] [Traction Podcast](https://podcasts.apple.com/us/podcast/traction/id1595806788) with Lloyed Lobo - Building Engineering Excellence ([recording](https://youtu.be/SR2DwEh2Wnk?si=kGBxsdFlMbRHDGMg))    
 [Jan 19th, 2024] Lightbulb moments | [blog](https://tyandel.com/2024/01/19/lightbulb-moments-with-bruce-wang/)    
 [Jan 18th, 2024] How to avoid the migration trap | [blog](https://platocommunity.substack.com/p/how-to-avoid-the-migration-trap-bruce)    
 
