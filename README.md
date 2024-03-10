@@ -131,6 +131,7 @@ __Execution__
 [Winning now, Winning Later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David M. Cote - How companies can succeed in the short term, while investing for the long term.   
 [Netflix's "Seeking Excellence" Culture Memo](https://jobs.netflix.com/culture) - people over process, freedom and responsibility, be candid and encourage independent thinking    
 [What makes a great engineering manager](https://www.linkedin.com/pulse/what-makes-great-engineering-manager-karen-casella/) - how a manager thinks about vision, people, technical, execution   
+[The Browser Company's Values / Roadtrips](https://thebrowser.company/values/) - Show up with heartfelt intensity, Start with "what could be", Assume you don't know, You're on the hook for the team, Make them feel something    
 
 __Personal Growth__   
 
