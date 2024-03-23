@@ -10,6 +10,8 @@
 
 ## Games Platform
 
+Games Platform (name TBD) is comprised of the following three teams:
+
 ### Games Systems
 
 WebAPI, game features for developers
