@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Experiences Engineering group leading the [Games Platform](https://github.com/batmany13/about-me/blob/master/gee.md#plat) team (Game Systems, Game Lifecycle Engineering, Games Platform Reliability)
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Experiences Engineering group leading the [Games Platform](https://github.com/batmany13/about-me/blob/master/gee.md#games-platform) team (Game Systems, Game Lifecycle Engineering, Games Platform Reliability)
 
 This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
 
