@@ -137,7 +137,7 @@ __Personal Growth__
 
 [From Strength to Strength](https://arthurbrooks.com/from-strength-to-strength) by Arthur C Brooks - how to think about success and happiness in the second half of your life, especially poginant for strivers and overachievers.  Thinking about moving fluid intelligence to Crystallized intelligence  (and also explains why I so enjoy mentoring).   
 [The Happiness Advantage](https://www.shawnachor.com/books/happiness-advantage/)  by Shawn Achor - positive psychology have shown that happiness fuels success, not the other way around.   
-[Making of a Corporate Athelte](https://hbr.org/2001/01/the-making-of-a-corporate-athlete) - Need oscillation cycles of stress and recovery, how to increase your physical, emotional, mental, and spirtual capacity.    
+[Making of a Corporate Athlete](https://hbr.org/2001/01/the-making-of-a-corporate-athlete) - Need oscillation cycles of stress and recovery, how to increase your physical, emotional, mental, and spirtual capacity.    
 [Think Again](https://adamgrant.net/book/think-again/) by Adam Grant - Rethinking cycle of Humility, doubt, curiosity and discovery.  Are you a preacher, prosecutor or politician with your ideas?    
 [Getting Naked, A business Fable](https://www.amazon.com/Getting-Naked-Business-Shedding-Sabotage-ebook/dp/B0032ZD0OI/ref=sr_1_1?keywords=getting+naked&qid=1577990890&s=digital-text&sr=1-1) by Patrick Lencioni - Don't be driven by fear of losing the business, being embarrassed or being inferior, be curious    
 [Radical Candor](https://www.amazon.com/Radical-Candor-Revised-Kick-Ass-Humanity-ebook/dp/B07P9LPXPT/ref=sr_1_3?keywords=radical+candor&qid=1577990458&s=digital-text&sr=1-3) by Kim Scott - Care deeply, challenge directly    
