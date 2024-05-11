@@ -8,7 +8,7 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ### _Trusting teams, seeking excellence, driving customer delight_
 
-<a href="https://peakon.com/blog/workplace-culture/psychological-safety/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
+<a href="https://hbr.org/podcast/2019/01/creating-psychological-safety-in-the-workplace/"><img width=50% height=50% src=rsrc/learning_zone.jpg></a>
 
 Building and sustaining a learning culture in your team or company is a journey.  Its difficulty is predicated on the current culture and state of the business, and is different for each company.  This doc is a mere guide of the things that I think is important, but should be tailored to fit your current situation.  The ideals may be everlasting, but the tactics and how you get there will be different for each team or company!
 
