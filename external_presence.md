@@ -5,10 +5,11 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 ### 2024
 __Coming up__
 
-[June 11th, 12, 2024] LeadDev London 2024 | [event](https://leaddev.com/leaddev-london) - TBD
+[June 11th, 12, 2024] LeadDev London 2024 "Tech Debt As Innovation" | [event](https://leaddev.com/leaddev-london)
 
 __Completed__
 
+[April 30th, 2024] Tech Debt as Innovation presentation at Coda/Plato Engineering Leaders' Dinner (not recorded)    
 [April 2nd, 2024] Le Podcast on Emerging Leadership ([article / podcast](https://alexis.monville.com/en/2024/03/30/building-and-sustaining-excellence-with-bruce-wang-netflix/))    
 [Feb 5th, 2024] [Traction Podcast](https://podcasts.apple.com/us/podcast/traction/id1595806788) with Lloyed Lobo - Building Engineering Excellence ([recording](https://youtu.be/SR2DwEh2Wnk?si=kGBxsdFlMbRHDGMg))    
 [Jan 19th, 2024] Lightbulb moments | [blog](https://tyandel.com/2024/01/19/lightbulb-moments-with-bruce-wang/)    
