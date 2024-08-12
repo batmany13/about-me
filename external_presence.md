@@ -8,7 +8,7 @@ __Coming up__
 
 __Completed__
 
-[June 11th, 12, 2024] LeadDev London 2024 "Tech Debt As Innovation" | [event](https://leaddev.com/leaddev-london) | [LinkedIn Post](https://www.linkedin.com/posts/batmany13_leaddevlondon-activity-7206293984992714752-P29x?utm_source=share&utm_medium=member_desktop)    
+[June 11th, 12, 2024] LeadDev London 2024 "Tech Debt As Innovation" | [event](https://leaddev.com/leaddev-london) | [LinkedIn Comment](https://www.linkedin.com/posts/batmany13_leaddevlondon-activity-7206293984992714752-P29x?utm_source=share&utm_medium=member_desktop)    
 [April 30th, 2024] Tech Debt as Innovation presentation at Coda/Plato Engineering Leaders' Dinner (not recorded)    
 [April 2nd, 2024] Le Podcast on Emerging Leadership ([article / podcast](https://alexis.monville.com/en/2024/03/30/building-and-sustaining-excellence-with-bruce-wang-netflix/))    
 [Feb 5th, 2024] [Traction Podcast](https://podcasts.apple.com/us/podcast/traction/id1595806788) with Lloyed Lobo - Building Engineering Excellence ([recording](https://youtu.be/SR2DwEh2Wnk?si=kGBxsdFlMbRHDGMg))    
