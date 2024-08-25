@@ -1,6 +1,23 @@
 # Feedback
 This section details the feedback I've received in the past.
 
+## 2024 Netflix 360s Theme
+
+
+__Where I shine__
+* Passion, energy, and enthusiasm
+* Relationships and partnerships throughout Netflix
+* Bias to action, rolling up my sleeves and getting into the details
+* Curiosity and asking pointed questions, surfacing an underlying issue or concern 
+
+__Failure modes__    
+Oftentimes, strengths can create blind spots or weaknesses that need calibrating to be more effective
+
+* (long-running feedback) Overethuasim - hard to tell what is a priority, and pulling the team into too many directions
+* (long-running feedback) Moving too fast - need to bring people along and provide more space to absorb changes and collect feedback
+* Lack of true alignment - It is not enough to build the bridge to partners or use superpowers of connectivity, need to align our work together and get buy-in
+* Mixed Signals - friendly enthusiasm may not lead to appropriate candor for certain situations
+
 ## 2023 Netflix 360s Themes
 
 🎉  partnerships, vision, context sharing, strong memo game    
