@@ -1,5 +1,7 @@
 # Games Experiences Engineering
 
+To create a platform that makes games enduringly loveable and successful for Netflix by helping customers find and play great games, while enabling game developers to create amazing and unique experiences.
+
 ## Games UI
 Manages the Games Member Experience, both within the Netflix app and platform UIs within a game.
 
@@ -9,9 +11,9 @@ Manages the Games Member Experience, both within the Netflix app and platform UI
 
 ## Games Developer Platform
 
-The Games Developer Platform team is on a mission to delight members by empowering Game Developers to do the best work of their lives and bridge Netflix’s unique superpowers and technologies to the vibrant, complex world of Gaming
+The Games Developer Platform team is on a mission to __delight members__ by empowering Game Developers to do the __best work of their lives__ and bridge Netflix’s __unique superpowers__ and technologies to the vibrant, complex world of Gaming
 
-This team owns the entire game developer journey, from setup to sunset of any game, building of Game Services and unlocking Netflix capabilities, integration through our SDK or API, and providing operational, quality, and partner support throughout. It would also ensure an all-around smooth game production, release, and launch experience and continuing support through updates and live operations enablement.
+This group owns the entire game developer journey, from setup to sunset of any game, building of Game Services and unlocking Netflix capabilities, integration through our SDK or API, and providing operational, quality, and partner support throughout. It would also ensure an all-around smooth game production, release, and launch experience and continuing support through updates and live operations enablement.
 
 It is made of the following teams:
 
