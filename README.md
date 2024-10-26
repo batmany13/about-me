@@ -22,7 +22,7 @@ Toolbelt: Take a growth mindset approach with yourself, and figure out how you'r
 
 ### Build safety
 
-Everything begins and ends with psychological safety.  Without it, people will lack [caring](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327), be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.  It's good to remember that Psychological safety is made up of two parts, high trust, and high accountability (like the chart above).  Building trust is just half of, its what you do with the trust (to push each other to grow and be a better team) that truly unlocks Pscyhologically safe teams!
+Everything begins and ends with psychological safety.  Without it, people will lack [caring](https://medium.com/@batmany/caring-makes-or-breaks-an-engineering-organization-5431fdad3327), be disengaged, aloof, standoffish or downright scared.  But that's not the worst of it, you won't get the ideas, the diversity of thought, the meaningful discussions between the team and lose out on all the benefits of hiring talented people.  It's good to remember that Psychological safety is made up of two parts, high trust, and high accountability (like the chart above).  Building trust is just half of it, its what you do with the trust (to push each other to grow and be a better team) that truly unlocks Pscyhologically safe teams!
 
 Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions from all members of the team, hire for diversity and inclusion.  No tolerance for brilliant jerks.
 
