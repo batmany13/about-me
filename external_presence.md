@@ -2,12 +2,16 @@
 
 Here are various blogs, talks, podcasts that I've done in the past on various topics
 
-### 2024
+### 2025
+_Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
+
 __Coming up__
 
+TBD - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing (Conan) Wang and Bruce Wang (no relations) on the startup founder journey
 
 __Completed__
 
+### 2024
 [June 11th, 12, 2024] LeadDev London 2024 "Tech Debt As Innovation" | [site](https://leaddev.com/technical-direction/tech-debt-as-innovation-reframing-this-forever-problem-as-an-opportunity) | [LinkedIn Comment](https://www.linkedin.com/posts/batmany13_leaddevlondon-activity-7206293984992714752-P29x?utm_source=share&utm_medium=member_desktop)    
 [April 30th, 2024] Tech Debt as Innovation presentation at Coda/Plato Engineering Leaders' Dinner (not recorded)    
 [April 2nd, 2024] Le Podcast on Emerging Leadership ([article / podcast](https://alexis.monville.com/en/2024/03/30/building-and-sustaining-excellence-with-bruce-wang-netflix/))    
