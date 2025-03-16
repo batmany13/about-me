@@ -7,7 +7,7 @@ _Significantly reducing my load on talks/discussions/blogs, and will do a few th
 
 __Coming up__
 
-March 20, 2025 - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing (Conan) Wang and Bruce Wang (no relations) on the startup founder journey ([recording]())    
+March 20, 2025 - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing (Conan) Wang and Bruce Wang (no relations) on the startup founder journey ([recording](https://www.youtube.com/watch?v=-w1fQyGtgEs))    
 
 __Completed__
 
