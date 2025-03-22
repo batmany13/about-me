@@ -7,9 +7,10 @@ _Significantly reducing my load on talks/discussions/blogs, and will do a few th
 
 __Coming up__
 
+__Completed__
+
 March 20, 2025 - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing (Conan) Wang and Bruce Wang (no relations) on the startup founder journey ([recording](https://www.youtube.com/watch?v=-w1fQyGtgEs))    
 
-__Completed__
 
 ### 2024
 [June 11th, 12, 2024] LeadDev London 2024 "Tech Debt As Innovation" | [site](https://leaddev.com/technical-direction/tech-debt-as-innovation-reframing-this-forever-problem-as-an-opportunity) | [LinkedIn Comment](https://www.linkedin.com/posts/batmany13_leaddevlondon-activity-7206293984992714752-P29x?utm_source=share&utm_medium=member_desktop)    
@@ -77,7 +78,6 @@ __Cancelled / Delayed__
 [Feb 2017] Why APIs are eating the world ([blog](https://www.linkedin.com/pulse/why-apis-eating-world-bruce-wang/))    
 [Oct 2016] DevOps KPIs with Elixir and Geckoboard ([blog](https://medium.com/brightergy-engineering/operational-dashboards-with-geckoboard-2dc9d6d3c326))   
 
-[Plato Mentor Page](https://www.platohq.com/mentors/bruce-wang)     
 [LeadDev Page](https://leaddev.com/community/bruce-wang)    
 [Medium Page](https://medium.com/@batmany)    
 [LinkedIn Articles](https://www.linkedin.com/in/batmany13/detail/recent-activity/posts/)    
