@@ -5,7 +5,10 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 ### 2025
 _Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
 
-__Coming up__
+__Coming up__    
+June 3rd, 2025 - Stanford Founders Fireside Chat - Culture is the Product [luma](https://lu.ma/ycnld9jt)    
+November 3rd, 2025 - LeadDev Berlin - How Games Engineering “embraced hard mode” to unlock innovation for Netflix Games
+[link](https://leaddev.com/leaddev-berlin/)     
 
 __Completed__
 
