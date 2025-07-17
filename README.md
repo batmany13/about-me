@@ -123,6 +123,7 @@ __Teams__
 [What google learned from its quest to build the perfect team](https://www.nytimes.com/2016/02/28/magazine/what-google-learned-from-its-quest-to-build-the-perfect-team.html) - Psychological Safety is the powerful force to drives great teams    
 [The Competitive Imperative of Learning](https://hbr.org/2008/07/the-competitive-imperative-of-learning) by Amy Edmondson - Execution for Learning over Execution for Efficiency   
 [Forget the pecking order at work](https://www.ted.com/talks/margaret_heffernan_forget_the_pecking_order_at_work?language=en) - having super chickens doesn't mean you'll be more productive, having a diverse team does    
+[Collective Genius, the art and practice of leading innovation](https://collectivegeniusbook.com/) - create the conditions for the org to collaborate, engage in discovery driven learning and make integrative decisions. Embrace the paradoxes and tensions inherent (e.g. support v confrontation), and facilitate creative abrasion, agility and resolution    
 
 __Execution__   
 
