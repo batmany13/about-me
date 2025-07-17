@@ -1,6 +1,24 @@
 # Feedback
 This section details the feedback I've received in the past.
 
+## 2025 Netflix 360s Theme
+
+__Strengths__    
+
+Leading with passion, courage, and lightness    
+Building new pathways   
+(long-running feedback) Connecting the Dots     
+
+__Opportunities__
+
+(long-running feedback) Slowing down    
+Mind the weight of my words or actions    
+Better, rounded out understanding and communication    
+
+### Strength is my weakness exercise
+
+Separately outside of 360s, I did a your strengths are your weaknesses exercise, which is to highlight how strengths can turn into weaknesses, and in some cases when combined together can cause a lot of issues.  For instance, passion, and lightness can cause understimating the power of words, connecting the dots may not yield deeper understanding of a situation.  Being able to see how my strengths show up as weaknesses can give a more nuanced appreciation of my skills and opportunities.
+
 ## 2024 Netflix 360s Theme
 
 
