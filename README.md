@@ -106,9 +106,7 @@ I need to reconcile what I (or the team) is doing with the company or team's mis
 
 ### Misc Things
 
-[My Mentorship Page](https://www.platohq.com/mentors/bruce-wang)    
-[My Calendly](https://calendly.com/batmany13/mentor)    
-@batman on [Rands Leadership Slack](https://randsinrepose.com/welcome-to-rands-leadership-slack/)   
+[Substack](https://substack.com/@batmany)   - early usage
 My Pet Peeves - laptops at meetings (slightly changed now with hybrid/virtual meetings), meetings without agendas   
 My Failings - Talking too much or dominating a conversation, being late to meetings (better now), prioritizing work    
 Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
