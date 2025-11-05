@@ -6,12 +6,12 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 _Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
 
 __Coming up__    
-June 3rd, 2025 - Stanford Founders Fireside Chat - Culture is the Product [luma](https://lu.ma/ycnld9jt)    
-November 3rd, 2025 - LeadDev Berlin - How Games Engineering “embraced hard mode” to unlock innovation for Netflix Games
-[link](https://leaddev.com/leaddev-berlin/)     
 
 __Completed__
 
+November 3rd, 2025 - LeadDev Berlin - What is innovation?  And how Games Engineering navigates it as a "startup" within Netflix
+[link](https://leaddev.com/leaddev-berlin/)     
+June 3rd, 2025 - Stanford Founders Fireside Chat - Culture is the Product [luma](https://lu.ma/ycnld9jt)    
 March 20, 2025 - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing (Conan) Wang and Bruce Wang (no relations) on the startup founder journey ([recording](https://www.youtube.com/watch?v=-w1fQyGtgEs))    
 
 
