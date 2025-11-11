@@ -5,15 +5,15 @@ These are feedback reflections I've had over the years, and some high-level them
 
 __Strengths__    
 
-Leading with passion, courage, and lightness    
-Building new pathways   
-(long-running feedback) Connecting the Dots     
+* Leading with passion, courage, and lightness    
+* Building new pathways   
+* (long-running feedback) Connecting the Dots     
 
 __Opportunities__
 
-(long-running feedback) Slowing down    
-Mind the weight of my words or actions    
-Better, rounded out understanding and communication    
+* (long-running feedback) Slowing down    
+* Mind the weight of my words or actions    
+* Better, rounded out understanding and communication    
 
 ### Strength is my weakness exercise
 
