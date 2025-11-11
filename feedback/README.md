@@ -1,5 +1,5 @@
 # Feedback
-This section details the feedback I've received in the past.
+These are feedback reflections I've had over the years, and some high-level themes on both strengths and opportunities
 
 ## 2025 Netflix 360s Theme
 
