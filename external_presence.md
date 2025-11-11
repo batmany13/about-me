@@ -4,7 +4,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 
 ### 2026 (Taking Break)
 
-Unfortunately, I will be taking a break from attending conferences and engaging in external speaking engagements.  My current role is taking quite a bit of my mental focus and energy, and I want to double down on that.  I'll reevaluate again for 2027+
+_Unfortunately, I will be taking a break from attending conferences and engaging in external speaking engagements.  My current role is taking quite a bit of my mental focus and energy, and I want to double down on that.  I'll reevaluate again in 2027_
 
 ### 2025
 _Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
