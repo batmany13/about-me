@@ -6,6 +6,7 @@ Here are various blogs, talks, podcasts that I've done in the past on various to
 _Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
 
 __Coming up__    
+November 18th, 2025 - Enrich Conversations on Netflix Promo Process [luma](https://luma.com/zk3jlh6t)    
 
 __Completed__
 
