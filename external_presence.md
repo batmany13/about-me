@@ -9,11 +9,9 @@ _Unfortunately, I will be taking a break from attending conferences and engaging
 ### 2025
 _Significantly reducing my load on talks/discussions/blogs, and will do a few the whole year_
 
-__Coming up__    
-November 18th, 2025 - Enrich Conversations on Netflix Promo Process [luma](https://luma.com/zk3jlh6t)    
-
 __Completed__
 
+November 18th, 2025 - Enrich Conversations on Netflix Promo Process [luma](https://luma.com/zk3jlh6t)    
 November 3rd, 2025 - LeadDev Berlin - What is innovation?  And how Games Engineering navigates it as a "startup" within Netflix
 [link](https://leaddev.com/leaddev-berlin/)     
 June 3rd, 2025 - Stanford Founders Fireside Chat - Culture is the Product [luma](https://lu.ma/ycnld9jt)    
