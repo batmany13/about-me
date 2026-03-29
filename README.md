@@ -4,6 +4,24 @@ My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in
 
 This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
 
+## What's in this repo
+
+| | |
+|---|---|
+| [Leadership Philosophy](#leadership-philosophy) | Core beliefs: trusting teams, seeking excellence, driving customer delight |
+| [About Me Personally](#about-me-personally) | Values, work style, what makes me tick |
+| [Managing & Growing People](managing.md) | People leadership: culture, coaching, hiring, retention |
+| [1x1s](1x1s.md) | My 1x1 methodology with 5 types and sample agendas |
+| [Thriving Team](thriving_team.md) | Skills and characteristics of a great team |
+| [Self Evaluation](self_eval.md) | My passions, unique advantages, and growth areas |
+| [360 Feedback](feedback/README.md) | Yearly feedback themes from Netflix 360s (2021-2025) |
+| [External Presence](external_presence.md) | Talks, blogs, podcasts, and panels (2016-2026) |
+| [Games Engineering](games_engineering.md) | Netflix Games Platform org structure and missions |
+| [Pursuit of Impact](pursuit_of_impact/README.md) | Tips on designing teams, hiring, and creating learning environments |
+| [OKRs](okrs.md) | Framework for objectives and key results |
+| [Interview Process](interview.md) | How I run interview loops |
+| [Ideas](ideas/) | Work-in-progress concepts (API Reliability Engineering, Four Laws of Software Engineering) |
+
 ## Leadership Philosophy
 
 ### _Trusting teams, seeking excellence, driving customer delight_

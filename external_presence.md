@@ -92,6 +92,6 @@ __Cancelled / Delayed__
 
 I've also done various sessions around APIs, Culture with various companies of all sizes, these are more intimate settings and having detailed conversations with companies.
 
-### Copmany Github Pages
+### Company GitHub Pages
 
 I've also built github pages at Brightergy, Synq.fm, Packet and Shippo.  These were team culture pages which highlighted how the team works or behaves together.
