@@ -18,7 +18,7 @@ I look for companies where AI capabilities create a compounding advantage — th
 
 ### Founding Teams That Can Execute
 
-This is where my [people leadership background](managing.md) shapes my investing.  I pay close attention to:
+This is where my [people leadership background](../leadership/managing.md) shapes my investing.  I pay close attention to:
 - **Technical depth** — can the founders actually build what they're pitching?
 - **Domain expertise** — do they deeply understand the industry they're targeting?
 - **Team dynamics** — do they complement each other?  Can they hire well?

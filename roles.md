@@ -4,11 +4,11 @@ I've always been drawn to the intersection of building things, growing people, a
 
 ## Engineering Leader — Netflix Games
 
-I'm an Engineering Director at Netflix leading [Games Platform Engineering](games_engineering.md), which is responsible for the entire game developer journey — from onboarding a game to live operations and everything in between.  This includes 6 teams spanning backend services, SDKs, developer tooling, SRE, test engineering, and game lifecycle management.
+I'm an Engineering Director at Netflix leading [Games Platform Engineering](netflix/games_engineering.md), which is responsible for the entire game developer journey — from onboarding a game to live operations and everything in between.  This includes 6 teams spanning backend services, SDKs, developer tooling, SRE, test engineering, and game lifecycle management.
 
 This is where I spend the majority of my energy.  It's a "startup within Netflix" — we're building a games platform from scratch with the scale and ambition of Netflix behind it.  The challenges here hit all three of my sweet spots: complex technical problems, building a team culture from the ground up, and navigating the product-market dynamics of an emerging business.
 
-**How I lead**: My [leadership philosophy](README.md#leadership-philosophy) centers on trusting teams, seeking excellence, and driving customer delight.  In practice, that means building psychological safety so people can do their best work, setting clear vision and goals, and making sure we're always balancing near-term delivery with long-term investment.  I write more about this in [managing people](managing.md), [1x1s](1x1s.md), and what I look for in a [thriving team](thriving_team.md).
+**How I lead**: My [leadership philosophy](README.md#leadership-philosophy) centers on trusting teams, seeking excellence, and driving customer delight.  In practice, that means building psychological safety so people can do their best work, setting clear vision and goals, and making sure we're always balancing near-term delivery with long-term investment.  I write more about this in [managing people](leadership/managing.md), [1x1s](leadership/1x1s.md), and what I look for in a [thriving team](leadership/thriving_team.md).
 
 ## Venture Partner & Seed Investor
 
@@ -21,7 +21,7 @@ What I bring to founders:
 - **Founder empathy** — I've lived the startup journey myself, including the failure.  I know what it feels like.
 - **Honest, direct feedback** — I'd rather tell you the hard truth now than let you figure it out after burning runway
 
-I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](thesis.md) and the [portfolio of companies](investments.md) the funds have backed.
+I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](investing/thesis.md) and the [portfolio of companies](investing/investments.md) the funds have backed.
 
 ## External Speaker & Thought Leader
 
@@ -32,7 +32,7 @@ I've been speaking publicly about engineering leadership, culture, and technolog
 - **Leadership transitions** — moving from IC to manager, building your leadership philosophy
 - **The startup-within-a-big-company experience** — what it's like to build something new at Netflix
 
-I've spoken at LeadDev (London, Berlin, NYC), Stanford, API World, GraphQL Summit, and many community events and podcasts.  The full history is in [external presence](external_presence.md).
+I've spoken at LeadDev (London, Berlin, NYC), Stanford, API World, GraphQL Summit, and many community events and podcasts.  The full history is in [external presence](speaking/external_presence.md).
 
 _I'm taking a break from external speaking in 2026 to focus on my current role, but plan to re-evaluate in 2027._
 

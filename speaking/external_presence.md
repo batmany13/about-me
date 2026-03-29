@@ -36,7 +36,7 @@ March 20, 2025 - [FounderCoho](https://www.foundercoho.com/) - Chat between Jing
 [July 2023] Enrich Conversations - Product Success Cures Many Ills   
 [March 15th, 2023] LeadingEng - Realizing Technical Strategy during turbelent times | [event](https://leaddev.com/leadingeng-new-york)   
 [March 3rd, 2023] KU I2S Student Research Symposium (ISRS) Keynote ([schedule](https://i2s-research.ku.edu/isrs)) - What makes a great engineer? | [slides](https://docs.google.com/presentation/d/1pkB6UyM_OW7utoqU-JO-s9OXtNK9BmETtdFQgjaTRRM/edit#slide=id.g1f5d3ea0465_0_0)   
-[Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
+[Feb 15th, 2023] Enrich - Setting & Communicating Technical Vision | [link](https://www.linkedin.com/posts/joinenrichnow_peerlearning-leaders-vision-activity-7026689720340414465-S8wy?utm_source=share&utm_medium=member_desktop) | [q&a](events/vision_qa.md), [signup](https://lu.ma/dyn5g4so)   
 [Jan 2023] Grow Podcast | [audio](https://podcasts.apple.com/ca/podcast/6-embracing-your-career-journey-as-a-manager-with/id1654065654?i=1000591024060) | [video](https://www.youtube.com/watch?v=-fzg0zEN3UQ)   
 
 __Pending Blog/Podcast/Video Release__
@@ -70,7 +70,7 @@ __Cancelled / Delayed__
 
 ### 2020 
 
-[Dec 2020] The Pursuit of Impact [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) ([detailed tips](https://github.com/batmany13/about-me/tree/master/pursuit_of_impact)) | Plato Winter 2020 Talk - [recording](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3)   
+[Dec 2020] The Pursuit of Impact [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) ([detailed tips](https://github.com/batmany13/about-me/tree/master/netflix/pursuit_of_impact)) | Plato Winter 2020 Talk - [recording](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3)   
 [Aug 2020] [GDG Singapore](https://gdg.community.dev/events/details/google-gdg-singapore-presents-full-cycle-people-leadership/) - Full Cycle Leadership ([video](https://www.youtube.com/watch?v=-hksiU_WoiU))    
 [Aug 2020] [Enrich Fireside](https://lu.ma/brucetalk) - Managing the Lifecycle of Your Team ([q&a doc](https://docs.google.com/document/d/1EhTQfpLB_iyHZEFX6xCUAbJmfXFnIYOc_rokOpvOcgU/edit#heading=h.amobz93acu52))    
 [March 2020] [Better Monday Podcast Ep 7](https://www.sofokus.com/podcast/episodes/recruiting-and-organizational-culture-at-netflix/) - Recruiting, Organizational Culture    

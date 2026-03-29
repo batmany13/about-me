@@ -13,21 +13,26 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | File | What it contains |
 |------|-----------------|
 | `README.md` | Core leadership philosophy (trusting teams, seeking excellence, driving customer delight), personal values, reading list |
-| `managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
-| `1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |
-| `thriving_team.md` | What skills and characteristics define a thriving team |
-| `self_eval.md` | Personal passions, unique advantages, and growth areas (last updated 2022) |
-| `games_engineering.md` | Netflix Games Platform Engineering org — team missions and structure |
-| `external_presence.md` | Complete index of talks, blogs, podcasts, panels (2016-2026) |
-| `interview.md` | Interview process documentation for API Systems |
-| `okrs.md` | OKRs framework overview |
 | `roles.md` | Overview of Bruce's three professional roles: Netflix leader, seed investor, external speaker |
-| `thesis.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
-| `investments.md` | Public-facing portfolio of AI Fund companies — name, field, short description (no confidential data) |
-| `feedback/README.md` | 360 review themes by year (2021-2025) with strengths and opportunities |
-| `pursuit_of_impact/README.md` | Conference talk tips: designing teams, hiring, learning environment |
+| `self_eval.md` | Personal passions, unique advantages, and growth areas (last updated 2022) |
+| **leadership/** | |
+| `leadership/managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
+| `leadership/1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |
+| `leadership/thriving_team.md` | What skills and characteristics define a thriving team |
+| `leadership/okrs.md` | OKRs framework overview |
+| `leadership/feedback/` | 360 review themes by year (2021-2025) with strengths and opportunities |
+| **netflix/** | |
+| `netflix/games_engineering.md` | Netflix Games Platform Engineering org — team missions and structure |
+| `netflix/interview.md` | Interview process documentation for API Systems |
+| `netflix/pursuit_of_impact/` | Conference talk tips: designing teams, hiring, learning environment |
+| **investing/** | |
+| `investing/thesis.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
+| `investing/investments.md` | Public-facing portfolio of AI Fund companies — name, field, short description (no confidential data) |
+| **speaking/** | |
+| `speaking/external_presence.md` | Complete index of talks, blogs, podcasts, panels (2016-2026) |
+| `speaking/events/` | Q&A from talks and sessions |
+| **other/** | |
 | `ideas/` | Work-in-progress concepts (API Reliability Engineering, Four Laws of Software Engineering) |
-| `events/vision_qa.md` | Q&A from a technical vision-setting talk |
 | `past/` | Legacy role descriptions (Product Edge Systems, Consumer Server Foundations) |
 | `rsrc/` | Images, PDFs, and presentation materials |
 
@@ -56,14 +61,14 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 
 ## Common Tasks
 
-### Adding a new talk/blog to external_presence.md
+### Adding a new talk/blog to speaking/external_presence.md
 1. Find the correct year section (or create one if it's a new year)
 2. Add entry under `__Completed__` or at the top of the year section
 3. Follow the format: `Date - Event Name | [link type](url)`
 4. Include recording/slides links when available
 
 ### Adding a new year of 360 feedback
-1. Open `feedback/README.md`
+1. Open `leadership/feedback/README.md`
 2. Add a new H2 section below the existing ones: `## YYYY Netflix 360s Theme`
 3. Add `__Strengths__` and `__Opportunities__` subsections with bullet points
 4. Note any long-running feedback themes with `(long-running feedback)` prefix
@@ -73,16 +78,16 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 - Keep the three sections: Passions, Unique Advantages, Growth Areas
 - Be honest and reflective — this is meant to be transparent
 
-### Updating games_engineering.md
+### Updating netflix/games_engineering.md
 - This reflects the current org structure at Netflix Games
 - Update team names, missions, and descriptions as the org evolves
 
-### Adding a new portfolio company to investments.md
+### Adding a new portfolio company to investing/investments.md
 1. Determine the category: AI Infrastructure, Vertical AI Applications, Developer Productivity, or Other
 2. Add under the correct section heading
 3. Format: `**Company Name** — Field/Focus Area` followed by a 1-2 sentence public description
 4. Keep descriptions public-friendly — no valuations, fit ratings, or internal analysis
-5. Update `thesis.md` if the new company represents a thesis evolution
+5. Update `investing/thesis.md` if the new company represents a thesis evolution
 
 ### Updating roles.md
 - Update when Bruce's role, responsibilities, or focus areas change
@@ -97,8 +102,8 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 
 ## How to help Bruce improve this repo
 - Suggest new content based on themes in his talks or feedback
-- Help keep external_presence.md current
-- Help keep investments.md current when new portfolio companies are added
+- Help keep speaking/external_presence.md current
+- Help keep investing/investments.md current when new portfolio companies are added
 - Flag outdated information (e.g., role changes, stale links)
 - Help draft new ideas/ entries based on talks or discussions
 - Synthesize patterns across 360 feedback years

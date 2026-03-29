@@ -1,8 +1,8 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](https://github.com/batmany13/about-me/blob/master/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](netflix/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
 
-This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
+This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
 
 ## What's in this repo
 
@@ -10,20 +10,24 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 about-me/
 ├── README.md                       ← You are here — leadership philosophy, values, reading list
 ├── roles.md                        ← My three roles: Netflix leader, seed investor, external speaker
-├── managing.md                     ← People leadership: culture, coaching, hiring, retention
-├── 1x1s.md                         ← My 1x1 methodology with 5 types and sample agendas
-├── thriving_team.md                ← Skills and characteristics of a great team
 ├── self_eval.md                    ← My passions, unique advantages, and growth areas
-├── external_presence.md            ← Talks, blogs, podcasts, and panels (2016-2026)
-├── games_engineering.md            ← Netflix Games Platform org structure and missions
-├── thesis.md                       ← My approach to seed-stage AI investing
-├── investments.md                  ← Public-facing portfolio of AI Fund companies
-├── okrs.md                         ← Framework for objectives and key results
-├── interview.md                    ← How I run interview loops
-├── feedback/                       ← Yearly 360 feedback themes from Netflix (2021-2025)
-├── pursuit_of_impact/              ← Tips on designing teams, hiring, and learning environments
+├── leadership/
+│   ├── managing.md                 ← People leadership: culture, coaching, hiring, retention
+│   ├── 1x1s.md                     ← My 1x1 methodology with 5 types and sample agendas
+│   ├── thriving_team.md            ← Skills and characteristics of a great team
+│   ├── okrs.md                     ← Framework for objectives and key results
+│   └── feedback/                   ← Yearly 360 feedback themes from Netflix (2021-2025)
+├── netflix/
+│   ├── games_engineering.md        ← Netflix Games Platform org structure and missions
+│   ├── interview.md                ← How I run interview loops
+│   └── pursuit_of_impact/          ← Tips on designing teams, hiring, and learning environments
+├── investing/
+│   ├── thesis.md                   ← My approach to seed-stage AI investing
+│   └── investments.md              ← Public-facing portfolio of AI Fund companies
+├── speaking/
+│   ├── external_presence.md        ← Talks, blogs, podcasts, and panels (2016-2026)
+│   └── events/                     ← Q&A from talks and sessions
 ├── ideas/                          ← WIP concepts (API Reliability Engineering, Four Laws)
-├── events/                         ← Q&A from talks and sessions
 ├── past/                           ← Legacy role descriptions
 └── rsrc/                           ← Images, PDFs, and presentation materials
 ```
@@ -42,7 +46,7 @@ Building and sustaining a learning culture in your team or company is a journey.
 
 To build a trusting team, you have to start with the leader.  Establishing trust starts with listening as a leader.  Your innate drive to be "action oriented" (like myself) could actually hinder your ability to learn from the team and grow with the team.  I believe that any team has the solution within itself, yet may lack the agency, inertia or steps to get them there.  You as a leader can shine a light on these issues and help guide the team to success.
 
-Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.  Write down what's important to a ["thriving team"](thriving_team.md).
+Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.  Write down what's important to a ["thriving team"](leadership/thriving_team.md).
 
 ### Build safety
 
@@ -54,7 +58,7 @@ Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions
 
 Information is not a weapon to use or to hoard but a powerful unifier that unlocks your team's autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
-Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other.
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](leadership/1x1s.md) to open up to each other.
 
 ### Reward empowered learning
 
