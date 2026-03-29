@@ -14,7 +14,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 |------|-----------------|
 | `README.md` | Core leadership philosophy (trusting teams, seeking excellence, driving customer delight), personal values, reading list |
 | `roles.md` | Overview of Bruce's three professional roles: Netflix leader, seed investor, external speaker |
-| `self_eval.md` | Personal passions, unique advantages, and growth areas (last updated 2022) |
+| `leadership/feedback/self_eval.md` | Personal passions, unique advantages, and growth areas (last updated 2022) |
 | **leadership/** | |
 | `leadership/managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
 | `leadership/1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |

@@ -10,13 +10,13 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 about-me/
 ├── README.md                       ← You are here — leadership philosophy, values, reading list
 ├── roles.md                        ← My three roles: Netflix leader, seed investor, external speaker
-├── self_eval.md                    ← My passions, unique advantages, and growth areas
 ├── leadership/
 │   ├── managing.md                 ← People leadership: culture, coaching, hiring, retention
 │   ├── 1x1s.md                     ← My 1x1 methodology with 5 types and sample agendas
 │   ├── thriving_team.md            ← Skills and characteristics of a great team
 │   ├── okrs.md                     ← Framework for objectives and key results
 │   └── feedback/                   ← Yearly 360 feedback themes from Netflix (2021-2025)
+│       └── self_eval.md            ← My passions, unique advantages, and growth areas
 ├── netflix/
 │   ├── games_engineering.md        ← Netflix Games Platform org structure and missions
 │   ├── interview.md                ← How I run interview loops
