@@ -6,24 +6,27 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ## What's in this repo
 
-| | |
-|---|---|
-| [The Many Hats I Wear](roles.md) | My three roles: Netflix leader, seed investor, external speaker |
-| [Leadership Philosophy](#leadership-philosophy) | Core beliefs: trusting teams, seeking excellence, driving customer delight |
-| [About Me Personally](#about-me-personally) | Values, work style, what makes me tick |
-| [Managing & Growing People](managing.md) | People leadership: culture, coaching, hiring, retention |
-| [1x1s](1x1s.md) | My 1x1 methodology with 5 types and sample agendas |
-| [Thriving Team](thriving_team.md) | Skills and characteristics of a great team |
-| [Self Evaluation](self_eval.md) | My passions, unique advantages, and growth areas |
-| [360 Feedback](feedback/README.md) | Yearly feedback themes from Netflix 360s (2021-2025) |
-| [External Presence](external_presence.md) | Talks, blogs, podcasts, and panels (2016-2026) |
-| [Investment Thesis](thesis.md) | My approach to seed-stage AI investing |
-| [AI Fund Portfolio](investments.md) | Public-facing list of portfolio companies |
-| [Games Engineering](games_engineering.md) | Netflix Games Platform org structure and missions |
-| [Pursuit of Impact](pursuit_of_impact/README.md) | Tips on designing teams, hiring, and creating learning environments |
-| [OKRs](okrs.md) | Framework for objectives and key results |
-| [Interview Process](interview.md) | How I run interview loops |
-| [Ideas](ideas/) | Work-in-progress concepts (API Reliability Engineering, Four Laws of Software Engineering) |
+```
+about-me/
+├── README.md                       ← You are here — leadership philosophy, values, reading list
+├── roles.md                        ← My three roles: Netflix leader, seed investor, external speaker
+├── managing.md                     ← People leadership: culture, coaching, hiring, retention
+├── 1x1s.md                         ← My 1x1 methodology with 5 types and sample agendas
+├── thriving_team.md                ← Skills and characteristics of a great team
+├── self_eval.md                    ← My passions, unique advantages, and growth areas
+├── external_presence.md            ← Talks, blogs, podcasts, and panels (2016-2026)
+├── games_engineering.md            ← Netflix Games Platform org structure and missions
+├── thesis.md                       ← My approach to seed-stage AI investing
+├── investments.md                  ← Public-facing portfolio of AI Fund companies
+├── okrs.md                         ← Framework for objectives and key results
+├── interview.md                    ← How I run interview loops
+├── feedback/                       ← Yearly 360 feedback themes from Netflix (2021-2025)
+├── pursuit_of_impact/              ← Tips on designing teams, hiring, and learning environments
+├── ideas/                          ← WIP concepts (API Reliability Engineering, Four Laws)
+├── events/                         ← Q&A from talks and sessions
+├── past/                           ← Legacy role descriptions
+└── rsrc/                           ← Images, PDFs, and presentation materials
+```
 
 ## Leadership Philosophy
 
