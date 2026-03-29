@@ -1,6 +1,6 @@
 # AI Fund Portfolio
 
-As a seed-stage investor, I focus on AI companies across infrastructure, vertical applications, and developer productivity.  Below are the companies I've invested in through the fund.  For my investment philosophy, see [thesis](thesis.md).
+I invest in pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund.  Below are the portfolio companies across those funds, spanning AI infrastructure, vertical applications, and developer productivity.  For my investment philosophy, see [thesis](thesis.md).
 
 ## AI Infrastructure
 

@@ -12,15 +12,16 @@ This is where I spend the majority of my energy.  It's a "startup within Netflix
 
 ## Venture Partner & Seed Investor
 
-On the side, I'm a seed-stage investor and startup advisor focused on AI.  This is where my entrepreneurial side gets to play — I'm a 2x founder myself, and I've always loved going from 0 to 1.
+On the side, I invest in and advise pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund.  I've been in the investment game for over 10 years, but got much more serious about it in the last year or so.  This is where my entrepreneurial side gets to play — I'm a 2x startup founder (1 exit, 1 failure) with 26+ years in the tech industry, and I've always loved going from 0 to 1.
 
 What I bring to founders:
-- **Pattern recognition** from operating at Netflix scale and building from scratch at startups
+- **Pattern recognition** from 26+ years in tech, including 6+ years operating in Netflix's high-performance culture and building startups from scratch
 - **Technical depth** — I can get into the code and architecture, not just the pitch deck
 - **People and culture lens** — I think a lot about founding teams, hiring, and building the right culture early
+- **Founder empathy** — I've lived the startup journey myself, including the failure.  I know what it feels like.
 - **Honest, direct feedback** — I'd rather tell you the hard truth now than let you figure it out after burning runway
 
-I invest in and advise companies across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](thesis.md) and the [portfolio of companies](investments.md) I've backed.
+I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](thesis.md) and the [portfolio of companies](investments.md) the funds have backed.
 
 ## External Speaker & Thought Leader
 
