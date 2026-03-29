@@ -8,15 +8,42 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ```
 about-me/
-├── README.md              ← You are here — leadership philosophy, values, reading list
-├── roles.md               ← My three roles: Netflix leader, seed investor, external speaker
-├── leadership/            ← Managing people, 1x1s, thriving teams, OKRs, 360 feedback & self-eval
-├── netflix/               ← Games Platform Engineering, interview process, pursuit of impact
-├── investing/             ← Investment thesis and public portfolio of AI Fund companies
-├── speaking/              ← Talks, blogs, podcasts, panels (2016-2026) and event Q&As
-├── ideas/                 ← WIP concepts (API Reliability Engineering, Four Laws)
-├── past/                  ← Legacy role descriptions
-└── rsrc/                  ← Images, PDFs, and presentation materials
+├── README.md                          ← You are here — leadership philosophy, values, reading list
+├── roles.md                           ← My three roles: Netflix leader, seed investor, speaker
+│
+├── leadership/
+│   ├── managing.md                    ← People leadership guide: culture, hiring, growing talent
+│   ├── 1x1s.md                       ← 1x1 methodology with 5 types and sample agendas
+│   ├── thriving_team.md               ← Skills and characteristics of a thriving team
+│   ├── okrs.md                        ← OKRs framework overview
+│   └── feedback/
+│       ├── README.md                  ← 360 review themes by year (2021–2025)
+│       └── self_eval.md               ← Personal passions, strengths, and growth areas
+│
+├── netflix/
+│   ├── games_engineering.md           ← Netflix Games Platform Engineering org and team missions
+│   ├── interview.md                   ← Interview process documentation for API Systems
+│   └── pursuit_of_impact/
+│       └── README.md                  ← Conference talk tips: team design, hiring, learning
+│
+├── investing/
+│   ├── thesis.md                      ← Seed-stage AI investment thesis
+│   └── investments.md                 ← Public portfolio of AI Fund companies
+│
+├── speaking/
+│   ├── external_presence.md           ← Index of talks, blogs, podcasts, panels (2016–2026)
+│   └── events/
+│       └── vision_qa.md              ← Q&A from vision talk sessions
+│
+├── ideas/
+│   ├── ares.md                        ← WIP: API Reliability Engineering concept
+│   └── four_laws.md                   ← WIP: Four Laws of Software Engineering
+│
+├── past/
+│   ├── pes.md                         ← Legacy: Product Edge Systems role
+│   └── csf.md                         ← Legacy: Consumer Server Foundations role
+│
+└── rsrc/                              ← Images, PDFs, and presentation materials
 ```
 
 ## Leadership Philosophy
