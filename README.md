@@ -27,7 +27,7 @@ about-me/
 │       └── README.md                  ← Conference talk tips: team design, hiring, learning
 │
 ├── investing/
-│   ├── thesis.md                      ← Seed-stage AI investment thesis
+│   ├── README.md                      ← Seed-stage AI investment thesis
 │   └── investments.md                 ← Public portfolio of AI Fund companies
 │
 ├── speaking/

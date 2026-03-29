@@ -26,7 +26,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | `netflix/interview.md` | Interview process documentation for API Systems |
 | `netflix/pursuit_of_impact/` | Conference talk tips: designing teams, hiring, learning environment |
 | **investing/** | |
-| `investing/thesis.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
+| `investing/README.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
 | `investing/investments.md` | Public-facing portfolio of AI Fund companies — name, field, short description (no confidential data) |
 | **speaking/** | |
 | `speaking/external_presence.md` | Complete index of talks, blogs, podcasts, panels (2016-2026) |
@@ -87,7 +87,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 2. Add under the correct section heading
 3. Format: `**Company Name** — Field/Focus Area` followed by a 1-2 sentence public description
 4. Keep descriptions public-friendly — no valuations, fit ratings, or internal analysis
-5. Update `investing/thesis.md` if the new company represents a thesis evolution
+5. Update `investing/README.md` if the new company represents a thesis evolution
 
 ### Updating roles.md
 - Update when Bruce's role, responsibilities, or focus areas change

@@ -1,40 +1,40 @@
 # AI Fund Portfolio
 
-I invest in pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund.  Below are the portfolio companies across those funds, spanning AI infrastructure, vertical applications, and developer productivity.  For my investment philosophy, see [thesis](thesis.md).
+I invest in pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund.  Below are the portfolio companies across those funds, spanning AI infrastructure, vertical applications, and developer productivity.  For my investment philosophy, see the [README](README.md).
 
 ---
 
 ## Portfolio at a Glance
 
-| Company | Focus Area | Category | Stage |
-|---------|-----------|----------|-------|
-| Braintrust | AI Observability & Evaluation | Infra | Series B |
-| Bespoke Labs | Synthetic Data / Post-Training | Infra | Series A |
-| Klarity | Accounting & Compliance Automation | Vertical | Series B |
-| LegalOn | AI Contract Review | Vertical | Series B |
-| Aidaptive | Predictive Personalization (eComm) | Vertical | Seed+ |
-| Overview AI | Manufacturing Vision Inspection | Vertical | Series A |
-| Cake AI | Managed Open-Source AI Infra | Infra | Seed |
-| CocoIndex | AI Data Pipelines (Open Source ETL) | Infra | Early |
-| Harmonic Labs | Inference Control Plane | Infra | Pre-Seed |
-| Vals AI | AI Model Compliance Testing | Infra | Seed |
-| Podonos | Voice AI Evaluation | Infra | Pre-Seed |
-| CopyCat | AI Browser Agents (RPA) | Infra | Seed |
-| Wafer.ai | AI Chip Design Optimization | Infra | Early |
-| Pauling AI | AI Drug Discovery | Vertical | Pre-Seed |
-| Neru Health | Chronic Care / Sleep Therapy AI | Vertical | Pre-Seed |
-| GoodCall | AI Phone Agent for SMBs | Vertical | Seed |
-| Conversant AI | Industrial Product Intelligence | Vertical | Pre-Seed |
-| Diplo AI | Automotive Regulatory Compliance | Vertical | Seed |
-| Trisetra AI | AI Home Design (3D/Code-Compliant) | Vertical | Seed |
-| Blue (HeyBlue) | Voice-First Computer-Use Agent | Dev Prod | Pre-Seed |
-| Pally | AI Relationship Management | Dev Prod | Pre-Seed |
-| Thesis Labs | AI Research Productivity | Dev Prod | Early |
-| Vybe.build | AI App Building Platform | Dev Prod | Early |
-| ChainML | Decentralized AI Agent Protocol | Other | Seed |
-| AlphaXIV | Academic Research Intelligence | Other | Seed |
-| Koolio.ai | AI Podcast Production | Other | Early |
-| DeepVista | AI Business Communication Agent | Other | Pre-Product |
+| Company | Focus Area | Category |
+|---------|-----------|----------|
+| Braintrust | AI Observability & Evaluation | Infra |
+| Bespoke Labs | Synthetic Data / Post-Training | Infra |
+| Klarity | Accounting & Compliance Automation | Vertical |
+| LegalOn | AI Contract Review | Vertical |
+| Aidaptive | Predictive Personalization (eComm) | Vertical |
+| Overview AI | Manufacturing Vision Inspection | Vertical |
+| Cake AI | Managed Open-Source AI Infra | Infra |
+| CocoIndex | AI Data Pipelines (Open Source ETL) | Infra |
+| Harmonic Labs | Inference Control Plane | Infra |
+| Vals AI | AI Model Compliance Testing | Infra |
+| Podonos | Voice AI Evaluation | Infra |
+| CopyCat | AI Browser Agents (RPA) | Infra |
+| Wafer.ai | AI Chip Design Optimization | Infra |
+| Pauling AI | AI Drug Discovery | Vertical |
+| Neru Health | Chronic Care / Sleep Therapy AI | Vertical |
+| GoodCall | AI Phone Agent for SMBs | Vertical |
+| Conversant AI | Industrial Product Intelligence | Vertical |
+| Diplo AI | Automotive Regulatory Compliance | Vertical |
+| Trisetra AI | AI Home Design (3D/Code-Compliant) | Vertical |
+| Blue (HeyBlue) | Voice-First Computer-Use Agent | Dev Prod |
+| Pally | AI Relationship Management | Dev Prod |
+| Thesis Labs | AI Research Productivity | Dev Prod |
+| Vybe.build | AI App Building Platform | Dev Prod |
+| ChainML | Decentralized AI Agent Protocol | Other |
+| AlphaXIV | Academic Research Intelligence | Other |
+| Koolio.ai | AI Podcast Production | Other |
+| DeepVista | AI Business Communication Agent | Other |
 
 ---
 

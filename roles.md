@@ -21,7 +21,7 @@ What I bring to founders:
 - **Founder empathy** — I've lived the startup journey myself, including the failure.  I know what it feels like.
 - **Honest, direct feedback** — I'd rather tell you the hard truth now than let you figure it out after burning runway
 
-I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](investing/thesis.md) and the [portfolio of companies](investing/investments.md) the funds have backed.
+I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](investing/README.md) and the [portfolio of companies](investing/investments.md) the funds have backed.
 
 ## External Speaker & Thought Leader
 
