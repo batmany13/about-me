@@ -133,6 +133,20 @@ My Failings - Talking too much or dominating a conversation, being late to meeti
 Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
 Fav Dessert - creme bruele, egg tart, tiramisu
 
+## How I'm Using AI
+
+I'm not just talking about AI — I'm using it daily across every part of my professional life.  I believe leaders need to be hands-on with the tools they're asking their teams to adopt, so I've been going deep.
+
+**Investing**: I built an entire repo to manage our fund's investment activities using AI — from building up our thesis, to detailed portfolio company profiles, deal flow analysis, and founder evaluations.  AI helps me synthesize research, spot patterns across the portfolio, and keep our investment lens sharp.
+
+**At Work**: I'm rethinking how my organization shares and absorbs context.  My internal newsletter "Fast Takes" is being reimagined with AI to change how we share, process, and act on information.  More broadly, I'm helping shape our "AI-Native" strategy within Games Engineering — thinking about how AI changes the way we build, operate, and collaborate.  I'm also exploring novel ways AI can improve how engineering organizations work together across teams and partner groups.
+
+**Building Tools**: I vibe-coded a Slack-to-Claude bot so I can track and summarize context more easily across Slack conversations — a practical example of scratching my own itch with AI.
+
+**This Repo**: Even this about-me repo has a [CLAUDE.md](CLAUDE.md) that instructs AI assistants on how to navigate, update, and improve the content here.
+
+I approach AI the same way I approach everything else — try it, learn from it, iterate, and share what I find.  If you want to chat about any of this, reach out.
+
 ## Books, Articles, Podcasts that's shaped me
 
 __Teams__   
