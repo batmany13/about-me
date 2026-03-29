@@ -6,35 +6,37 @@ I invest in pre-seed and seed-stage AI companies through two funds — a private
 
 ## Portfolio at a Glance
 
-| Company | Focus Area | Category |
-|---------|-----------|----------|
-| Braintrust | AI Observability & Evaluation | Infra |
-| Bespoke Labs | Synthetic Data / Post-Training | Infra |
-| Klarity | Accounting & Compliance Automation | Vertical |
-| LegalOn | AI Contract Review | Vertical |
-| Aidaptive | Predictive Personalization (eComm) | Vertical |
-| Overview AI | Manufacturing Vision Inspection | Vertical |
-| Cake AI | Managed Open-Source AI Infra | Infra |
-| CocoIndex | AI Data Pipelines (Open Source ETL) | Infra |
-| Harmonic Labs | Inference Control Plane | Infra |
-| Vals AI | AI Model Compliance Testing | Infra |
-| Podonos | Voice AI Evaluation | Infra |
-| CopyCat | AI Browser Agents (RPA) | Infra |
-| Wafer.ai | AI Chip Design Optimization | Infra |
-| Pauling AI | AI Drug Discovery | Vertical |
-| Neru Health | Chronic Care / Sleep Therapy AI | Vertical |
-| GoodCall | AI Phone Agent for SMBs | Vertical |
-| Conversant AI | Industrial Product Intelligence | Vertical |
-| Diplo AI | Automotive Regulatory Compliance | Vertical |
-| Trisetra AI | AI Home Design (3D/Code-Compliant) | Vertical |
-| Blue (HeyBlue) | Voice-First Computer-Use Agent | Dev Prod |
-| Pally | AI Relationship Management | Dev Prod |
-| Thesis Labs | AI Research Productivity | Dev Prod |
-| Vybe.build | AI App Building Platform | Dev Prod |
-| ChainML | Decentralized AI Agent Protocol | Other |
-| AlphaXIV | Academic Research Intelligence | Other |
-| Koolio.ai | AI Podcast Production | Other |
-| DeepVista | AI Business Communication Agent | Other |
+| Company | Focus Area | Category | YC |
+|---------|-----------|----------|----|
+| Braintrust | AI Observability & Evaluation | Infra | |
+| Bespoke Labs | Synthetic Data / Post-Training | Infra | |
+| Klarity | Accounting & Compliance Automation | Vertical | S18 |
+| LegalOn | AI Contract Review | Vertical | |
+| Aidaptive | Predictive Personalization (eComm) | Vertical | |
+| Overview AI | Manufacturing Vision Inspection | Vertical | Yes |
+| Cake AI | Managed Open-Source AI Infra | Infra | |
+| CocoIndex | AI Data Pipelines (Open Source ETL) | Infra | |
+| Harmonic Labs | Inference Control Plane | Infra | |
+| Vals AI | AI Model Compliance Testing | Infra | W24 |
+| Podonos | Voice AI Evaluation | Infra | W22 * |
+| CopyCat | AI Browser Agents (RPA) | Infra | W25 |
+| Wafer.ai | AI Chip Design Optimization | Infra | W24 |
+| Pauling AI | AI Drug Discovery | Vertical | |
+| Neru Health | Chronic Care / Sleep Therapy AI | Vertical | |
+| GoodCall | AI Phone Agent for SMBs | Vertical | |
+| Conversant AI | Industrial Product Intelligence | Vertical | |
+| Diplo AI | Automotive Regulatory Compliance | Vertical | |
+| Trisetra AI | AI Home Design (3D/Code-Compliant) | Vertical | |
+| Blue (HeyBlue) | Voice-First Computer-Use Agent | Dev Prod | S25 |
+| Pally | AI Relationship Management | Dev Prod | S25 |
+| Thesis Labs | AI Research Productivity | Dev Prod | |
+| Vybe.build | AI App Building Platform | Dev Prod | |
+| ChainML | Decentralized AI Agent Protocol | Other | |
+| AlphaXIV | Academic Research Intelligence | Other | |
+| Koolio.ai | AI Podcast Production | Other | |
+| DeepVista | AI Business Communication Agent | Other | |
+
+\* Founder is YC W22 alumni (via Bobidi, predecessor company). Podonos itself is not YC-backed.
 
 ---
 
