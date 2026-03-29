@@ -8,28 +8,15 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ```
 about-me/
-├── README.md                       ← You are here — leadership philosophy, values, reading list
-├── roles.md                        ← My three roles: Netflix leader, seed investor, external speaker
-├── leadership/
-│   ├── managing.md                 ← People leadership: culture, coaching, hiring, retention
-│   ├── 1x1s.md                     ← My 1x1 methodology with 5 types and sample agendas
-│   ├── thriving_team.md            ← Skills and characteristics of a great team
-│   ├── okrs.md                     ← Framework for objectives and key results
-│   └── feedback/                   ← Yearly 360 feedback themes from Netflix (2021-2025)
-│       └── self_eval.md            ← My passions, unique advantages, and growth areas
-├── netflix/
-│   ├── games_engineering.md        ← Netflix Games Platform org structure and missions
-│   ├── interview.md                ← How I run interview loops
-│   └── pursuit_of_impact/          ← Tips on designing teams, hiring, and learning environments
-├── investing/
-│   ├── thesis.md                   ← My approach to seed-stage AI investing
-│   └── investments.md              ← Public-facing portfolio of AI Fund companies
-├── speaking/
-│   ├── external_presence.md        ← Talks, blogs, podcasts, and panels (2016-2026)
-│   └── events/                     ← Q&A from talks and sessions
-├── ideas/                          ← WIP concepts (API Reliability Engineering, Four Laws)
-├── past/                           ← Legacy role descriptions
-└── rsrc/                           ← Images, PDFs, and presentation materials
+├── README.md              ← You are here — leadership philosophy, values, reading list
+├── roles.md               ← My three roles: Netflix leader, seed investor, external speaker
+├── leadership/            ← Managing people, 1x1s, thriving teams, OKRs, 360 feedback & self-eval
+├── netflix/               ← Games Platform Engineering, interview process, pursuit of impact
+├── investing/             ← Investment thesis and public portfolio of AI Fund companies
+├── speaking/              ← Talks, blogs, podcasts, panels (2016-2026) and event Q&As
+├── ideas/                 ← WIP concepts (API Reliability Engineering, Four Laws)
+├── past/                  ← Legacy role descriptions
+└── rsrc/                  ← Images, PDFs, and presentation materials
 ```
 
 ## Leadership Philosophy
