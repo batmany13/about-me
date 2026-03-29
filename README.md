@@ -8,6 +8,7 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 | | |
 |---|---|
+| [The Many Hats I Wear](roles.md) | My three roles: Netflix leader, seed investor, external speaker |
 | [Leadership Philosophy](#leadership-philosophy) | Core beliefs: trusting teams, seeking excellence, driving customer delight |
 | [About Me Personally](#about-me-personally) | Values, work style, what makes me tick |
 | [Managing & Growing People](managing.md) | People leadership: culture, coaching, hiring, retention |
@@ -16,6 +17,8 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 | [Self Evaluation](self_eval.md) | My passions, unique advantages, and growth areas |
 | [360 Feedback](feedback/README.md) | Yearly feedback themes from Netflix 360s (2021-2025) |
 | [External Presence](external_presence.md) | Talks, blogs, podcasts, and panels (2016-2026) |
+| [Investment Thesis](thesis.md) | My approach to seed-stage AI investing |
+| [AI Fund Portfolio](investments.md) | Public-facing list of portfolio companies |
 | [Games Engineering](games_engineering.md) | Netflix Games Platform org structure and missions |
 | [Pursuit of Impact](pursuit_of_impact/README.md) | Tips on designing teams, hiring, and creating learning environments |
 | [OKRs](okrs.md) | Framework for objectives and key results |

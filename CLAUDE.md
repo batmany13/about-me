@@ -21,7 +21,9 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | `external_presence.md` | Complete index of talks, blogs, podcasts, panels (2016-2026) |
 | `interview.md` | Interview process documentation for API Systems |
 | `okrs.md` | OKRs framework overview |
-| `thesis.md` | Startup advisory and investment thesis (stub — WIP) |
+| `roles.md` | Overview of Bruce's three professional roles: Netflix leader, seed investor, external speaker |
+| `thesis.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
+| `investments.md` | Public-facing portfolio of AI Fund companies — name, field, short description (no confidential data) |
 | `feedback/README.md` | 360 review themes by year (2021-2025) with strengths and opportunities |
 | `pursuit_of_impact/README.md` | Conference talk tips: designing teams, hiring, learning environment |
 | `ideas/` | Work-in-progress concepts (API Reliability Engineering, Four Laws of Software Engineering) |
@@ -75,6 +77,18 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 - This reflects the current org structure at Netflix Games
 - Update team names, missions, and descriptions as the org evolves
 
+### Adding a new portfolio company to investments.md
+1. Determine the category: AI Infrastructure, Vertical AI Applications, Developer Productivity, or Other
+2. Add under the correct section heading
+3. Format: `**Company Name** — Field/Focus Area` followed by a 1-2 sentence public description
+4. Keep descriptions public-friendly — no valuations, fit ratings, or internal analysis
+5. Update `thesis.md` if the new company represents a thesis evolution
+
+### Updating roles.md
+- Update when Bruce's role, responsibilities, or focus areas change
+- Keep the three-role structure (Netflix leader, investor, speaker) unless a new role emerges
+- Update the speaking break status when it changes
+
 ## What NOT to change without explicit ask
 - The core leadership philosophy in README.md (Trusting Teams, Seeking Excellence, Driving Customer Delight)
 - The "About Me Personally" section and its subsections
@@ -84,6 +98,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 ## How to help Bruce improve this repo
 - Suggest new content based on themes in his talks or feedback
 - Help keep external_presence.md current
+- Help keep investments.md current when new portfolio companies are added
 - Flag outdated information (e.g., role changes, stale links)
 - Help draft new ideas/ entries based on talks or discussions
 - Synthesize patterns across 360 feedback years
