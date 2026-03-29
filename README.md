@@ -1,8 +1,23 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](https://github.com/batmany13/about-me/blob/master/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](netflix/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
 
-This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](feedback/README.md) I've received in the past.
+This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
+
+## What's in this repo
+
+```
+about-me/
+├── README.md              ← You are here — leadership philosophy, values, reading list
+├── roles.md               ← My three roles: Netflix leader, seed investor, external speaker
+├── leadership/            ← Managing people, 1x1s, thriving teams, OKRs, 360 feedback & self-eval
+├── netflix/               ← Games Platform Engineering, interview process, pursuit of impact
+├── investing/             ← Investment thesis and public portfolio of AI Fund companies
+├── speaking/              ← Talks, blogs, podcasts, panels (2016-2026) and event Q&As
+├── ideas/                 ← WIP concepts (API Reliability Engineering, Four Laws)
+├── past/                  ← Legacy role descriptions
+└── rsrc/                  ← Images, PDFs, and presentation materials
+```
 
 ## Leadership Philosophy
 
@@ -18,7 +33,7 @@ Building and sustaining a learning culture in your team or company is a journey.
 
 To build a trusting team, you have to start with the leader.  Establishing trust starts with listening as a leader.  Your innate drive to be "action oriented" (like myself) could actually hinder your ability to learn from the team and grow with the team.  I believe that any team has the solution within itself, yet may lack the agency, inertia or steps to get them there.  You as a leader can shine a light on these issues and help guide the team to success.
 
-Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.  Write down what's important to a ["thriving team"](thriving_team.md).
+Toolbelt: Take a growth mindset approach with yourself, and figure out how you're growing and learning as a leader and how do you apply that to your team.  Write down what's important to a ["thriving team"](leadership/thriving_team.md).
 
 ### Build safety
 
@@ -30,7 +45,7 @@ Toolbelt: Model Vulnerability and ask a lot of questions.  Encourage discussions
 
 Information is not a weapon to use or to hoard but a powerful unifier that unlocks your team's autonomy and building value for your customers.  This means sharing data good or bad, talking about issues openly so that you can invite people to work together to solve them.  Don't hide or shield your team, be open about whats going on, they'll figure it out anyways.  
 
-Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](1x1s.md) to open up to each other.
+Toolbelt: Have meetings and lunches together, talk about what's going on in an informal setting.  Use [1x1s](leadership/1x1s.md) to open up to each other.
 
 ### Reward empowered learning
 
@@ -111,6 +126,20 @@ My Pet Peeves - laptops at meetings (slightly changed now with hybrid/virtual me
 My Failings - Talking too much or dominating a conversation, being late to meetings (better now), prioritizing work    
 Fav Food(s) - Chinese, Sushi, Vietnamese, Mexican, but really all kinds, I am a foodie :) .   
 Fav Dessert - creme bruele, egg tart, tiramisu
+
+## How I'm Using AI
+
+I'm not just talking about AI — I'm using it daily across every part of my professional life.  I believe leaders need to be hands-on with the tools they're asking their teams to adopt, so I've been going deep.
+
+**Investing**: I built an entire repo to manage our fund's investment activities using AI — from building up our thesis, to detailed portfolio company profiles, deal flow analysis, and founder evaluations.  AI helps me synthesize research, spot patterns across the portfolio, and keep our investment lens sharp.
+
+**At Work**: I'm rethinking how my organization shares and absorbs context.  My internal newsletter "Fast Takes" is being reimagined with AI to change how we share, process, and act on information.  More broadly, I'm helping shape our "AI-Native" strategy within Games Engineering — thinking about how AI changes the way we build, operate, and collaborate.  I'm also exploring novel ways AI can improve how engineering organizations work together across teams and partner groups.
+
+**Building Tools**: I vibe-coded a Slack-to-Claude bot so I can track and summarize context more easily across Slack conversations — a practical example of scratching my own itch with AI.
+
+**This Repo**: Even this about-me repo has a [CLAUDE.md](CLAUDE.md) that instructs AI assistants on how to navigate, update, and improve the content here.
+
+I approach AI the same way I approach everything else — try it, learn from it, iterate, and share what I find.  If you want to chat about any of this, reach out.
 
 ## Books, Articles, Podcasts that's shaped me
 

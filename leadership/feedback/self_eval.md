@@ -24,7 +24,7 @@ I can take nuggets of information and connect the dots quickly
 I'm a 2x founder, seed investor and startup mentor. I love going from 0->1, and have built a track record in building teams from the ground up and delivering pragmatic solutions.  I’ve also rebuilt team culture/structures in every team I’ve taken over.
 
 ## Thought leader on Engineering Leadership
-[about me](https://github.com/batmany13/about-me/blob/master/README.md), [thriving teams](https://github.com/batmany13/about-me/blob/master/thriving_team.md)
+[about me](https://github.com/batmany13/about-me/blob/master/README.md), [thriving teams](https://github.com/batmany13/about-me/blob/master/leadership/thriving_team.md)
 
 I’ve blogged, presented, done AMA, participated in peer groups on engineering concepts
 
