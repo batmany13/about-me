@@ -73,33 +73,15 @@ A rigid organization experiences a market shift as a threat because it can only 
 
 > *You don't get a launch blog post for retiring a migration.  You get credit in the accumulated trust of ICs who know why their lives are better.*
 
-### How Vision Actually Propagates
+General McChrystal introduces the **humble gardener** in [*Team of Teams*](https://www.amazon.com/Team-Teams-Rules-Engagement-Complex-ebook/dp/B00KWG9OF4) — the leader who toils the soil, waters the plants, and measures success by what grows rather than what they built.  It's the opposite of the heroic architect model where the leader designs the system and the team executes the blueprint.  The gardener creates conditions, then steps back.
 
-> *Selflessness is what makes step three possible — you care that the mindset takes hold, not that people know it came from you.*
+This metaphor captures two things I keep coming back to in practice:
 
-There's a specific theory of how vision propagates through organizations:
+**The gardener propagates vision by letting go.**  There's a specific three-step pattern: (1) seed the right mental model, (2) create space for genuine discovery, (3) let ownership transfer completely.  Most leaders can't do step three — they over-specify because they're attached to their vision being implemented *their way*.  Selflessness is what makes step three possible.  You care that the mindset takes hold, not that people know it came from you.
 
-1. **Seed the right mental model** — plant the idea
-2. **Create space for genuine discovery** — let people find it themselves
-3. **Let ownership transfer completely** — step back fully
+**The gardener makes the invisible visible.**  The most important engineering work — [tech debt reframed as innovation](tech_debt_as_innovation.md), API systems as connective tissue, platform reliability — is never glamorous.  The reward signal is delayed and diffuse.  You don't get a launch blog post for retiring a migration or making an internal platform 40% more reliable.  The credit, when it comes, is indirect — teams that ship faster, incidents that don't happen, ICs who trust the ground beneath them.
 
-Most leaders can't do step three. They over-specify because they're attached to their vision being implemented *their way*. Selflessness is what makes step three possible — you care that the mindset takes hold, not that people know it came from you.
-
-That's not a management technique. That's a theory of organizational propagation.
-
-### Make the Invisible Visible
-
-The most important engineering work is often the least visible.  [Tech debt reframed as innovation](tech_debt_as_innovation.md).  API systems as connective tissue.  Platform reliability as the thing that lets product teams ship without fear.  This is the humble gardener's work — it's never glamorous, but it's the infrastructure that makes everyone else faster.
-
-The leaders who choose this work are rare because the reward signal is delayed and diffuse.  You don't get a launch blog post for retiring a migration or making an internal platform 40% more reliable.  The feedback loop is measured in quarters, not sprints.  And the credit, when it comes, is indirect — it shows up as teams that ship faster, incidents that don't happen, and ICs who trust the ground beneath them.
-
-This is why "make the invisible visible" is a deliberate leadership practice, not just a nice sentiment.  It means:
-
-- **Narrating the work** — actively telling the story of infrastructure wins in all-hands, planning docs, and exec reviews so the organization sees the value, not just the absence of problems
-- **Creating explicit recognition channels** — if your promo process only rewards launches, your best platform engineers will either leave or start chasing launches.  The incentive structure has to match the work you say matters
-- **Connecting the dots for others** — most product engineers don't know why their deploys are faster this quarter.  The gardener has to make that causal chain visible, not out of ego, but because the organization needs to understand what it's investing in
-
-At Netflix, I saw this play out directly.  The [tech debt as innovation](tech_debt_as_innovation.md) reframe started as a marketing campaign — same work, different narrative — and it changed how executives budgeted for platform work and how engineers felt about doing it.  The substance didn't change.  The visibility did.  And that made all the difference.
+So the gardener has to actively narrate that work: tell the story of infrastructure wins in all-hands and planning docs, make sure the promo process rewards the work you say matters, and connect the dots for product engineers who don't know why their deploys are faster this quarter.  At Netflix, the [tech debt as innovation](tech_debt_as_innovation.md) reframe started as exactly this kind of narrative work — same substance, different framing — and it changed how executives budgeted for platform work and how engineers felt about doing it.
 
 ## The Altitude Switch
 
