@@ -11,6 +11,7 @@ If I had to distill the through-lines from how I think about leadership:
 - **[Culture as pivot capacity](#culture-as-pivot-capacity)** — not the cause of success but the organizational capability that captures lucky moments
 - **[Gardener over architect](#gardener-over-architect)** — create conditions, transfer ownership completely, measure yourself by what grows after you leave
 - **[The altitude switch](#the-altitude-switch)** — zoom from five-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **[The practice pivot](#the-practice-pivot)** — consistency in *why*, flexibility in *how* — the habit that compounds context over years
 - **[PMF first, culture as multiplier](#pmf-and-the-honest-sequencing)** — the honest sequencing that most culture-first narratives get backwards
 
 ---
@@ -94,6 +95,20 @@ What makes this more than a nice-to-have is that the two altitudes actively rein
 The reinforcement loop matters because it builds trust in both directions.  Engineers trust a leader who can engage on their technical problems without faking it.  Executives trust a leader who can zoom out and connect the work to business outcomes.  The altitude switch is what lets you be credible in both rooms — and translate between them when the two rooms aren't talking to each other.
 
 The trap is thinking you have to choose.  "I'm a strategic thinker" or "I'm a detail person" is a false binary.  The best engineering leaders refuse the choice and build the muscle for both.
+
+## The Practice Pivot
+
+> *The habit isn't "write a newsletter" — it's "force yourself to process information actively."  The medium is just the current vehicle.*
+
+James Clear's *Atomic Habits* makes a foundational point: the habits that endure are identity-driven, not outcome-driven.  You don't stick with something for six years because of external accountability — you stick with it because it becomes part of how you operate.  The interesting thing is what happens when you apply that to a leadership practice like a weekly newsletter.
+
+Writing Fast Takes every week for six years was never about self-promotion or audience building.  It was a forcing function for **context absorption** — a weekly deadline that required synthesizing what was happening across the org, the industry, and the technology landscape into something coherent.  The paradox is that doing it for yourself first is what made it valuable to others.  A newsletter written to impress reads differently than one written to understand.  People can feel the difference.
+
+The *Atomic Habits* insight here is that the real habit isn't the artifact — it's the cognitive practice underneath it.  The habit is: *every week, force yourself to actively process and synthesize information rather than passively consuming it.*  The newsletter was the vehicle for that habit.  But vehicles change.
+
+That's the practice pivot: **consistency in *why*, flexibility in *how*.**  The *why* — absorbing context, synthesizing patterns, staying connected to what's actually happening — doesn't change.  The *how* evolves as the tools evolve.  AI doesn't replace the practice; it transforms the medium.  The same forcing function that produced a manually written newsletter can now produce something AI-assisted that processes more information, surfaces different patterns, and reaches people in new ways.
+
+What stays constant is the compounding effect.  Each week's context absorption builds on the last.  Six years of that isn't 300+ newsletters — it's a compounding understanding of the landscape that no single deep-dive can replicate.  That accumulated context is part of what fuels the [altitude switch](#the-altitude-switch) — you can zoom between vision and details because you've been actively processing the full picture every week for years.
 
 ## PMF and the Honest Sequencing
 
