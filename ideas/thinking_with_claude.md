@@ -110,7 +110,7 @@ The *Atomic Habits* insight here is that the real habit isn't the artifact — i
 
 That's the practice pivot: **consistency in *why*, flexibility in *how*.**  The *why* — absorbing context, synthesizing patterns, staying connected to what's actually happening — doesn't change.  The *how* evolves as the tools evolve.  AI doesn't replace the practice; it transforms the medium.  The Fast Takes bot work — built with Claude Code — is exactly this pivot in action: the same forcing function, reimagined with AI to process more information, surface different patterns, and reach people in new ways.
 
-What stays constant is the compounding effect.  Each week's context absorption builds on the last.  Six years of that isn't 300+ newsletters — it's a compounding understanding of the landscape that no single deep-dive can replicate.  That accumulated context is part of what fuels the [altitude switch](#the-altitude-switch) — you can zoom between vision and details because you've been actively processing the full picture every week for years.
+What stays constant is the compounding effect.  Each week's context absorption builds on the last.  Six years of that isn't 275+ newsletters — it's a compounding understanding of the landscape that no single deep-dive can replicate.  That accumulated context is part of what fuels the [altitude switch](#the-altitude-switch) — you can zoom between vision and details because you've been actively processing the full picture every week for years.
 
 ## PMF and the Honest Sequencing
 
