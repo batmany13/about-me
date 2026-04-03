@@ -8,43 +8,17 @@ This is a guide to my leadership philosophy and a little about me.  You can also
 
 ```
 about-me/
-├── README.md                          ← You are here — leadership philosophy, values, reading list
-├── roles.md                           ← My three roles: Netflix leader, seed investor, speaker
-│
-├── leadership/
-│   ├── managing.md                    ← People leadership guide: culture, hiring, growing talent
-│   ├── 1x1s.md                       ← 1x1 methodology with 5 types and sample agendas
-│   ├── thriving_team.md               ← Skills and characteristics of a thriving team
-│   ├── okrs.md                        ← OKRs framework overview
-│   └── feedback/
-│       ├── README.md                  ← 360 review themes by year (2021–2025)
-│       └── self_eval.md               ← Personal passions, strengths, and growth areas
-│
-├── netflix/
-│   ├── games_engineering.md           ← Netflix Games Platform Engineering org and team missions
-│   ├── interview.md                   ← Interview process documentation for API Systems
-│   ├── pursuit_of_impact/
-│   │   └── README.md                  ← Conference talk tips: team design, hiring, learning
-│   └── past/
-│       ├── ares.md                    ← WIP: API Reliability Engineering concept
-│       ├── pes.md                     ← Legacy: Product Edge Systems role
-│       └── csf.md                     ← Legacy: Consumer Server Foundations role
-│
-├── investing/
-│   ├── README.md                      ← Seed-stage AI investment thesis
-│   └── investments.md                 ← Public portfolio of AI Fund companies
-│
-├── speaking/
-│   ├── external_presence.md           ← Index of talks, blogs, podcasts, panels (2016–2026)
-│   └── events/
-│       └── vision_qa.md              ← Q&A from vision talk sessions
-│
-├── ideas/
-│   ├── four_laws.md                   ← Four Laws of Software Engineering
-│   └── thinking_with_claude.md        ← Leadership musings from AI-assisted reflection
-│
-└── rsrc/                              ← Images, PDFs, and presentation materials
+├── README.md          ← You are here — leadership philosophy, values, reading list
+├── roles.md           ← My three roles: Netflix leader, seed investor, speaker
+├── leadership/        ← People leadership: managing, 1x1s, team health, OKRs, 360 feedback
+├── netflix/           ← Netflix-specific: Games Engineering org, interviews, past roles
+├── investing/         ← Seed-stage AI investment thesis and portfolio
+├── speaking/          ← Talks, blogs, podcasts, panels (2016–2026)
+├── ideas/             ← Frameworks: Four Laws, Tech Debt as Innovation, leadership musings
+└── rsrc/              ← Images, PDFs, and presentation materials
 ```
+
+Each subdirectory has its own README with file listings and descriptions.
 
 ## Leadership Philosophy
 
