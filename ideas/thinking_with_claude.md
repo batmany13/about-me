@@ -85,7 +85,15 @@ So the gardener has to actively narrate that work: tell the story of infrastruct
 
 ## The Altitude Switch
 
-_TODO: Expand on the practice of zooming from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end._
+> *The leaders who can operate at both altitudes don't just tolerate the switch — they use each altitude to sharpen the other.*
+
+Most leaders gravitate to one altitude and stay there.  The visionary thinkers paint the ten-year picture but lose credibility when they can't engage on how the system actually works.  The detail-oriented operators know every edge case but struggle to articulate why any of it matters at the strategic level.  The rare skill is moving between the two fluidly — zooming from long-term direction to implementation specifics and back without losing coherence at either end.
+
+What makes this more than a nice-to-have is that the two altitudes actively reinforce each other.  Time in the weeds gives you pattern recognition that makes your vision more grounded — you're not hand-waving about "AI transformation" if you've spent hours in Claude Code understanding what the tooling can and can't actually do.  And time at altitude gives your detail work purpose — you're not just optimizing a system, you're shaping it toward a destination you can articulate.
+
+The reinforcement loop matters because it builds trust in both directions.  Engineers trust a leader who can engage on their technical problems without faking it.  Executives trust a leader who can zoom out and connect the work to business outcomes.  The altitude switch is what lets you be credible in both rooms — and translate between them when the two rooms aren't talking to each other.
+
+The trap is thinking you have to choose.  "I'm a strategic thinker" or "I'm a detail person" is a false binary.  The best engineering leaders refuse the choice and build the muscle for both.
 
 ## PMF and the Honest Sequencing
 
