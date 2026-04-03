@@ -37,7 +37,8 @@ about-me/
 │
 ├── ideas/
 │   ├── ares.md                        ← WIP: API Reliability Engineering concept
-│   └── four_laws.md                   ← WIP: Four Laws of Software Engineering
+│   ├── four_laws.md                   ← WIP: Four Laws of Software Engineering
+│   └── thinking_with_claude.md        ← Leadership musings from AI-assisted reflection
 │
 ├── past/
 │   ├── pes.md                         ← Legacy: Product Edge Systems role
@@ -115,6 +116,18 @@ Toolbelt: Read Simon Sinek's Infinite Game or Leaders Eat Last.  Create a succes
 You must deliver on immediate goals while planting seeds for the future.  Challenge yourself to think about how you can do both?  Can you hold your growth flat, yet still achieve your team's goals?  Can you remove that piece of debt and deliver new features?  Can you use the new major project to push your architecture forward instead of serially applying it?  How do you push changes quickly and provide safety to your systems?  Every decision is about the nuance of the balance, and many times we tend to default to the near term.
 
 Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David Cote for inspiration.  If a Fortune 100 CEO can turn around a company, while delivering on quarterly numbers AND investing in the future, you can do it too!
+
+## The Deeper Operating Philosophy
+
+The principles above are how I lead day-to-day.  But underneath them are a set of sharper convictions about how organizations actually work — things I've refined through experience and [thinking out loud](ideas/thinking_with_claude.md):
+
+- **Gardener over architect** — create the conditions, transfer ownership completely, measure yourself by what grows after you leave
+- **Selflessness as anti-politics infrastructure** — not just a value, a structural mechanism that keeps ego arbitrage out of the system
+- **Culture as pivot capacity** — culture isn't the foundation of success, it's the organizational capability that lets you capture lucky moments.  PMF creates the oxygen, culture determines how efficiently you convert it
+- **The altitude switch** — zoom from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **Vision propagates by letting go** — seed the right mental model, create space for genuine discovery, then let ownership transfer completely.  Most leaders can't do step three
+
+_For the full set of reflections, see [Thinking with Claude](ideas/thinking_with_claude.md)._
 
 ## About Me Personally
 
