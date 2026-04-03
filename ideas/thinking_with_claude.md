@@ -14,11 +14,19 @@ A rigid organization experiences a market shift as a threat because it can only 
 
 ## The Anti-Politics Stance
 
-Politics in organizations is almost always fundamentally **ego arbitrage** — people optimizing for personal credit, visibility, and positional security over collective outcomes. Every political behavior you see in dysfunctional organizations traces back to someone protecting or advancing their own narrative at the expense of the whole.
+Patrick Lencioni makes a deceptively simple argument in *The Advantage*: the single biggest source of dysfunction in organizations isn't a lack of intelligence or strategy — it's politics.  He defines organizational health as the absence of politics, confusion, and low morale, and argues that most leaders over-invest in being *smart* (strategy, technology, marketing) while under-investing in being *healthy* (clarity, alignment, low politics).  The smartest strategy in the world gets shredded when people are optimizing for their own narrative instead of the collective outcome.
+
+I reference *The Advantage*'s [six questions exercise](https://www.tablegroup.com/thoughts-from-the-field_-issue-10-capitalizing-on-clarity/) in my [core philosophy](../README.md) because clarity is the first anti-politics mechanism — when everyone knows *why we exist*, *what we do*, and *how we behave*, there's less ambiguity to exploit.  But clarity alone isn't enough.
+
+Politics in organizations is almost always fundamentally **ego arbitrage** — people optimizing for personal credit, visibility, and positional security over collective outcomes.  Every political behavior you see in dysfunctional organizations traces back to someone protecting or advancing their own narrative at the expense of the whole.  Information hoarding, credit-claiming, empire-building, passive sabotage of peers' initiatives — these aren't character flaws.  They're rational responses to incentive structures that reward individual positioning over team outcomes.
+
+That's why treating politics as a moral failing ("don't be political") never works.  You have to change the structure.  [Selfless leadership](#selfless-leadership--self-erasure) removes the top-down signal that credit-seeking is rewarded.  [Ego routing](#ego-routing--the-fourth-path) gives ambitious people a legitimate outlet so their drive doesn't leak into internal games.  And the Lencioni-style clarity work removes the ambiguity that political actors exploit.  Stack all three and you get what I call **anti-politics infrastructure** — not a culture deck aspiration, but an interlocking set of mechanisms that make political behavior structurally unrewarding.
 
 ## Ego Routing — The Fourth Path
 
-Most leadership advice treats ego as something to suppress. There's a smarter move — route it to a non-competing channel. The fund and speaking aren't ego elimination, they're ego arbitrage. You get the satisfaction of being recognized as exceptional in domains where it doesn't create political contamination at work.
+Most leadership advice treats ego as binary: either you have too much of it (arrogant, political) or you've tamed it (humble, selfless).  Collins, Lencioni, and most of the leadership canon land on the same prescription — suppress it.  But suppression has a cost.  Ambitious people *need* a competitive outlet.  Deny that and you either drain the fire out of them or push it underground where it becomes political behavior.
+
+The smarter move is **ego arbitrage** — a term that came out of this conversation and one I haven't encountered in any leadership framework.  The idea borrows from finance: arbitrage is exploiting a price difference across markets.  Ego arbitrage is the same thing applied to identity.  You take the competitive, recognition-seeking energy that would be toxic *inside* your organization and route it to a *parallel domain* where it's productive and creates no internal contamination.  The fund and speaking aren't ego elimination — they're ego deployed to a non-competing market.  You get the satisfaction of being recognized as exceptional in domains that don't interfere with the selfless, low-politics game you're playing at work.
 
 Most senior leaders either:
 
@@ -26,13 +34,19 @@ Most senior leaders either:
 2. **Let it run inside the org and become political** — loses the trust
 3. **Leave for a CEO role to feed it** — loses the accumulated institutional knowledge
 
-There's a fourth path — parallel identity construction that keeps the internal game clean. The fund Batman is competing. The Netflix Batman is gardening. They don't interfere with each other.
+There's a fourth path — parallel identity construction that keeps the internal game clean.  The fund Batman is competing.  The Netflix Batman is gardening.  They don't interfere with each other.
 
-That's actually deeply healthy and rare.
+That's actually deeply healthy and rare.  And it only works because the channels are genuinely separate — the external wins don't convert into internal leverage, and the internal selflessness doesn't require you to pretend you don't have ambition.
 
 ## Selfless Leadership ≠ Self-Erasure
 
-The hardest part of selfless leadership — and the thing Collins doesn't fully capture — is that selflessness doesn't mean self-erasure. The best selfless leaders still have fierce conviction, strong opinions, and clear points of view. They just don't need credit for those things.
+Jim Collins introduced the idea of **Level 5 Leadership** in *Good to Great* — the finding that the most transformative company leaders shared a paradoxical blend of personal humility and intense professional will.  They deflected credit to their teams, accepted blame personally, and were more concerned with the company's long-term success than their own legacy.  Collins contrasted them with the charismatic, celebrity-CEO model and argued that ego-driven leaders rarely produce durable greatness.
+
+It's a powerful framework, and it deeply influenced how I think about leadership.  But Collins paints humility mostly as a personality trait — something the leader *is* — without fully exploring the tension that comes with it in practice.
+
+The hardest part of selfless leadership is that **selflessness doesn't mean self-erasure**.  The best selfless leaders still have fierce conviction, strong opinions, and clear points of view.  They just don't need credit for those things.  Collins's Level 5 leaders can read as almost passive — quiet, behind-the-scenes, letting results speak.  In reality, the leaders I've seen do this well are anything but passive.  They argue hard in the room, make unpopular calls, and push teams past comfortable mediocrity.  What makes them selfless isn't the absence of ego — it's where they direct it.  The ego serves the mission, not the résumé.
+
+This is why [ego routing](#ego-routing--the-fourth-path) matters so much as a companion concept.  Collins tells you to be humble; the missing piece is *how* — a structural mechanism for channeling competitive drive so it doesn't poison the internal game.
 
 ## How Vision Actually Propagates
 
