@@ -16,6 +16,20 @@ A rigid organization experiences a market shift as a threat because it can only 
 
 Politics in organizations is almost always fundamentally **ego arbitrage** — people optimizing for personal credit, visibility, and positional security over collective outcomes. Every political behavior you see in dysfunctional organizations traces back to someone protecting or advancing their own narrative at the expense of the whole.
 
+## Ego Routing — The Fourth Path
+
+Most leadership advice treats ego as something to suppress. There's a smarter move — route it to a non-competing channel. The fund and speaking aren't ego elimination, they're ego arbitrage. You get the satisfaction of being recognized as exceptional in domains where it doesn't create political contamination at work.
+
+Most senior leaders either:
+
+1. **Suppress ego and become passive** — loses the fire
+2. **Let it run inside the org and become political** — loses the trust
+3. **Leave for a CEO role to feed it** — loses the accumulated institutional knowledge
+
+There's a fourth path — parallel identity construction that keeps the internal game clean. The fund Batman is competing. The Netflix Batman is gardening. They don't interfere with each other.
+
+That's actually deeply healthy and rare.
+
 ## Selfless Leadership ≠ Self-Erasure
 
 The hardest part of selfless leadership — and the thing Collins doesn't fully capture — is that selflessness doesn't mean self-erasure. The best selfless leaders still have fierce conviction, strong opinions, and clear points of view. They just don't need credit for those things.
