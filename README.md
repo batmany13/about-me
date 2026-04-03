@@ -2,49 +2,23 @@
 
 My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](netflix/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
 
-This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
+This is a guide to my leadership philosophy and a little about me.  Some of these ideas were sharpened through [conversations with AI](ideas/thinking_with_claude.md).  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
 
 ## What's in this repo
 
 ```
 about-me/
-├── README.md                          ← You are here — leadership philosophy, values, reading list
-├── roles.md                           ← My three roles: Netflix leader, seed investor, speaker
-│
-├── leadership/
-│   ├── managing.md                    ← People leadership guide: culture, hiring, growing talent
-│   ├── 1x1s.md                       ← 1x1 methodology with 5 types and sample agendas
-│   ├── thriving_team.md               ← Skills and characteristics of a thriving team
-│   ├── okrs.md                        ← OKRs framework overview
-│   └── feedback/
-│       ├── README.md                  ← 360 review themes by year (2021–2025)
-│       └── self_eval.md               ← Personal passions, strengths, and growth areas
-│
-├── netflix/
-│   ├── games_engineering.md           ← Netflix Games Platform Engineering org and team missions
-│   ├── interview.md                   ← Interview process documentation for API Systems
-│   └── pursuit_of_impact/
-│       └── README.md                  ← Conference talk tips: team design, hiring, learning
-│
-├── investing/
-│   ├── README.md                      ← Seed-stage AI investment thesis
-│   └── investments.md                 ← Public portfolio of AI Fund companies
-│
-├── speaking/
-│   ├── external_presence.md           ← Index of talks, blogs, podcasts, panels (2016–2026)
-│   └── events/
-│       └── vision_qa.md              ← Q&A from vision talk sessions
-│
-├── ideas/
-│   ├── ares.md                        ← WIP: API Reliability Engineering concept
-│   └── four_laws.md                   ← WIP: Four Laws of Software Engineering
-│
-├── past/
-│   ├── pes.md                         ← Legacy: Product Edge Systems role
-│   └── csf.md                         ← Legacy: Consumer Server Foundations role
-│
-└── rsrc/                              ← Images, PDFs, and presentation materials
+├── README.md          ← You are here — leadership philosophy, values, reading list
+├── roles.md           ← My three roles: Netflix leader, seed investor, speaker
+├── leadership/        ← People leadership: managing, 1x1s, team health, OKRs, 360 feedback
+├── netflix/           ← Netflix-specific: Games Engineering org, interviews, past roles
+├── investing/         ← Seed-stage AI investment thesis and portfolio
+├── speaking/          ← Talks, blogs, podcasts, panels (2016–2026)
+├── ideas/             ← Frameworks: Four Laws, Tech Debt as Innovation, leadership musings
+└── rsrc/              ← Images, PDFs, and presentation materials
 ```
+
+Each subdirectory has its own README with file listings and descriptions.
 
 ## Leadership Philosophy
 
@@ -116,6 +90,18 @@ You must deliver on immediate goals while planting seeds for the future.  Challe
 
 Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-Now-Later-Companies-Investing/dp/1599510219) by David Cote for inspiration.  If a Fortune 100 CEO can turn around a company, while delivering on quarterly numbers AND investing in the future, you can do it too!
 
+## The Deeper Operating Philosophy
+
+The principles above are how I lead day-to-day.  But underneath them are a set of sharper convictions about how organizations actually work — things I've refined through experience and [thinking out loud](ideas/thinking_with_claude.md):
+
+- **Gardener over architect** — create the conditions, transfer ownership completely, measure yourself by what grows after you leave
+- **Selflessness as anti-politics infrastructure** — not just a value, a structural mechanism that keeps ego arbitrage out of the system
+- **Culture as pivot capacity** — culture isn't the foundation of success, it's the organizational capability that lets you capture lucky moments.  PMF creates the oxygen, culture determines how efficiently you convert it
+- **The altitude switch** — zoom from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **Vision propagates by letting go** — seed the right mental model, create space for genuine discovery, then let ownership transfer completely.  Most leaders can't do step three
+
+_For the full set of reflections, see [Thinking with Claude](ideas/thinking_with_claude.md)._
+
 ## About Me Personally
 
 <img src=rsrc/garden.jpg width=35% height=35%>
@@ -165,6 +151,8 @@ I'm not just talking about AI — I'm using it daily across every part of my pro
 **Building Tools**: I vibe-coded a Slack-to-Claude bot so I can track and summarize context more easily across Slack conversations — a practical example of scratching my own itch with AI.
 
 **This Repo**: Even this about-me repo has a [CLAUDE.md](CLAUDE.md) that instructs AI assistants on how to navigate, update, and improve the content here.
+
+**Thinking Out Loud**: Some of my sharpest leadership frameworks emerged from conversations with AI — not because it generated the ideas, but because articulating them out loud forced clarity that thinking alone doesn't require.  The [Deeper Operating Philosophy](#the-deeper-operating-philosophy) section above and the [ideas/](ideas/) folder are products of that process.
 
 I approach AI the same way I approach everything else — try it, learn from it, iterate, and share what I find.  If you want to chat about any of this, reach out.
 
