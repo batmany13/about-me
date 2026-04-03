@@ -14,7 +14,7 @@ Tech debt is not a bug to fix, it's a force to manage.  Every system accrues it,
 
 ## People & Culture Matter
 
-No technical strategy survives a dysfunctional culture.  Psychological safety, selfless leadership, and low ego arbitrage are what allow teams to take risks, share information openly, and hold each other accountable.  Culture isn't a nice-to-have layered on top of execution — it's the organizational infrastructure that makes sustained execution possible.
+No technical strategy survives a dysfunctional culture.  Psychological safety, [selfless leadership](thinking_with_claude.md#selfless-leadership--self-erasure) (what Jim Collins calls Level 5 Leadership in *Good to Great* — humility paired with fierce professional will), and low ego arbitrage are what allow teams to take risks, share information openly, and hold each other accountable.  Culture isn't a nice-to-have layered on top of execution — it's the organizational infrastructure that makes sustained execution possible.
 
 ## Product Success Cures many ills
 

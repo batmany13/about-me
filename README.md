@@ -94,11 +94,13 @@ Toolbelt: Reading [Winning now, Winning later](https://www.amazon.com/Winning-No
 
 The principles above are how I lead day-to-day.  But underneath them are a set of sharper convictions about how organizations actually work — things I've refined through experience and [thinking out loud](ideas/thinking_with_claude.md):
 
-- **Gardener over architect** — create the conditions, transfer ownership completely, measure yourself by what grows after you leave
-- **Selflessness as anti-politics infrastructure** — not just a value, a structural mechanism that keeps ego arbitrage out of the system
-- **Culture as pivot capacity** — culture isn't the foundation of success, it's the organizational capability that lets you capture lucky moments.  PMF creates the oxygen, culture determines how efficiently you convert it
-- **The altitude switch** — zoom from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end
-- **Vision propagates by letting go** — seed the right mental model, create space for genuine discovery, then let ownership transfer completely.  Most leaders can't do step three
+- **Selflessness as anti-politics infrastructure** — not a value statement, a structural mechanism that keeps ego arbitrage out of the system
+- **Ego routing** — channel competitive energy to non-competing domains, keep the internal game clean
+- **Culture as pivot capacity** — not the cause of success but the organizational capability that captures lucky moments
+- **Gardener over architect** — create conditions, transfer ownership completely, measure yourself by what grows after you leave
+- **The altitude switch** — zoom from five-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **The practice pivot** — consistency in *why*, flexibility in *how* — the habit that compounds context over years
+- **PMF and the honest sequencing** — get the product right first, then let culture multiply the gains — most culture-first narratives get this backwards
 
 _For the full set of reflections, see [Thinking with Claude](ideas/thinking_with_claude.md)._
 
