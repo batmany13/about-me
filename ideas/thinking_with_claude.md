@@ -19,7 +19,7 @@ If I had to distill the through-lines from how I think about leadership:
 - **[The practice pivot](#the-practice-pivot)** — consistency in *why*, flexibility in *how* — the habit that compounds context over years
   - *"The habit isn't 'write a newsletter' — it's 'force yourself to process information actively.'  The medium is just the current vehicle."*
 - **[PMF and the honest sequencing](#pmf-and-the-honest-sequencing)** — PMF creates the oxygen, culture multiplies the gains — and that pivot capacity is how the prepared get lucky
-  - *"Culture is a multiplier, not a foundation."*
+  - *"A sound business is the foundation.  Culture is the multiplier."*
 
 ---
 
@@ -121,9 +121,9 @@ What stays constant is the compounding effect.  Each week's context absorption b
 
 ## PMF and the Honest Sequencing
 
-> *Culture is a multiplier, not a foundation.*
+> *A sound business is the foundation.  Culture is the multiplier.*
 
-Culture is a multiplier, not a foundation.  The companies and leaders that get this wrong fall into one of three traps:
+A sound business is the foundation.  Culture is the multiplier.  The companies and leaders that get this wrong fall into one of three traps:
 
 - **Great culture, no PMF** — beloved internally, dies anyway.  Quibi raised $2B, had an A-list team and strong internal conviction, but built a product nobody needed — mobile-only short-form video at a premium price.  Dead in six months.
 - **Great PMF, no culture** — scales chaotically, burns out, eventually loses to someone who figures out both.  Early Uber is the textbook case: undeniable product-market fit that reshaped transportation, but a culture so toxic (sexual harassment ignored by HR, Greyball to evade regulators, IP theft allegations) that it cost them their CEO, billions in valuation, and years of recovery.  WeWork is the same pattern — real demand for flexible workspaces, but a culture of unchecked ego at the top that vaporized $40B in valuation in a month.
