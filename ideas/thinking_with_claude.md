@@ -46,6 +46,20 @@ Most leaders can't do step three. They over-specify because they're attached to 
 
 That's not a management technique. That's a theory of organizational propagation.
 
+## Make the Invisible Visible
+
+Tech debt as innovation.  API systems as connective tissue.  The humble gardener's work is never glamorous — it's the infrastructure that makes everyone else faster.  The leaders who do this work are rare because the reward signal is delayed and diffuse.  You don't get a launch blog post for retiring a migration or making an internal platform 40% more reliable.  You get credit in the accumulated trust of ICs who know why their lives are better.
+
+## PMF and the Honest Sequencing
+
+Culture is a multiplier, not a foundation.  The companies and leaders that get this wrong fall into one of three traps:
+
+- **Great culture, no PMF** — beloved internally, dies anyway
+- **Great PMF, no culture** — scales chaotically, burns out, eventually loses to someone who figures out both
+- **Both, but wrong sequencing** — start optimizing culture before PMF is real, which is a distraction that kills startups
+
+Culture kept Netflix relevant through pivots — DVD to streaming, licensing to originals, US to global.  Each required cannibalizing something currently working.  Most companies structurally cannot do this, not because their leaders aren't smart enough to see it coming, but because the organizational immune system kills the pivot before it becomes action.  Culture — specifically the low politics, high trust architecture — removes enough friction that leadership can actually execute the pivot when they call it.
+
 ## The Operating Philosophy — Through-Lines
 
 If I had to distill the through-lines from how I think about leadership:

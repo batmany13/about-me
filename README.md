@@ -40,7 +40,7 @@ about-me/
 │       └── vision_qa.md              ← Q&A from vision talk sessions
 │
 ├── ideas/
-│   ├── four_laws.md                   ← WIP: Four Laws of Software Engineering
+│   ├── four_laws.md                   ← Four Laws of Software Engineering
 │   └── thinking_with_claude.md        ← Leadership musings from AI-assisted reflection
 │
 └── rsrc/                              ← Images, PDFs, and presentation materials

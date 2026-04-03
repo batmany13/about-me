@@ -2,6 +2,12 @@
 
 _Based on talks at [LeadDev London 2024](https://leaddev.com/technical-direction/tech-debt-as-innovation-reframing-this-forever-problem-as-an-opportunity) and various Enrich/Plato sessions._
 
+## The Origin Story
+
+"Tech Debt as Innovation" started as a marketing campaign.  After talking to several very senior engineers at Netflix, a pattern emerged: nobody cared about tech debt.  It was invisible, thankless work.  But in reality, it was critically important — and it was exactly the kind of work that got these engineers promoted.  The disconnect was in the framing, not the substance.
+
+Rebranding debt work as innovation work changed how executives budgeted for it and how engineers felt about doing it.  Same work, different narrative — and the narrative made all the difference.
+
 ## The Core Idea
 
 Tech debt and innovation aren't opposites — they're two sides of the same coin.  The areas of your codebase with the most debt are often the ripest for innovation, and the act of innovating is one of the most effective ways to retire debt.

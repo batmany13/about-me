@@ -1,4 +1,4 @@
-# (WIP) Four Laws of Software Engineering
+# Four Laws of Software Engineering
 
 These are patterns I've seen hold true across every engineering organization I've worked in — from startups to Netflix.  They're not rules to follow, but forces to respect.
 
