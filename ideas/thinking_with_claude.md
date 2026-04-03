@@ -125,8 +125,8 @@ What stays constant is the compounding effect.  Each week's context absorption b
 
 Culture is a multiplier, not a foundation.  The companies and leaders that get this wrong fall into one of three traps:
 
-- **Great culture, no PMF** — beloved internally, dies anyway
-- **Great PMF, no culture** — scales chaotically, burns out, eventually loses to someone who figures out both
-- **Both, but wrong sequencing** — start optimizing culture before PMF is real, which is a distraction that kills startups
+- **Great culture, no PMF** — beloved internally, dies anyway.  Quibi raised $2B, had an A-list team and strong internal conviction, but built a product nobody needed — mobile-only short-form video at a premium price.  Dead in six months.
+- **Great PMF, no culture** — scales chaotically, burns out, eventually loses to someone who figures out both.  Early Uber is the textbook case: undeniable product-market fit that reshaped transportation, but a culture so toxic (sexual harassment ignored by HR, Greyball to evade regulators, IP theft allegations) that it cost them their CEO, billions in valuation, and years of recovery.  WeWork is the same pattern — real demand for flexible workspaces, but a culture of unchecked ego at the top that vaporized $40B in valuation in a month.
+- **Both, but wrong sequencing** — start optimizing culture before PMF is real, which is a distraction that kills startups.  This is the subtlest trap and the most common in early-stage companies.  Founders invest in values workshops, elaborate hiring processes, and team offsites while the product is still searching for a market.  The culture work feels productive but it's premature optimization — you're polishing the organization before you know if the thing you're building matters.
 
 Culture kept Netflix relevant through pivots — DVD to streaming, licensing to originals, US to global.  Each required cannibalizing something currently working.  Most companies structurally cannot do this, not because their leaders aren't smart enough to see it coming, but because the organizational immune system kills the pivot before it becomes action.  Culture — specifically the low politics, high trust architecture — removes enough friction that leadership can actually execute the pivot when they call it.
