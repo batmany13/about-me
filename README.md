@@ -2,7 +2,7 @@
 
 My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](netflix/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
 
-This is a guide to my leadership philosophy and a little about me.  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
+This is a guide to my leadership philosophy and a little about me.  Some of these ideas were sharpened through [conversations with AI](ideas/thinking_with_claude.md).  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
 
 ## What's in this repo
 
