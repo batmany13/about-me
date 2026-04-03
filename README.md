@@ -97,7 +97,7 @@ The principles above are how I lead day-to-day.  But underneath them are a set o
 - **Gardener over architect** — create the conditions, transfer ownership completely, measure yourself by what grows after you leave
 - **Selflessness as anti-politics infrastructure** — not just a value, a structural mechanism that keeps ego arbitrage out of the system
 - **Culture as pivot capacity** — culture isn't the foundation of success, it's the organizational capability that lets you capture lucky moments.  PMF creates the oxygen, culture determines how efficiently you convert it
-- **The altitude switch** — zoom from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **The altitude switch** — zoom from five-year vision to Jira ticket and back, fluidly, without losing coherence at either end
 - **Vision propagates by letting go** — seed the right mental model, create space for genuine discovery, then let ownership transfer completely.  Most leaders can't do step three
 
 _For the full set of reflections, see [Thinking with Claude](ideas/thinking_with_claude.md)._

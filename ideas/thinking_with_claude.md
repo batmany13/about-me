@@ -10,7 +10,7 @@ If I had to distill the through-lines from how I think about leadership:
 - **[Ego routing](#ego-routing--the-fourth-path)** — channel competitive energy to non-competing domains, keep the internal game clean
 - **[Culture as pivot capacity](#culture-as-pivot-capacity)** — not the cause of success but the organizational capability that captures lucky moments
 - **[Gardener over architect](#gardener-over-architect)** — create conditions, transfer ownership completely, measure yourself by what grows after you leave
-- **[The altitude switch](#the-altitude-switch)** — zoom from ten-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+- **[The altitude switch](#the-altitude-switch)** — zoom from five-year vision to Jira ticket and back, fluidly, without losing coherence at either end
 - **[PMF first, culture as multiplier](#pmf-and-the-honest-sequencing)** — the honest sequencing that most culture-first narratives get backwards
 
 ---
@@ -87,7 +87,7 @@ So the gardener has to actively narrate that work: tell the story of infrastruct
 
 > *The leaders who can operate at both altitudes don't just tolerate the switch — they use each altitude to sharpen the other.*
 
-Most leaders gravitate to one altitude and stay there.  The visionary thinkers paint the ten-year picture but lose credibility when they can't engage on how the system actually works.  The detail-oriented operators know every edge case but struggle to articulate why any of it matters at the strategic level.  The rare skill is moving between the two fluidly — zooming from long-term direction to implementation specifics and back without losing coherence at either end.
+Most leaders gravitate to one altitude and stay there.  The visionary thinkers paint the five-year picture but lose credibility when they can't engage on how the system actually works.  The detail-oriented operators know every edge case but struggle to articulate why any of it matters at the strategic level.  The rare skill is moving between the two fluidly — zooming from long-term direction to implementation specifics and back without losing coherence at either end.
 
 What makes this more than a nice-to-have is that the two altitudes actively reinforce each other.  Time in the weeds gives you pattern recognition that makes your vision more grounded — you're not hand-waving about "AI transformation" if you've spent hours in Claude Code understanding what the tooling can and can't actually do.  And time at altitude gives your detail work purpose — you're not just optimizing a system, you're shaping it toward a destination you can articulate.
 
