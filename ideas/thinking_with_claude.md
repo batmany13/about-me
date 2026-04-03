@@ -18,7 +18,7 @@ If I had to distill the through-lines from how I think about leadership:
   - *"The leaders who can operate at both altitudes don't just tolerate the switch — they use each altitude to sharpen the other."*
 - **[The practice pivot](#the-practice-pivot)** — consistency in *why*, flexibility in *how* — the habit that compounds context over years
   - *"The habit isn't 'write a newsletter' — it's 'force yourself to process information actively.'  The medium is just the current vehicle."*
-- **[PMF first, culture as multiplier](#pmf-and-the-honest-sequencing)** — PMF creates the oxygen, culture multiplies the gains — and that pivot capacity is how the prepared get lucky
+- **[PMF and the honest sequencing](#pmf-and-the-honest-sequencing)** — PMF creates the oxygen, culture multiplies the gains — and that pivot capacity is how the prepared get lucky
   - *"Culture is a multiplier, not a foundation."*
 
 ---
