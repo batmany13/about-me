@@ -26,6 +26,7 @@ about-me/
 │   ├── pursuit_of_impact/
 │   │   └── README.md                  ← Conference talk tips: team design, hiring, learning
 │   └── past/
+│       ├── ares.md                    ← WIP: API Reliability Engineering concept
 │       ├── pes.md                     ← Legacy: Product Edge Systems role
 │       └── csf.md                     ← Legacy: Consumer Server Foundations role
 │
@@ -39,7 +40,6 @@ about-me/
 │       └── vision_qa.md              ← Q&A from vision talk sessions
 │
 ├── ideas/
-│   ├── ares.md                        ← WIP: API Reliability Engineering concept
 │   ├── four_laws.md                   ← WIP: Four Laws of Software Engineering
 │   └── thinking_with_claude.md        ← Leadership musings from AI-assisted reflection
 │
