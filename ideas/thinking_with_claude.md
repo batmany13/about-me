@@ -7,12 +7,19 @@ _Reflections from a conversation with Claude that sharpened how I think about le
 If I had to distill the through-lines from how I think about leadership:
 
 - **[Selflessness as anti-politics infrastructure](#selflessness-as-anti-politics-infrastructure)** — not a value statement, a structural mechanism
+  - *"Politics in organizations is almost always fundamentally ego arbitrage — people optimizing for personal credit, visibility, and positional security over collective outcomes."*
 - **[Ego routing](#ego-routing--the-fourth-path)** — channel competitive energy to non-competing domains, keep the internal game clean
+  - *"Ego routing: deploy competitive energy to a non-competing market so it doesn't poison the internal game."*
 - **[Culture as pivot capacity](#culture-as-pivot-capacity)** — not the cause of success but the organizational capability that captures lucky moments
+  - *"A high optionality organization experiences the same shift as opportunity because it has more response modes available."*
 - **[Gardener over architect](#gardener-over-architect)** — create conditions, transfer ownership completely, measure yourself by what grows after you leave
+  - *"You don't get a launch blog post for retiring a migration.  You get credit in the accumulated trust of ICs who know why their lives are better."*
 - **[The altitude switch](#the-altitude-switch)** — zoom from five-year vision to Jira ticket and back, fluidly, without losing coherence at either end
+  - *"The leaders who can operate at both altitudes don't just tolerate the switch — they use each altitude to sharpen the other."*
 - **[The practice pivot](#the-practice-pivot)** — consistency in *why*, flexibility in *how* — the habit that compounds context over years
+  - *"The habit isn't 'write a newsletter' — it's 'force yourself to process information actively.'  The medium is just the current vehicle."*
 - **[PMF first, culture as multiplier](#pmf-and-the-honest-sequencing)** — the honest sequencing that most culture-first narratives get backwards
+  - *"Culture is a multiplier, not a foundation."*
 
 ---
 
