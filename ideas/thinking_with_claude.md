@@ -14,7 +14,7 @@ A rigid organization experiences a market shift as a threat because it can only 
 
 **Culture isn't the foundation — it's pivot capacity.** PMF creates the oxygen, culture determines how efficiently you convert it.
 
-## The Anti-Politics Stance
+## Ego Arbitrage
 
 > *Politics in organizations is almost always fundamentally ego arbitrage — people optimizing for personal credit, visibility, and positional security over collective outcomes.*
 
@@ -28,11 +28,11 @@ That's why treating politics as a moral failing ("don't be political") never wor
 
 ## Ego Routing — The Fourth Path
 
-> *Ego arbitrage: deploy competitive energy to a non-competing market so it doesn't poison the internal game.*
+> *Ego routing: deploy competitive energy to a non-competing market so it doesn't poison the internal game.*
 
-Most leadership advice treats ego as binary: either you have too much of it (arrogant, political) or you've tamed it (humble, selfless).  Collins, Lencioni, and most of the leadership canon land on the same prescription — suppress it.  But suppression has a cost.  Ambitious people *need* a competitive outlet.  Deny that and you either drain the fire out of them or push it underground where it becomes political behavior.
+Most leadership advice treats ego as binary: either you have too much of it (arrogant, political) or you've tamed it (humble, selfless).  Collins, Lencioni, and most of the leadership canon land on the same prescription — suppress it.  But suppression has a cost.  Ambitious people *need* a competitive outlet.  Deny that and you either drain the fire out of them or push it underground where it becomes [ego arbitrage](#ego-arbitrage) — political behavior.
 
-The smarter move is **ego arbitrage** — a term that came out of this conversation and one I haven't encountered in any leadership framework.  The idea borrows from finance: arbitrage is exploiting a price difference across markets.  Ego arbitrage is the same thing applied to identity.  You take the competitive, recognition-seeking energy that would be toxic *inside* your organization and route it to a *parallel domain* where it's productive and creates no internal contamination.  The fund and speaking aren't ego elimination — they're ego deployed to a non-competing market.  You get the satisfaction of being recognized as exceptional in domains that don't interfere with the selfless, low-politics game you're playing at work.
+The smarter move is **ego routing** — a term that came out of this conversation and one I haven't encountered in any leadership framework.  If ego arbitrage is the problem (people exploiting positional credit inside the org), ego routing is the solution: take the competitive, recognition-seeking energy that would be toxic *inside* your organization and route it to a *parallel domain* where it's productive and creates no internal contamination.  The fund and speaking aren't ego elimination — they're ego deployed to a non-competing market.  You get the satisfaction of being recognized as exceptional in domains that don't interfere with the selfless, low-politics game you're playing at work.
 
 Most senior leaders either:
 
