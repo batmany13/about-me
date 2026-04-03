@@ -23,8 +23,11 @@ about-me/
 ├── netflix/
 │   ├── games_engineering.md           ← Netflix Games Platform Engineering org and team missions
 │   ├── interview.md                   ← Interview process documentation for API Systems
-│   └── pursuit_of_impact/
-│       └── README.md                  ← Conference talk tips: team design, hiring, learning
+│   ├── pursuit_of_impact/
+│   │   └── README.md                  ← Conference talk tips: team design, hiring, learning
+│   └── past/
+│       ├── pes.md                     ← Legacy: Product Edge Systems role
+│       └── csf.md                     ← Legacy: Consumer Server Foundations role
 │
 ├── investing/
 │   ├── README.md                      ← Seed-stage AI investment thesis
@@ -39,10 +42,6 @@ about-me/
 │   ├── ares.md                        ← WIP: API Reliability Engineering concept
 │   ├── four_laws.md                   ← WIP: Four Laws of Software Engineering
 │   └── thinking_with_claude.md        ← Leadership musings from AI-assisted reflection
-│
-├── past/
-│   ├── pes.md                         ← Legacy: Product Edge Systems role
-│   └── csf.md                         ← Legacy: Consumer Server Foundations role
 │
 └── rsrc/                              ← Images, PDFs, and presentation materials
 ```

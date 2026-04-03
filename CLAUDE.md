@@ -33,7 +33,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | `speaking/events/` | Q&A from talks and sessions |
 | **other/** | |
 | `ideas/` | Work-in-progress concepts (API Reliability Engineering, Four Laws of Software Engineering, AI-assisted leadership reflections) |
-| `past/` | Legacy role descriptions (Product Edge Systems, Consumer Server Foundations) |
+| `netflix/past/` | Legacy role descriptions (Product Edge Systems, Consumer Server Foundations) |
 | `rsrc/` | Images, PDFs, and presentation materials |
 
 ## Conventions
