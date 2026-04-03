@@ -152,6 +152,8 @@ I'm not just talking about AI — I'm using it daily across every part of my pro
 
 **This Repo**: Even this about-me repo has a [CLAUDE.md](CLAUDE.md) that instructs AI assistants on how to navigate, update, and improve the content here.
 
+**Thinking Out Loud**: Some of my sharpest leadership frameworks emerged from conversations with AI — not because it generated the ideas, but because articulating them out loud forced clarity that thinking alone doesn't require.  The [Deeper Operating Philosophy](#the-deeper-operating-philosophy) section above and the [ideas/](ideas/) folder are products of that process.
+
 I approach AI the same way I approach everything else — try it, learn from it, iterate, and share what I find.  If you want to chat about any of this, reach out.
 
 ## Books, Articles, Podcasts that's shaped me
