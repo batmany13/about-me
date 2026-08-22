@@ -137,30 +137,17 @@ Emits per-repo commits (author-filtered), PR numbers, the directories that moved
 
 ---
 
-## Step 3 — Write the detailed catchup into each source repo
+## Step 3 — Run each repo's own catchup
 
-For every repo with commits that week, write `<repo>/.claude/catchups/<YYYY-WNN>.md`.  **Unscrubbed** — this is Bruce's own record on his own machine.
+**Don't write these from scratch.  Each source repo has its own `catchup` skill — run that.**
 
-```markdown
-# <YYYY-WNN> — <Mon D–D, YYYY> (<N> commits, <N> PRs)
+For every repo with commits that week, invoke its `.claude/skills/catchup/SKILL.md` (or `/catchup`) with the week.  Each one knows its own conventions, and they differ in ways that matter: aifund splits highlights by author (Bruce / Gandhi) and renders both headers even when one has zero commits; the single-author repos have no split section at all.  Reimplementing the format here produces a file that looks right and violates the repo's own convention.
 
-**<One-line theme for this repo's week.>**
+The result lands at `<repo>/.claude/catchups/<YYYY-WNN>.md`, **unscrubbed** — Bruce's own record, in his own private repo.  That skill also commits it and opens a PR on that repo (its final step); let it.
 
-### <Area — 3–6 words>
-- <what shipped, what it replaced, what it enables>
-- <PR numbers as `(#NN)`; paths as relative paths; name everything>
+**If a repo has no `catchup` skill, port one** rather than hand-writing the file.  Copy the structure from `aifund/.claude/skills/catchup/SKILL.md` and adapt two things: the highlight categories in Step 3, and whether an author split applies.  `findingalphas` and `family` were ported this way on 2026-08-22.
 
-### Corrections
-- <what got refuted, reverted, or found wrong — track these, they're the best signal>
-
-Open threads: <what's mid-flight going into next week>
-```
-
-6–12 bullets, ~150–250 words.  Group aggressively on a 300-commit week; signal, not completeness.  Skip typo fixes and intra-feature steps.
-
-If a repo already has a catchup for that week, update it rather than duplicating.
-
-These repos are private, and aifund already commits its catchups — so committing is fine and often right.  Just don't do it unattended: write the file, tell Bruce, let him decide.
+Read the resulting catchups before moving on — Step 4 derives from them, never from the raw pull.
 
 ---
 
