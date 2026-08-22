@@ -14,19 +14,25 @@ I ran a weekly internal newsletter at Netflix called Fast Takes for years.  I'm 
 
 Every week gets five sections:
 
-- **Building** — what I made, and what I got wrong making it
-- **Fund & Advisory** — the investing and founder work, in shape rather than in names
+- **Building** — what I made and what I got wrong making it, then the week's learning
+- **Fund & Advisory** — the investing and founder work, in shape rather than in names, then its learning
 - **Rooms I Was In** — events I attended and the one interesting thing from each
 - **Top of Mind for Founders** — leadership lessons surfacing from advisory conversations, anonymized to the pattern.  The section that ages best
 - **Next** — what's queued, honestly
 
-Plus a stats line: commits, repos, PRs, events, and roughly how the week split between building and fund work.
+Plus a stats line — commits, PRs, repo count, and roughly how the week split between building and fund work.  Counts, not names.
+
+The updates are deliberately short.  The one or two sentences of learning at the end of each are the part I actually write these for.
 
 ## How these are made
 
-Mostly automatically, and that's part of what I'm testing.
+Half automatically, in two passes, and the split between them is the part I find interesting.
 
-A [skill](../.claude/skills/fnr/SKILL.md) reads the week's actual commits across several repos — most of them private — along with the calendar events I attended.  It writes a full, unscrubbed catchup into each source repo, where the real record lives.  Then it derives this public file from those, running every line through a scrub policy.
+A [skill](../.claude/skills/fnr/SKILL.md) reads the week's actual commits across several repos — most of them private — along with the calendar events I attended, and writes a full unscrubbed catchup into each source repo where the real record lives.  From those it drafts this file.
+
+**That first draft exists to remind me what I did.**  After a week heads-down across several repos I genuinely don't remember the shape of it, and reading it back is what produces the reaction.  Then I correct it — the facts are usually wrong in small ways the commits can't show — and write the learnings myself.  The second pass folds my words in and rewrites the summary around them.
+
+So: the machine reconstructs, I reflect, the machine revises.  The facts come from the data; the meaning doesn't.  A draft that invented the learnings for me would read fine and be worthless, which is a decent description of the whole risk with this technology.
 
 **Two layers, on purpose:**
 
@@ -35,7 +41,7 @@ A [skill](../.claude/skills/fnr/SKILL.md) reads the week's actual commits across
 | Ground truth | inside each source repo, gitignored | me | everything |
 | This | `fnr/`, committed | you | what survives the scrub |
 
-The scrub policy is itself private, which I recognize is a slightly funny thing to say in public.  The short version: research subjects that are already public get named, problem classes and techniques get described, my own mistakes get published generously, and anything that belongs to a founder, a portfolio company, a person who was in a room with me, or my family does not appear here at all.
+The scrub policy is itself private, which I recognize is a slightly funny thing to say in public.  The short version: problem classes and techniques get described, my own mistakes get published generously, and none of it names the thing I'm building.  Anything belonging to a founder, a portfolio company, a person who was in a room with me, or my family doesn't appear here at all.
 
 What you're getting is real but partial.  You should be able to tell from a year of these whether I'm someone you want to work with.  You should not be able to reconstruct what I'm building.
 
