@@ -1,5 +1,7 @@
 ## Interview Process
 
+_Historical record — the interview loop I ran in Netflix API Systems (2020–2023).  The structure is the transferable part; the specific stages were Netflix's.  See [past/netflix/](README.md) for context._
+
 It is important to have a process, that is uniform and allow different interviewers to evaluate disparate candidates appropriately.  It is important to think of interviews as pieces filling a jigsaw puzzle.  Each interview should further clarify the view of a candidate.  As a candidate advances in the interview, no one single interview may sink the candidancy and it only provides more information.  Utimately, the decision will be on the hiring manager (hence the offer decision) to decide if the candidate would fit given all the things you know about them.
 
 ### Netflix API Systems
