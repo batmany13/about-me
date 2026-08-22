@@ -4,7 +4,7 @@ I've always been drawn to the intersection of building things, growing people, a
 
 ## The No-Break Career Break
 
-I left Netflix in August 2026 after six years, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md).  What I'm doing now is a career break in the sense that I don't have an employer, and in no other sense at all.
+I left Netflix in August 2026 after nearly seven years, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md).  What I'm doing now is a career break in the sense that I don't have an employer, and in no other sense at all.
 
 The name is a joke I'm only half making.  I'm not decompressing on a beach — I'm working harder than I have in years, just on my own terms and my own problems.  Four things have my attention:
 
@@ -27,7 +27,7 @@ Advising founders is the part of my old life that I most wanted to bring more of
 
 What I bring:
 
-- **Pattern recognition** from 26+ years in tech, including six years operating inside Netflix's high-performance culture and building startups from scratch
+- **Pattern recognition** from 26+ years in tech, including nearly seven years operating inside Netflix's high-performance culture and building startups from scratch
 - **Technical depth** — I can get into the code and architecture, not just the pitch deck.  More true now than it's been in a decade
 - **People and culture lens** — founding teams, early hiring, and the culture decisions that are cheap now and expensive later
 - **Founder empathy** — I've lived the journey, including the failure.  I know what it feels like

@@ -2,7 +2,7 @@
 
 ## What is this repo?
 
-This is Bruce Wang's personal leadership knowledge base. Bruce spent 2020–2026 at Netflix, most recently as an Engineering Director in Games Engineering leading Games Platform Engineering. **He left in August 2026** and is now on what he calls a "no-break career break": building, advising founders, seed investing, and learning. The repo documents his leadership philosophy, frameworks, 360 feedback history, speaking engagements, reflections on growth, and — since W34 2026 — a weekly published reflection in `fnr/`.
+This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seven years at Netflix (2020–2026, 6 years 8 months), most recently as an Engineering Director in Games Engineering leading Games Platform Engineering. **He left in August 2026** and is now on what he calls a "no-break career break": building, advising founders, seed investing, and learning. The repo documents his leadership philosophy, frameworks, 360 feedback history, speaking engagements, reflections on growth, and — since W34 2026 — a weekly published reflection in `fnr/`.
 
 **Netflix is a past role.** Never write about it in the present tense or imply he still works there. The `past/netflix/` directory preserves that work as a historical record; content inside it is written in the present tense of its own moment and should stay that way.
 
@@ -132,4 +132,5 @@ Don't update it as if it were live. It's a record of 2020–2026. Fix broken lin
 - Synthesize patterns across 360 feedback years
 - Suggest books/articles that align with his philosophy
 - Flag any remaining present-tense Netflix framing as a bug
+- Netflix tenure is "nearly seven years" (6 years 8 months, 2020–2026) — not "six years"
 - Watch for scrub leaks: a public `fnr/` file should never carry a portfolio company name, an investment decision, an event attendee list, or anything from the personal repo

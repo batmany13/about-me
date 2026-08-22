@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I spent the last six years at Netflix, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md#games-platform-engineering).  I left in August 2026 and am now on what I'm calling a [no-break career break](roles.md) — building, advising founders, investing at seed, and learning in the open.  I publish [weekly field notes](fnr/) on all of it.
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I spent nearly seven years at Netflix, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md#games-platform-engineering).  I left in August 2026 and am now on what I'm calling a [no-break career break](roles.md) — building, advising founders, investing at seed, and learning in the open.  I publish [weekly field notes](fnr/) on all of it.
 
 This is a guide to my leadership philosophy and a little about me.  Some of these ideas were sharpened through [conversations with AI](ideas/thinking_with_claude.md).  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
 

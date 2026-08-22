@@ -4,7 +4,7 @@ A weekly, published Mondays, about the week that just closed.
 
 ## What FNR stands for
 
-**F**ield **N**otes & **R**eflections.  It is also, deliberately, a pun on **F&R** — Freedom & Responsibility, the two words at the center of the Netflix culture I spent six years inside.
+**F**ield **N**otes & **R**eflections.  It is also, deliberately, a pun on **F&R** — Freedom & Responsibility, the two words at the center of the Netflix culture I spent nearly seven years inside.
 
 The joke is the point.  I have a great deal of freedom right now and no employer attached to it, which turns out to be a genuinely interesting test of how much of that model I'd internalized versus how much was scaffolding.  Freedom without an org around it is just unstructured time.  Responsibility without a manager is just a promise to yourself.  This file is where I keep the promise: a public, weekly, dated record that the freedom is producing something.
 

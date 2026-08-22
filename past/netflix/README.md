@@ -1,6 +1,6 @@
 # Netflix — 2020 to 2026
 
-_A closed chapter._  I spent six years at Netflix, most recently as an Engineering Director in Games Engineering leading Games Platform Engineering.  Before that, API Systems and Product Edge.  I left in August 2026.
+_A closed chapter._  I spent nearly seven years at Netflix, most recently as an Engineering Director in Games Engineering leading Games Platform Engineering.  Before that, API Systems and Product Edge.  I left in August 2026.
 
 This directory is the record, not a résumé.  I've kept it because the org design work — team missions, boundaries, interview loops — is the most concrete artifact I have of how I actually think about building organizations, and that's more useful to a founder or a hiring partner than any summary of it.
 
