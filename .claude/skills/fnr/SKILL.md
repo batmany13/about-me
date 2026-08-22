@@ -112,6 +112,7 @@ Emits per-repo commits (author-filtered), PR numbers, the directories that moved
 **Then go deeper than the blob** — the blob is an index, not the story:
 
 - `git show --stat <sha>` in the source repo for any commit whose subject is ambiguous
+- **Event registry fields describe the PLAN, not what happened.**  `format`, `venue`, and the entity list are written *before* the event and are often wrong afterward — one entry said "one-table sit-down dinner" for what turned out to be a room of founders mingling.  Never describe the shape or feel of a room from the registry.  State the facts the registry is reliable for (name, host, date, public link) and ask him what it was actually like.
 - Read the event **prep files** (`prep_file` in the events output).  These carry the actual conversations, questions, and follow-ups — the richest source for the founders section, and also the most sensitive material in the whole corpus
 - Read existing `.claude/catchups/` in the source repos if the week is already summarized there — aifund has run this convention since May 2026; don't redo work
 - Check `git log` in about-me itself for writing done that week
