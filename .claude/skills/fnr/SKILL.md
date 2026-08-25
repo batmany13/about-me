@@ -165,6 +165,46 @@ Emits per-repo commits (author-filtered), PR numbers, the directories that moved
 
 ---
 
+## Step 2.5 — Mine the week's corrections for a pattern
+
+**Publish the pattern, never the incident.**  A single correction — "recorded the transport binding as never chosen" — is unreadable to anyone outside the system: they can't tell what a transport binding is, why leaving it implied was bad, or whether the fix was right.  It reads as trivia.  The same correction, seen alongside the week's other twenty, is a *class* of mistake, and a class is something a stranger can recognise in their own work.
+
+### How to find it
+
+Correction-shaped commits have a characteristic grammar.  Sweep both repos:
+
+```bash
+git log --all --no-merges --format="%s" --since="<mon>" --until="<sun> 23:59" \
+  | grep -iE "^(fix|correct|retire|revert)|, not |is not | never |no producer|no consumer|instead of|honestly" \
+  | sort -u
+```
+
+Then **cluster them and name the shared shape.**  Don't rank them and take the best one — the value is in the repetition, because a mistake made once is an accident and a mistake made twenty times in five days is a property of how you were working.
+
+### The test
+
+**Could a reader who has never seen the system recognise this mistake in their own work?**
+
+- ❌ "A portfolio row is not gap-closing work; bundle back to 0.1.0" — needs the system to parse
+- ❌ "The gate's independence dimension has no producer" — same
+- ✅ "My own notes kept asserting things that were never decided" — anyone who has kept notes has done this
+
+If the pattern only makes sense to someone inside the repo, it isn't a learning yet.  Keep abstracting until it is, or drop it.
+
+### Illustrate with two or three, abstracted
+
+Name instances only as evidence for the pattern, stripped of system vocabulary: *"a binding that looked chosen, a component nothing produced, a rule nobody had agreed."*  The reader needs enough to believe the pattern is real, not enough to reconstruct the architecture.
+
+### Say why the fix was right
+
+The pattern is half of it.  The other half is what it cost and what the correction bought — that's the part that makes it a learning rather than a confession.  **A stranger should finish the paragraph knowing what to do differently**, not just that something went wrong.
+
+### Worked example — W34
+
+Twenty-odd corrections across both repos, and almost all shared one grammar: *X is not Y*, or *X was never Z*.  A decision that was never made, a component with no producer, a rule that was never agreed, a duplicate mistaken for a relocation, an org mistaken for a repo.  Every one was the representation claiming more than the reality — and the reason that matters is that you act on the representation.  Published as three sentences; the individual fixes never appear.
+
+---
+
 ## Step 3 — Run each repo's own catchup
 
 **Don't write these from scratch.  Each source repo has its own `catchup` skill — run that.**
