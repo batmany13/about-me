@@ -1,5 +1,7 @@
 # Games Engineering
 
+_Historical record — this is the Netflix Games Engineering org as it stood in 2026, written in the present tense of that time.  I left Netflix in August 2026; the org has almost certainly moved on.  See [past/netflix/](README.md) for context._
+
 To create a platform that makes games enduringly loveable and successful for Netflix by helping customers find and play great games, while enabling game developers to create amazing and unique experiences.
 
 ## Games Player Experiences (GPEx)

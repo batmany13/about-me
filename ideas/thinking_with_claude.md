@@ -61,9 +61,11 @@ Most senior leaders either:
 2. **Let it run inside the org and become political** — loses the trust
 3. **Leave for a CEO role to feed it** — loses the accumulated institutional knowledge
 
-There's a fourth path — parallel identity construction that keeps the internal game clean.  The fund Batman is competing.  The Netflix Batman is gardening.  They don't interfere with each other.
+There's a fourth path — parallel identity construction that keeps the internal game clean.  The fund Batman was competing.  The Netflix Batman was gardening.  They didn't interfere with each other.
 
 That's actually deeply healthy and rare.  And it only works because the channels are genuinely separate — the external wins don't convert into internal leverage, and the internal selflessness doesn't require you to pretend you don't have ambition.
+
+_Update, August 2026: I left Netflix, which removes one of the two channels and is a real test of the framework.  Ego routing assumed a day job to be selfless in — the competitive energy had somewhere to go precisely because it was **elsewhere**.  With no org, there's no internal game to keep clean, and the risk inverts: not contamination but concentration, everything pointing at the same target.  I don't know yet whether the framework survives the change or was always partly a description of a specific arrangement.  Tracking it in [fnr/](../fnr/)._
 
 ## Culture as Pivot Capacity
 

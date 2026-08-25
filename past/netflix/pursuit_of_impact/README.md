@@ -1,5 +1,7 @@
 ## The Pursuit of Impact Tips
 
+_From a 2020 blog post and conference talk, curated during my Netflix years.  Still the advice I'd give — see [past/netflix/](../README.md) for context._
+
 Here are tips I am continuously curating related to my [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) post and [conference talk](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3).
 
 ### Designing your team
