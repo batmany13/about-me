@@ -355,7 +355,13 @@ _Part of a [no-break career break](../roles.md). How these are made: [fnr/README
 ### Section rules
 
 - **Always include `Building` and `Top of Mind for Founders.`**  They're the spine.  A quiet week says so in one honest line — it does not skip the header.
-- **`Fund & Advisory` is the fund lane, not the fund repo.**  Intake, people, and how he's thinking about the work.  If the paragraph could sit under `Building` without anyone noticing, it's in the wrong section.  Sources: `intake.processed` and `intake.outbox` for what got queued, the event prep files for who was met, the forward draft for everything git can't see.
+- **`Rooms` → `Fund & Advisory` → `On the Bench` is one pipeline.  Each says its part once.**  Bruce's framing: the fund's job is largely *processing* the rooms and the notes they produce.
+  - `Rooms I Was In` — where the material came from, and the one interesting thing from each.
+  - `Fund & Advisory` — **the processing**: debriefs filed, people written up, the network graph thickened, a founder's pivot recorded, a company finally identified.  This is fund work that git *can* see, in `network/events/`, `network/people/`, `network/research/` — go read those paths, not just the intake counts.
+  - `On the Bench` — what came out the other end.
+
+  Don't restate the queue size in `Fund & Advisory` when `On the Bench` lists the queue, and don't re-explain where an item came from in `On the Bench` when `Rooms` already covered the event.  If two of the three sections carry the same sentence, the middle one is usually the keeper — it's the part nobody else reports.
+- **`Fund & Advisory` is the fund lane, not the fund repo.**  If the paragraph could sit under `Building` without anyone noticing, it's in the wrong section.
 - **`On the Bench` runs as long as the week's intake earns.**  Roughly 3–5 bullets, but **listing the tech he's seeing IS the point of the section** — don't trim it to look tidy.  Group items that arrived as a cohort into one bullet (the Ray Summit batch is one bullet, not five); that keeps it readable without dropping anything real.
 - **Framing decides whether `On the Bench` reads as curiosity or as a leaked pipeline.**  "I want to know where the durability lives" is learning; "evaluating for the infra thesis" is not.  Never publish `lab.experiment`, `track.zone`, `registry_layer`, or any conclusion.
 - **`Top of Mind for Founders` is ONE thing, hand-written.**  Not two, not three, not a list.  Bruce writes it; draft 1 leaves a prompt and draft 2 transcribes.  ("For now" — if he later wants help drafting it, he'll say so.)
