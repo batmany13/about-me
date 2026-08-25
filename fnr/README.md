@@ -41,7 +41,7 @@ So: the machine reconstructs, I reflect, the machine revises.  The facts come fr
 
 | | Where | Who reads it | What's in it |
 |---|---|---|---|
-| Ground truth | inside each source repo, gitignored | me | everything |
+| Ground truth | a weekly catchup committed inside each source repo | me | everything |
 | This | `fnr/`, committed | you | what survives the scrub |
 
 The scrub policy is itself private, which I recognize is a slightly funny thing to say in public.  It lives with the rest of the private layer in a separate repo — [about-me-private](https://github.com/batmany13/about-me-private) — that clones into `fnr/.private/` here, a path this repo ignores.  Two repos rather than one file of secrets, because access to a separate repo can be revoked and a key that has already been shared cannot.  The existence of the thing isn't the secret; its contents are.  The short version: problem classes and techniques get described, my own mistakes get published generously, and none of it names the thing I'm building.  Anything belonging to a founder, a portfolio company, a person who was in a room with me, or my family doesn't appear here at all.

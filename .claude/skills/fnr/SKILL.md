@@ -356,7 +356,7 @@ Don't commit or open a PR unless he asks.
 
 **Monday does two things: it closes last week and opens this one.**
 
-After draft 1 goes out, create `fnr/.private/drafts/<YYYY-WNN>.wip.md` for the week *now beginning* — gitignored, private, and forward-looking.  Bruce wants to think about what outcomes he's after **before** the week runs, not reconstruct them afterward.
+After draft 1 goes out, create `fnr/.private/drafts/<YYYY-WNN>.wip.md` for the week *now beginning* — it lives in the private repo, so **commit and push it there**, and forward-looking.  Bruce wants to think about what outcomes he's after **before** the week runs, not reconstruct them afterward.
 
 Sections:
 
