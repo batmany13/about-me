@@ -2,5 +2,13 @@ ideas/.DS_Store
 .DS_Store
 
 # Field Notes & Reflections — the private layer.
-# Repo paths, scrub policy, and raw weekly drafts never get committed.
+#
+# This is not "files we forgot to commit". fnr/.private/ is its own PRIVATE repo
+# — https://github.com/batmany13/about-me-private — cloned into this ignored path:
+#
+#     git clone https://github.com/batmany13/about-me-private.git fnr/.private
+#
+# It holds repos.json (which repos the weekly reads), scrub_policy.md (what may be
+# published), and the unscrubbed drafts. A fresh clone of about-me starts without
+# it; that is expected, and the fix is the clone above, never a reconstruction.
 fnr/.private/

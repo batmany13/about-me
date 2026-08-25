@@ -20,7 +20,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seve
 | **fnr/** | |
 | `fnr/README.md` | What Field Notes & Reflections is, the F&R pun, and the two-layer public/private model |
 | `fnr/<YYYY-WNN>.md` | One public weekly per ISO week, published Mondays about the week that just closed |
-| `fnr/.private/` | **Gitignored.** `repos.json` (which repos the weekly reads) and `scrub_policy.md` (what may be published). Never commit, never quote in public files |
+| `fnr/.private/` | **A separate private repo** — [about-me-private](https://github.com/batmany13/about-me-private) — cloned into this gitignored path. Holds `repos.json` (which repos the weekly reads), `scrub_policy.md` (what may be published), and the unscrubbed drafts. Never commit its contents here, never quote it in public files |
 | **leadership/** | |
 | `leadership/managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
 | `leadership/1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |
@@ -89,7 +89,10 @@ This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seve
 ### Writing the weekly (fnr/)
 Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-write these — the skill exists so the scrub policy is applied consistently.
 
-1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md` (both gitignored)
+0. If `fnr/.private/` is missing, it was never cloned into this checkout — not lost:
+   `git clone https://github.com/batmany13/about-me-private.git fnr/.private`.
+   **Never reconstruct `repos.json` or `scrub_policy.md` from memory or from a conversation** — clone the reviewed copy.
+1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
 2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
 3. Write the **unscrubbed** catchup into each source repo's `.claude/catchups/<week>.md`
 4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
