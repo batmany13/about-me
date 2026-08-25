@@ -347,6 +347,52 @@ The only section with a real cap is `Top of Mind for Founders` — one item, bec
 
 ---
 
+## Step 6.5 — Read it back before handing it over
+
+Draft 2 is where it reads well or doesn't.  Run these against the whole file, in order.  Every one of them came from a real defect in W34.
+
+### Balance — the stat line is the check
+
+**The section weights should roughly track the week's own numbers.**  W34 ran `24 PRs tech / 24 fund` — dead even — while the prose ran **447 words of Building against 136 of Fund & Advisory**, better than 3:1.  One of those is wrong, and it isn't the PR count.  When a section is a third the size of another that did comparable work, the small one is under-reported, not genuinely quiet.
+
+Rough shape for a normal week: `Building` is the biggest section and shouldn't exceed ~40% of the total.  If it's pushing half, it has absorbed material that belongs elsewhere.
+
+### Does each section set up its own learning?
+
+`Fund & Advisory` in W34 was entirely repo mechanics — typed requests, coverage computability — and then closed on a learning about **how many events he can attend and the advisory/rest balance.**  The update and the learning were about different subjects, so the learning arrived unsupported.
+
+A `**Learning.**` that doesn't grow out of the paragraphs above it means one of the two is wrong: either the update omitted the week's real story in that lane, or the learning belongs in a different section.  Usually the former — advisory *conversations* are invisible in git, so the update defaults to repo work and the lane's actual substance goes missing.  **Go looking for it** in the event prep files and the forward draft's running notes.
+
+### Vagueness — the intensifier test
+
+**"Shored up the research and execution agents significantly"** was the weakest line in W34, sitting between paragraphs that were specific.  `significantly` carries no information; strip it and the sentence says the agents changed, which the reader already assumed.
+
+Search the draft for `significantly`, `a lot`, `much better`, `substantially`, `heavily`, `improved`.  Each one is either hiding a fact worth naming or padding a line that should be cut.  Named things: a number, a before/after, a mechanism, a decision.
+
+### Aphorism budget — two or three, not five
+
+W34 landed five principle-lines: *which side is allowed to write* · *what is this spec for* · *ledger, not a verdict* · *a claim may not assert currency against evidence it predates* · *a finding nobody was waiting for is a note.*  Individually good.  Five in a thousand words is dense enough that they stop landing and start sounding like a style.
+
+Keep the two or three that earned it — the ones tied to something he actually did that week — and let the rest be plain description.  The best one goes near the end of its section, not buried mid-paragraph.
+
+### Repetition
+
+Say a thing once.  W34 mentions the unchosen transport binding in `Building` (as a correction) and again in `On the Bench` (as queued work).  That's defensible — different tense, different purpose — but check that the second mention adds something.  If it doesn't, cut the second.
+
+### Attachment — does every paragraph belong to what precedes it?
+
+In `Rooms I Was In`, the prep paragraph ("The part that did work…") is about the a16z dinner but sits as its own paragraph after it, so it reads as a comment on all three rooms.  Any trailing paragraph in a list-shaped section needs to be visibly attached to its item or folded into it.
+
+### The footer earns nothing
+
+W34's footer read `3 events this week.  Build stats at the top of Building.` — one number already implied by the section above it, and a pointer to something ten lines up.  Keep the footer to the two standing links.  Don't restate stats there.
+
+### Last pass: what would a stranger not understand?
+
+Read it as someone who doesn't know the work.  Vague-but-fine is normal here — the scrub guarantees it.  **Vague-and-pointless is the failure**: a sentence that survived scrubbing with nothing left in it.  Cut those rather than shipping a hollowed-out line.
+
+---
+
 ## Step 7 — Report back
 
 After draft 2, tell Bruce:
