@@ -114,6 +114,31 @@ def primary_ref(path):
     return "HEAD"
 
 
+def gh_pr_counts(path, start, end):
+    """Merged-in-week and currently-open PR counts, straight from GitHub.
+
+    The subject-parsed `prs` list below is unreliable as a count: it scrapes #NN
+    out of commit subjects, so it picks up cross-repo references ("close out
+    aifund #330"), PRs merely mentioned, and the same PR referenced twice. For
+    W34 it read 37 where GitHub said 24. Squash-merging makes commit counts a
+    soft number too, but a PR is one unit of work however it was merged -- so
+    these are the figures worth publishing.
+
+    Returns (merged, open) or (None, None) when gh is unavailable; never raises,
+    because a missing gh must degrade the stat line, not break the week.
+    """
+    merged = run(["gh", "pr", "list", "--state", "merged", "--limit", "200",
+                  "--json", "number,mergedAt",
+                  "--jq", f'[.[] | select(.mergedAt >= "{start}" and .mergedAt < "{end}")] | length'],
+                 cwd=path, timeout=45).strip()
+    opened = run(["gh", "pr", "list", "--state", "open", "--limit", "200",
+                  "--json", "number", "--jq", "length"], cwd=path, timeout=45).strip()
+    try:
+        return int(merged), int(opened)
+    except ValueError:
+        return None, None
+
+
 def collect_repo(repo, start, end, emails):
     """Walk one repo's git log for the week."""
     path = resolve_path(repo["path"])
@@ -208,6 +233,12 @@ def collect_repo(repo, start, end, emails):
         if m:
             prs.add(int(m.group(1)))
     out["prs"] = sorted(prs)
+    # Authoritative counts, when gh can answer. `prs` above stays as a list of
+    # referenced numbers -- useful for naming PRs in a catchup, not for counting.
+    end_excl = (dt.date.fromisoformat(str(end)) + dt.timedelta(days=1)).isoformat()
+    merged, opened = gh_pr_counts(path, str(start), end_excl)
+    out["prs_merged"] = merged
+    out["prs_open_now"] = opened
 
     # Which parts of the repo moved -- the cheapest signal for "what was this week about".
     dirs = Counter()
@@ -354,6 +385,10 @@ def main():
             # The publishable figures: mainline only, so they hold on any machine.
             "commits_publishable_primary": sum(r["commit_count_primary"] for r in publishable),
             "prs_publishable": sum(len(r["prs"]) for r in publishable),
+            # Prefer these two in the stat line: squash-proof, and they separate
+            # what landed from what is still in flight.
+            "prs_merged_publishable": sum(r["prs_merged"] or 0 for r in publishable),
+            "prs_open_now_publishable": sum(r["prs_open_now"] or 0 for r in publishable),
             "repos_active": sum(1 for r in collected if r["commit_count"]),
             "repos_publishable": sum(1 for r in publishable if r["commit_count"]),
             "by_lane_publishable": dict(lanes),
