@@ -121,6 +121,12 @@ def collect_repo(repo, start, end, emails):
         "name": repo["name"],
         "lane": repo.get("lane"),
         "disclosure": repo.get("disclosure", "hidden"),
+        # Two different decisions, deliberately decoupled. `disclosure` governs
+        # whether a repo may be NAMED; `public_stats` governs whether its volume
+        # feeds the published stat line. A repo can be freely nameable and still
+        # not belong in the counts -- the personal lane is exactly that case.
+        # Defaults preserve the old behaviour for registries that predate this.
+        "public_stats": repo.get("public_stats", repo.get("disclosure", "hidden") != "hidden"),
         "public_name": repo.get("public_name"),
         "note": repo.get("note"),
         "url": repo.get("url"),
@@ -326,7 +332,7 @@ def main():
     collected = [collect_repo(r, start, end, emails) for r in repos]
     events = collect_events(registry.get("events", {}), by_name, start, end)
 
-    publishable = [r for r in collected if r["disclosure"] != "hidden"]
+    publishable = [r for r in collected if r["public_stats"]]
     lanes, lanes_primary = Counter(), Counter()
     for r in publishable:
         lanes[r["lane"] or "other"] += r["commit_count"]

@@ -51,6 +51,7 @@ The facts come from the data.  The meaning comes from him.  A draft that invents
 | `Fund & Advisory` — the update | 🟢 MACHINE | Summarize and adapt. |
 | `Fund & Advisory` — **Learning.** | 🔴 **HUMAN — verbatim** | Prompt in draft 1. |
 | `Rooms` — event facts | 🟢 MACHINE | Name, host, date, public link from `events.json`. |
+| Personal-automation mention | 🟡 MIXED | Nameable in moderation when it carries a learning; contents never, stat line never.  Let weeks pass without it. |
 | `Rooms` — what mattered | 🟡 MIXED | Draft from the prep files; his reaction overrides.  He'll tell you a room was awkward when the prep file says it was a great opportunity. |
 | `Top of Mind for Founders` | 🔴 **HUMAN — verbatim** | **One item only**, hand-written by him.  Draft 1 leaves a prompt.  See the section rule below. |
 | `On the Bench` | 🟢 MACHINE | 3–4 items pulled from the intake registry — see Step 2.  He edits the picks. |
@@ -311,7 +312,8 @@ _Part of a [no-break career break](../roles.md). How these are made: [fnr/README
 
   **The recurring seam is talent** — how to get the most out of people, how to motivate, hire, grow, and keep a culture alive.  What works at 2–5 people differs from 1–5k, but the underlying principles are the same.  That's the thread the section pulls on week over week, and it's the thing he has 26 years of earned right to say.  When prompting him for this block, prompt *into* that seam: what did this week's advisory conversations surface about people, hiring, motivation, or culture?
 - **`Rooms I Was In` is conditional** on having attended something.  Drop the whole section on a week with no events rather than writing "no events this week".
-- **Stats go at the top of `Building`,** as an italic line: commits, PRs, repo count, and the tech/fund split.  **Publish exactly these four fields and no others:**
+- **Stats go at the top of `Building`,** as an italic line: commits, PRs, repo count, and the tech/fund split.  **Use `commits_publishable`, never `commits_all`.**  The gap between them is the personal lane, and publishing the delta turns it into a recurring public number — which is precisely the exposure the split exists to prevent.  Repo *count* is fine; repo *names* are not.
+- **`disclosure` and `public_stats` are different questions.**  `disclosure` governs whether a repo may be NAMED; `public_stats` governs whether its volume feeds the stat line.  The personal repo is `described` and `public_stats: false` — nameable in moderation, never counted.  Don't infer one from the other.
 
   | Stat | Field |
   |---|---|
