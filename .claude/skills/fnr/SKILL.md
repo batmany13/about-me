@@ -296,7 +296,16 @@ one.>
 
 ## Fund & Advisory
 
-<1–2 short paragraphs. Shape, not names.>
+<1–2 short paragraphs on the FUND lane specifically: intake (what got
+queued and where it came from), new companies and founders met, and how
+he's thinking about this work. Shape and counts, never names.
+
+NOT repo mechanics. The fund repo's own plumbing — contracts, seams,
+tooling — belongs in `Building` with the rest of the build work, and
+putting it here duplicates that section. This lane kept defaulting to
+repo work because repo work is what git can see; the fund's actual week
+lives in the intake registries, the event prep files, and the forward
+draft's running notes. Go there.>
 
 **Learning.**  <1–2 sentences, in his words.>
 
@@ -346,6 +355,7 @@ _Part of a [no-break career break](../roles.md). How these are made: [fnr/README
 ### Section rules
 
 - **Always include `Building` and `Top of Mind for Founders.`**  They're the spine.  A quiet week says so in one honest line — it does not skip the header.
+- **`Fund & Advisory` is the fund lane, not the fund repo.**  Intake, people, and how he's thinking about the work.  If the paragraph could sit under `Building` without anyone noticing, it's in the wrong section.  Sources: `intake.processed` and `intake.outbox` for what got queued, the event prep files for who was met, the forward draft for everything git can't see.
 - **`On the Bench` runs as long as the week's intake earns.**  Roughly 3–5 bullets, but **listing the tech he's seeing IS the point of the section** — don't trim it to look tidy.  Group items that arrived as a cohort into one bullet (the Ray Summit batch is one bullet, not five); that keeps it readable without dropping anything real.
 - **Framing decides whether `On the Bench` reads as curiosity or as a leaked pipeline.**  "I want to know where the durability lives" is learning; "evaluating for the infra thesis" is not.  Never publish `lab.experiment`, `track.zone`, `registry_layer`, or any conclusion.
 - **`Top of Mind for Founders` is ONE thing, hand-written.**  Not two, not three, not a list.  Bruce writes it; draft 1 leaves a prompt and draft 2 transcribes.  ("For now" — if he later wants help drafting it, he'll say so.)
