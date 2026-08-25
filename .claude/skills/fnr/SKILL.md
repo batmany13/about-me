@@ -99,7 +99,15 @@ Both files live in that repo:
   **`disclosure` governs naming, not importance or reading depth.**  `described` means describe it without naming it — it says nothing about how central the repo is.  The most important repo in the registry is currently `described`, and it still drives most of every weekly.  Read every non-`hidden` repo closely regardless of its level; read `hidden` ones too, for the private catchup only.
 - `fnr/.private/scrub_policy.md` — **read this in full every run.** It is the judgment layer: green/yellow/red categories, the five-question test, and the standing exceptions.
 
-If `repos.json` is missing, stop and say so — there is nothing to read without it.  If `scrub_policy.md` is missing, fall back to the most conservative reading (name nothing, abstract everything) and tell Bruce the policy file is gone.
+**If the whole `fnr/.private/` directory is absent, it isn't lost — it was never cloned into this checkout.**  A fresh clone of about-me, or a recycled worktree, starts without it, because the parent repo ignores that path by design.  The recovery is one command, not a reconstruction:
+
+```bash
+git clone https://github.com/batmany13/about-me-private.git fnr/.private
+```
+
+Naming *that* repo here is fine — it is the private layer, and saying so reveals only that a private layer exists, which this file already says outright.  Naming the repos it *points at* is not.  If you ever find yourself reconstructing `repos.json` or `scrub_policy.md` from memory or from conversation, stop: clone the repo instead.  A reconstructed policy is a policy nobody reviewed.
+
+If `repos.json` is missing after cloning, stop and say so — there is nothing to read without it.  If `scrub_policy.md` is missing, fall back to the most conservative reading (name nothing, abstract everything) and tell Bruce the policy file is gone.
 
 ---
 
