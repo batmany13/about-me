@@ -73,7 +73,24 @@ The test: diff your output against what he sent.  Every difference should be one
 
 ## Step 0 — Read the private config
 
-Both files are gitignored and live in the about-me repo:
+`fnr/.private/` is **its own private git repo**, cloned into a directory that
+about-me gitignores.  That is how it syncs between machines — gitignore cannot
+sync a file it refuses to track.
+
+**Check it is current before reading anything.**  Because the directory is ignored
+by the parent, `git status` in about-me will never mention uncommitted work in
+here; a week of running notes can sit unpushed and nothing says so.
+
+```bash
+git -C fnr/.private fetch --quiet && git -C fnr/.private status --short --branch
+```
+
+Uncommitted changes, or a branch behind `origin/main`?  **Say so before going
+further** — a weekly drafted against a stale policy or a missing forward draft is
+worse than one that didn't run.  Pull if it is merely behind; if it is dirty, ask
+what to do with the local edits rather than deciding.
+
+Both files live in that repo:
 
 - `fnr/.private/repos.json` — which repos to read, where they are, each one's `disclosure` level (`named` / `described` / `hidden`), and the `intake` block naming the two vetting-queue files (`intake.processed` and `intake.outbox`, each a `{repo, path}` pair).
 
