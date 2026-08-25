@@ -1,41 +1,68 @@
 # The Many Hats I Wear
 
-I've always been drawn to the intersection of building things, growing people, and investing in ideas.  Over the years, that's evolved into three distinct but deeply connected roles that I balance today.
+I've always been drawn to the intersection of building things, growing people, and investing in ideas.  For most of my career those pulled against each other for calendar time.  Right now they don't, and that's the whole point of this chapter.
 
-## Engineering Leader — Netflix Games
+## The No-Break Career Break
 
-I'm an Engineering Director at Netflix leading [Games Platform Engineering](netflix/games_engineering.md), which is responsible for the entire game developer journey — from onboarding a game to live operations and everything in between.  This includes 6 teams spanning backend services, SDKs, developer tooling, SRE, test engineering, and game lifecycle management.
+I left Netflix in August 2026 after nearly seven years, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md).  What I'm doing now is a career break in the sense that I don't have an employer, and in no other sense at all.
 
-This is where I spend the majority of my energy.  It's a "startup within Netflix" — we're building a games platform from scratch with the scale and ambition of Netflix behind it.  The challenges here hit all three of my sweet spots: complex technical problems, building a team culture from the ground up, and navigating the product-market dynamics of an emerging business.
+The name is a joke I'm only half making.  I'm not decompressing on a beach — I'm working harder than I have in years, just on my own terms and my own problems.  Four things have my attention:
 
-**How I lead**: My [leadership philosophy](README.md#leadership-philosophy) centers on trusting teams, seeking excellence, and driving customer delight.  In practice, that means building psychological safety so people can do their best work, setting clear vision and goals, and making sure we're always balancing near-term delivery with long-term investment.  I write more about this in [managing people](leadership/managing.md), [1x1s](leadership/1x1s.md), and what I look for in a [thriving team](leadership/thriving_team.md).
+- **Building** — writing code every day, for the first time in a long time
+- **Founder advisory** — the highest-leverage thing I do, and now I can actually be present for it
+- **Seed investing** — the fund work, with real hours behind it instead of evenings
+- **Learning** — going deep on AI systems rather than skimming enough to be conversant
 
-## Venture Partner & Seed Investor
+There's no end date.  There's also no illusion that this is permanent.  I'm treating it as a genuine experiment: what does my week look like when nobody else sets it, and is what comes out of that better than what I'd have produced inside a company?  I'm publishing the answer weekly in [fnr/](fnr/) — field notes and reflections — so the experiment has a record and not just a memory.
 
-On the side, I invest in and advise pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund.  I've been in the investment game for over 10 years, but got much more serious about it in the last year or so.  This is where my entrepreneurial side gets to play — I'm a 2x startup founder (1 exit, 1 failure) with 26+ years in the tech industry, and I've always loved going from 0 to 1.
+## Building
 
-What I bring to founders:
-- **Pattern recognition** from 26+ years in tech, including 6+ years operating in Netflix's high-performance culture and building startups from scratch
-- **Technical depth** — I can get into the code and architecture, not just the pitch deck
-- **People and culture lens** — I think a lot about founding teams, hiring, and building the right culture early
-- **Founder empathy** — I've lived the startup journey myself, including the failure.  I know what it feels like.
-- **Honest, direct feedback** — I'd rather tell you the hard truth now than let you figure it out after burning runway
+The thing I miss most about early-career engineering is the tightness of the loop: think, build, learn, repeat, all in the same afternoon.  I have that back.  I'm building AI systems — evaluation harnesses, research agents, knowledge infrastructure — mostly in private repos, and mostly to answer questions I couldn't answer by reading about them.
 
-I invest primarily through funds now rather than writing individual checks, across AI infrastructure, vertical AI applications, and developer productivity.  You can see my [investment thesis](investing/README.md) and the [portfolio of companies](investing/investments.md) the funds have backed.
+This isn't a side effect of the break; it's a thesis about it.  I've spent years telling engineering leaders they need to be hands-on with the tools they're asking their teams to adopt.  Hard to keep saying that from behind a calendar full of meetings.  The [weekly notes](fnr/) are where the specifics show up, sanitized but real.
 
-## External Speaker & Thought Leader
+## Founder Advisory
 
-I've been speaking publicly about engineering leadership, culture, and technology since 2016.  Topics I keep coming back to:
+Advising founders is the part of my old life that I most wanted to bring more of, not less.  I'm a 2x startup founder myself (1 exit, 1 failure) with 26+ years in the industry, and I've been advising and angel investing for over 10 years.
 
-- **Engineering culture** — psychological safety, high-performance teams, why caring matters
-- **Tech debt and innovation** — reframing tech debt as an opportunity, not just a burden
-- **Leadership transitions** — moving from IC to manager, building your leadership philosophy
-- **The startup-within-a-big-company experience** — what it's like to build something new at Netflix
+What I bring:
 
-I've spoken at LeadDev (London, Berlin, NYC), Stanford, API World, GraphQL Summit, and many community events and podcasts.  The full history is in [external presence](speaking/external_presence.md).
+- **Pattern recognition** from 26+ years in tech, including nearly seven years operating inside Netflix's high-performance culture and building startups from scratch
+- **Technical depth** — I can get into the code and architecture, not just the pitch deck.  More true now than it's been in a decade
+- **People and culture lens** — founding teams, early hiring, and the culture decisions that are cheap now and expensive later
+- **Founder empathy** — I've lived the journey, including the failure.  I know what it feels like
+- **Honest, direct feedback** — I'd rather tell you the hard truth now than let you find it after burning runway
 
-_I'm taking a break from external speaking in 2026 to focus on my current role, but plan to re-evaluate in 2027._
+The leadership lessons that keep surfacing in these conversations get their own section in every [weekly note](fnr/).  Founders keep hitting the same walls, and the pattern is worth writing down.
 
-## How These Roles Connect
+## Seed Investing
 
-These aren't separate lives — they feed each other constantly.  Leading at Netflix gives me real-world context that makes my advising more grounded.  Working with startups gives me fresh perspectives and patterns that I bring back to my teams.  Speaking forces me to crystallize and pressure-test my thinking.  And all of it comes back to the same core belief: **great things happen when you invest in people, build trust, and stay curious**.
+I invest in pre-seed and seed-stage AI companies through two funds — a private pre-seed fund and a CTO Fund — across AI infrastructure, vertical AI applications, and developer productivity.
+
+The break changed the shape of this work more than the volume.  Diligence I used to compress into a weekend now gets the depth it deserves; I can go read a company's actual codebase instead of taking the architecture diagram on faith.  My [investment thesis](investing/README.md) and the [portfolio](investing/investments.md) have the details.
+
+## Learning
+
+The least legible of the four and probably the most valuable.  I'm going deep on how AI systems actually work — not the discourse, the mechanics.  Retrieval and indexing, evaluation methodology, agent architectures, where these systems break and why.
+
+I've always learned by building and by teaching.  That hasn't changed; what changed is that I no longer have to justify the time.  Some of it lands in [ideas/](ideas/), some in the weekly notes, and a lot of it stays as compost for a while before it becomes anything.
+
+## Engineering Leader (the through-line)
+
+I've led engineering organizations for most of my career — Netflix most recently, and [several before that](past/).  I'm not leading one today, and I expect I will again.
+
+My [leadership philosophy](README.md#leadership-philosophy) — trusting teams, seeking excellence, driving customer delight — didn't come out of the break and doesn't depend on the job.  It's in [managing people](leadership/managing.md), [1x1s](leadership/1x1s.md), and [thriving teams](leadership/thriving_team.md).  Five years of [360 feedback](leadership/feedback/README.md) is the receipts.
+
+## External Speaker
+
+I've spoken publicly about engineering leadership, culture, and technology since 2016 — LeadDev (London, Berlin, NYC), Stanford, API World, GraphQL Summit, plus community events and podcasts.  The full history is in [external presence](speaking/external_presence.md).
+
+Topics I keep coming back to: engineering culture and psychological safety, [tech debt as innovation](ideas/tech_debt_as_innovation.md), leadership transitions from IC to manager, and what it's actually like to build something new inside a big company.
+
+_I stepped back from speaking in 2026 to focus on the role I no longer have.  That reasoning expired with the job, so 2027 is genuinely open — and I have more to say now than I did when I paused._
+
+## How These Connect
+
+These aren't separate lives; they never were.  Building gives the advisory work teeth — I can tell a founder their architecture won't hold because I spent last week finding out.  Advisory work surfaces patterns that sharpen the investing lens.  Investing forces me to hold a view about where the whole field is going, which tells me what to learn next.  And learning feeds back into what I build.
+
+The loop is tighter than it's ever been, which is the real argument for the break.  It all still comes back to the same belief: **great things happen when you invest in people, build trust, and stay curious**.

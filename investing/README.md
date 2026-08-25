@@ -1,6 +1,8 @@
 # Startup Advisory and Investment Thesis
 
-I invest in pre-seed and seed-stage AI companies primarily through two funds — a private pre-seed fund and a CTO Fund.  I've been angel investing and advising startups for over 10 years, but got much more serious about it in the last year or so.  My perspective is shaped by 26+ years in the tech industry, being a 2x startup founder (1 exit, 1 failure), and 6+ years operating in Netflix's high-performance culture.
+I invest in pre-seed and seed-stage AI companies primarily through two funds — a private pre-seed fund and a CTO Fund.  I've been angel investing and advising startups for over 10 years, but got much more serious about it in the last year or so.  My perspective is shaped by 26+ years in the tech industry, being a 2x startup founder (1 exit, 1 failure), and nearly seven years operating inside Netflix's high-performance culture (2020–2026).
+
+Since August 2026 this work has my full attention rather than my evenings — see [what I'm doing now](../roles.md) and the [weekly notes](../fnr/).
 
 ## Why AI, Why Now
 
@@ -34,9 +36,9 @@ This is where my [people leadership background](../leadership/managing.md) shape
 
 While I mostly invest through funds now rather than writing individual checks, I'm not a passive investor.  What I offer founders:
 
-- **Technical architecture feedback** — I can go deep on system design, API architecture, and scaling challenges
+- **Technical architecture feedback** — I can go deep on system design, API architecture, and scaling challenges.  I'm writing code daily again, so this is hands-on rather than remembered
 - **Leadership and hiring advice** — building the right team and culture early is the highest-leverage thing a founder can do
-- **Pattern matching from 26+ years in tech** — what works at scale, what breaks, and what the transition from 0-to-1 to 1-to-N actually looks like, informed by my own founder journey (1 exit, 1 failure) and operating at Netflix
+- **Pattern matching from 26+ years in tech** — what works at scale, what breaks, and what the transition from 0-to-1 to 1-to-N actually looks like, informed by my own founder journey (1 exit, 1 failure) and nearly seven years operating at Netflix
 - **Honest, direct feedback** — I'd rather be the one to tell you something isn't working than have you learn it from the market
 
 ## Portfolio

@@ -70,7 +70,7 @@ __Cancelled / Delayed__
 
 ### 2020 
 
-[Dec 2020] The Pursuit of Impact [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) ([detailed tips](https://github.com/batmany13/about-me/tree/master/netflix/pursuit_of_impact)) | Plato Winter 2020 Talk - [recording](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3)   
+[Dec 2020] The Pursuit of Impact [blog](https://www.linkedin.com/pulse/pursuit-impact-bruce-wang/) ([detailed tips](https://github.com/batmany13/about-me/tree/master/past/netflix/pursuit_of_impact)) | Plato Winter 2020 Talk - [recording](https://www.youtube.com/watch?v=IjZHC5XQ5-c&list=PLviHs0aJhWLZkgjGQAlmcRa1eFl0BTdcr&index=3)   
 [Aug 2020] [GDG Singapore](https://gdg.community.dev/events/details/google-gdg-singapore-presents-full-cycle-people-leadership/) - Full Cycle Leadership ([video](https://www.youtube.com/watch?v=-hksiU_WoiU))    
 [Aug 2020] [Enrich Fireside](https://lu.ma/brucetalk) - Managing the Lifecycle of Your Team ([q&a doc](https://docs.google.com/document/d/1EhTQfpLB_iyHZEFX6xCUAbJmfXFnIYOc_rokOpvOcgU/edit#heading=h.amobz93acu52))    
 [March 2020] [Better Monday Podcast Ep 7](https://www.sofokus.com/podcast/episodes/recruiting-and-organizational-culture-at-netflix/) - Recruiting, Organizational Culture    

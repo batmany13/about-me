@@ -2,7 +2,9 @@
 
 ## What is this repo?
 
-This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering Director at Netflix in the Games Engineering group, a startup advisor, and seed investor. The repo documents his leadership philosophy, frameworks, 360 feedback history, speaking engagements, and reflections on growth.
+This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seven years at Netflix (2020–2026, 6 years 8 months), most recently as an Engineering Director in Games Engineering leading Games Platform Engineering. **He left in August 2026** and is now on what he calls a "no-break career break": building, advising founders, seed investing, and learning. The repo documents his leadership philosophy, frameworks, 360 feedback history, speaking engagements, reflections on growth, and — since W34 2026 — a weekly published reflection in `fnr/`.
+
+**Netflix is a past role.** Never write about it in the present tense or imply he still works there. The `past/netflix/` directory preserves that work as a historical record; content inside it is written in the present tense of its own moment and should stay that way.
 
 **Audience**: Mentees, potential collaborators, hiring partners, engineering leaders, and anyone interested in leadership practices.
 
@@ -13,18 +15,25 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | File | What it contains |
 |------|-----------------|
 | `README.md` | Core leadership philosophy (trusting teams, seeking excellence, driving customer delight), personal values, reading list |
-| `roles.md` | Overview of Bruce's three professional roles: Netflix leader, seed investor, external speaker |
+| `roles.md` | What he's doing now: the no-break career break — building, founder advisory, seed investing, learning — plus the engineering-leader through-line and speaking history |
 | `leadership/feedback/self_eval.md` | Personal passions, unique advantages, and growth areas (last updated 2022) |
+| **fnr/** | |
+| `fnr/README.md` | What Field Notes & Reflections is, the F&R pun, and the two-layer public/private model |
+| `fnr/<YYYY-WNN>.md` | One public weekly per ISO week, published Mondays about the week that just closed |
+| `fnr/.private/` | **Gitignored.** `repos.json` (which repos the weekly reads) and `scrub_policy.md` (what may be published). Never commit, never quote in public files |
 | **leadership/** | |
 | `leadership/managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
 | `leadership/1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |
 | `leadership/thriving_team.md` | What skills and characteristics define a thriving team |
 | `leadership/okrs.md` | OKRs framework overview |
 | `leadership/feedback/` | 360 review themes by year (2021-2025) with strengths and opportunities |
-| **netflix/** | |
-| `netflix/games_engineering.md` | Netflix Games Platform Engineering org — team missions and structure |
-| `netflix/interview.md` | Interview process documentation for API Systems |
-| `netflix/pursuit_of_impact/` | Conference talk tips: designing teams, hiring, learning environment |
+| **past/** | |
+| `past/README.md` | Closed chapters — why they're preserved as-is |
+| `past/netflix/README.md` | Netflix 2020–2026, framed as a finished chapter, plus what he took from it |
+| `past/netflix/games_engineering.md` | Games Platform Engineering org and team missions (as of 2026) |
+| `past/netflix/interview.md` | Interview process design for API Systems |
+| `past/netflix/pursuit_of_impact/` | Conference talk tips: designing teams, hiring, learning environment |
+| `past/netflix/earlier_roles/` | ARES, Product Edge Systems, Consumer Server Foundations |
 | **investing/** | |
 | `investing/README.md` | Seed-stage AI investment thesis: what Bruce looks for, how he helps founders |
 | `investing/investments.md` | Public-facing portfolio of AI Fund companies — name, field, short description (no confidential data) |
@@ -33,7 +42,6 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 | `speaking/events/` | Q&A from talks and sessions |
 | **other/** | |
 | `ideas/` | Work-in-progress concepts (Four Laws of Software Engineering, AI-assisted leadership reflections) |
-| `netflix/past/` | Legacy role descriptions and past concepts (API Reliability Engineering, Product Edge Systems, Consumer Server Foundations) |
 | `rsrc/` | Images, PDFs, and presentation materials |
 
 ## Conventions
@@ -69,7 +77,7 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 
 ### Adding a new year of 360 feedback
 1. Open `leadership/feedback/README.md`
-2. Add a new H2 section below the existing ones: `## YYYY Netflix 360s Theme`
+2. Add a new H2 section below the existing ones. The 2021–2025 sections are Netflix 360s and are a closed historical set — a new year would come from somewhere else, so title it for its actual source (`## YYYY <Source> Feedback Theme`)
 3. Add `__Strengths__` and `__Opportunities__` subsections with bullet points
 4. Note any long-running feedback themes with `(long-running feedback)` prefix
 
@@ -78,9 +86,19 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 - Keep the three sections: Passions, Unique Advantages, Growth Areas
 - Be honest and reflective — this is meant to be transparent
 
-### Updating netflix/games_engineering.md
-- This reflects the current org structure at Netflix Games
-- Update team names, missions, and descriptions as the org evolves
+### Writing the weekly (fnr/)
+Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-write these — the skill exists so the scrub policy is applied consistently.
+
+1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md` (both gitignored)
+2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
+3. Write the **unscrubbed** catchup into each source repo's `.claude/catchups/<week>.md`
+4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
+5. Report the scrub delta — what was held back, by category
+
+Default week is the **last closed week**, not the current one.
+
+### Touching past/netflix/
+Don't update it as if it were live. It's a record of 2020–2026. Fix broken links and typos; don't refresh org structure, and don't convert its prose to past tense — the historical banners at the top of each file carry that job.
 
 ### Adding a new portfolio company to investing/investments.md
 1. Determine the category: AI Infrastructure, Vertical AI Applications, Developer Productivity, or Other
@@ -91,7 +109,8 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 
 ### Updating roles.md
 - Update when Bruce's role, responsibilities, or focus areas change
-- Keep the three-role structure (Netflix leader, investor, speaker) unless a new role emerges
+- Keep the current structure — the no-break career break framing (building, founder advisory, seed investing, learning), the engineering-leader through-line, and speaking — unless the situation actually changes
+- If he takes a new role, `roles.md` gets restructured and the career-break framing moves to `past/`
 - Update the speaking break status when it changes
 
 ## What NOT to change without explicit ask
@@ -99,6 +118,9 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 - The "About Me Personally" section and its subsections
 - The reading list — only add, don't remove or reorganize
 - 360 feedback content (it's historical record)
+- Anything under `past/` — it's a preserved record, not a living document
+- Published `fnr/` weeklies from prior weeks (fix typos and broken links only; don't retro-edit the record)
+- The scrub policy in `fnr/.private/scrub_policy.md` — Bruce owns that file; propose changes, don't make them
 
 ## How to help Bruce improve this repo
 - Suggest new content based on themes in his talks or feedback
@@ -108,3 +130,6 @@ This is Bruce Wang's personal leadership knowledge base. Bruce is an Engineering
 - Help draft new ideas/ entries based on talks or discussions
 - Synthesize patterns across 360 feedback years
 - Suggest books/articles that align with his philosophy
+- Flag any remaining present-tense Netflix framing as a bug
+- Netflix tenure is "nearly seven years" (6 years 8 months, 2020–2026) — not "six years"
+- Watch for scrub leaks: a public `fnr/` file should never carry a portfolio company name, an investment decision, an event attendee list, or anything from the personal repo

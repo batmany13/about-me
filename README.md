@@ -1,6 +1,6 @@
 # About me
 
-My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I am currently an Engineering Director @ Netflix in the Games Engineering group leading the [Games Platform](netflix/games_engineering.md#games-platform-engineering) org and startup advisor and seed investor.
+My name is [Bruce Wang](https://www.linkedin.com/in/batmany13/) and I've been in various software development and management roles.  I spent nearly seven years at Netflix, most recently as an Engineering Director leading [Games Platform Engineering](past/netflix/games_engineering.md#games-platform-engineering).  I left in August 2026 and am now on what I'm calling a [no-break career break](roles.md) — building, advising founders, investing at seed, and learning in the open.  I publish [weekly field notes](fnr/) on all of it.
 
 This is a guide to my leadership philosophy and a little about me.  Some of these ideas were sharpened through [conversations with AI](ideas/thinking_with_claude.md).  You can also read [feedback](leadership/feedback/README.md) I've received in the past.
 
@@ -9,12 +9,13 @@ This is a guide to my leadership philosophy and a little about me.  Some of thes
 ```
 about-me/
 ├── README.md          ← You are here — leadership philosophy, values, reading list
-├── roles.md           ← My three roles: Netflix leader, seed investor, speaker
+├── roles.md           ← What I'm doing now: building, advising, investing, learning
+├── fnr/               ← Field Notes & Reflections — the weekly, published Mondays
 ├── leadership/        ← People leadership: managing, 1x1s, team health, OKRs, 360 feedback
-├── netflix/           ← Netflix-specific: Games Engineering org, interviews, past roles
 ├── investing/         ← Seed-stage AI investment thesis and portfolio
-├── speaking/          ← Talks, blogs, podcasts, panels (2016–2026)
 ├── ideas/             ← Frameworks: Four Laws, Tech Debt as Innovation, leadership musings
+├── speaking/          ← Talks, blogs, podcasts, panels (2016–2026)
+├── past/              ← Closed chapters — Netflix (2020–2026) and earlier roles
 └── rsrc/              ← Images, PDFs, and presentation materials
 ```
 
@@ -148,7 +149,9 @@ I'm not just talking about AI — I'm using it daily across every part of my pro
 
 **Investing**: I built an entire repo to manage our fund's investment activities using AI — from building up our thesis, to detailed portfolio company profiles, deal flow analysis, and founder evaluations.  AI helps me synthesize research, spot patterns across the portfolio, and keep our investment lens sharp.
 
-**At Work**: I'm rethinking how my organization shares and absorbs context.  My internal newsletter "Fast Takes" is being reimagined with AI to change how we share, process, and act on information.  More broadly, I'm helping shape our "AI-Native" strategy within Games Engineering — thinking about how AI changes the way we build, operate, and collaborate.  I'm also exploring novel ways AI can improve how engineering organizations work together across teams and partner groups.
+**Building**: I write code every day now, mostly AI systems — evaluation harnesses, research agents, retrieval and knowledge infrastructure.  This is the part of the [career break](roles.md) I'd defend hardest: you cannot have a credible opinion about what AI does to engineering work without doing engineering work with it.
+
+**Working in the open**: At Netflix I ran an internal newsletter called "Fast Takes" — a weekly context-sharing habit that I rebuilt around AI near the end.  That habit was too good to leave behind, so it came with me in a new form: [fnr/](fnr/), Field Notes & Reflections.  The pipeline reads my week's actual commits across several private repos plus the events I attended, drafts the detail privately, and publishes a sanitized version here.  The [skill that does it](.claude/skills/fnr/SKILL.md) is in this repo.
 
 **Building Tools**: I vibe-coded a Slack-to-Claude bot so I can track and summarize context more easily across Slack conversations — a practical example of scratching my own itch with AI.
 

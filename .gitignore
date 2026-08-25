@@ -1,2 +1,6 @@
 ideas/.DS_Store
 .DS_Store
+
+# Field Notes & Reflections — the private layer.
+# Repo paths, scrub policy, and raw weekly drafts never get committed.
+fnr/.private/
