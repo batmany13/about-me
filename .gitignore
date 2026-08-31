@@ -1,6 +1,9 @@
 ideas/.DS_Store
 .DS_Store
 
+# Agent worktrees — checkouts, not content.
+/.claude/worktrees
+
 # Field Notes & Reflections — the private layer.
 #
 # This is not "files we forgot to commit". fnr/.private/ is its own PRIVATE repo
