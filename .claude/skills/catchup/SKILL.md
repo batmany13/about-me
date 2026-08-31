@@ -302,8 +302,17 @@ never bucket a real contributor under someone else.
 ## Step 5 (optional): Sync entities to DeepVista
 
 Only when config sets `deepvista.enabled: true`. See
-`reference/deepvista.md` for the full prototype — endpoint, auth, and the one
-gotcha that makes cards invisible if you miss it.
+[`reference/deepvista.md`](reference/deepvista.md) for the full prototype —
+endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
+
+The key lives in `~/.config/secrets.env` as `DEEPVISTA_API_KEY` and must be
+exported before the session starts, or `.mcp.json` cannot interpolate it:
+
+```bash
+set -a; . ~/.config/secrets.env; set +a
+```
+
+Never read a key into the transcript, and never put one in a repo file.
 
 ```bash
 python3 $SKILL/deepvista_cards.py plan --repo . --week 2026-W35

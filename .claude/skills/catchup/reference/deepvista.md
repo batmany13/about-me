@@ -51,14 +51,49 @@ For Claude Code, in the target repo's `.mcp.json`:
 }
 ```
 
-**Auth.** Two paths. OAuth 2.1 is the default and needs an interactive browser
-round-trip. An API key is the alternative and is what makes this work headless —
-generate one at **Settings → Security & Access** and send it as
-`Authorization: Bearer <key>`. Keep it in the environment; never commit it.
+## Where the key lives
 
-Without a key, `mcp-remote` can bridge the OAuth flow (`npx -y mcp-remote
-https://api.deepvista.ai/mcp`), and `rm -rf ~/.mcp-auth` clears a stuck auth
-cache.
+`~/.config/secrets.env`, with the rest of the local secrets. Never in the repo,
+never in a config file, never printed — transcripts get committed.
+
+```bash
+# ~/.config/secrets.env
+DEEPVISTA_API_KEY=...
+```
+
+Load it into the environment before starting the session that needs it, so
+`${DEEPVISTA_API_KEY}` in `.mcp.json` resolves:
+
+```bash
+set -a; . ~/.config/secrets.env; set +a
+```
+
+`.mcp.json` interpolates from the environment of the process that starts the
+server — a key sitting in the file but never exported reads as an
+authentication failure, not as a missing variable, which is a slow thing to
+diagnose. Export first, then start.
+
+## Where the key comes from
+
+**It is a UI action, not an API call.** There is no endpoint that mints one and
+no CLI command either — the CLI's `auth` group is `login` / `status` / `list` /
+`switch` / `remove` / `logout`, and none of them issue a key.
+
+1. Sign in at **app.deepvista.ai** (the account must exist first; sign-up is on
+   the same page).
+2. **Settings → Security & Access** → generate a key.
+3. Paste it into `~/.config/secrets.env` as `DEEPVISTA_API_KEY`.
+
+**One trap worth naming.** `deepvista auth login` writes a field literally called
+`api_key` into `~/.config/deepvista/credentials.default.json`. **That is not this
+key.** It is the Supabase *anon* key the client uses to refresh its session —
+public by design, and useless as a bearer credential here. Reading it out of the
+credentials file and putting it in `secrets.env` will fail in a confusing way.
+
+The alternative to a key is OAuth 2.1, which needs an interactive browser
+round-trip and so cannot run headless. `mcp-remote` bridges it
+(`npx -y mcp-remote https://api.deepvista.ai/mcp`) and `rm -rf ~/.mcp-auth`
+clears a stuck auth cache.
 
 ## The cycle
 
@@ -142,6 +177,9 @@ Honest list, so nothing here reads as tested when it isn't:
    almost certainly mirror it, but read the tool list once connected and adjust
    the mapping if it differs.
 3. **Whether an API key works for MCP as well as REST.** Documented, not tried.
+   The docs state it plainly for the MCP server; the CLI's own HTTP client has no
+   API-key path at all and authenticates only with a login JWT, so the two
+   surfaces do not agree and only the MCP one claims to accept a key.
 4. **Whether `status: confirmed` is settable through MCP.** It is a REST field;
    the MCP tool may not expose it. If it doesn't, cards will need confirming in
    the UI, and that is worth knowing before a bulk push.
@@ -154,7 +192,9 @@ against it. The CLI source is the real contract.
 
 ## First run, in order
 
-1. Generate an API key (Settings → Security & Access), export it, add `.mcp.json`.
+1. Generate an API key in the web UI (Settings → Security & Access), put it in
+   `~/.config/secrets.env` as `DEEPVISTA_API_KEY`, `set -a; . ~/.config/secrets.env; set +a`,
+   then add the `.mcp.json` entry.
 2. Confirm the connection and **dump the MCP tool list** — reconcile it against
    the field names above before pushing anything.
 3. `plan --week <week>` and read one full body with `--show-body`.
