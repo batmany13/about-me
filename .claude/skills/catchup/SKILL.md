@@ -305,14 +305,12 @@ Only when config sets `deepvista.enabled: true`. See
 [`reference/deepvista.md`](reference/deepvista.md) for the full prototype —
 endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
 
-The key lives in `~/.config/secrets.env` as `DEEPVISTA_API_KEY` and must be
-exported before the session starts, or `.mcp.json` cannot interpolate it:
-
-```bash
-set -a; . ~/.config/secrets.env; set +a
-```
-
-Never read a key into the transcript, and never put one in a repo file.
+**No API key is required** — the server does MCP OAuth with dynamic client
+registration. Add the `.mcp.json` entry with no `headers`, then run `/mcp` in an
+**interactive** session and sign in through the browser; a non-interactive
+session has no prompt to answer. If a key path ever appears, it belongs in
+`~/.config/secrets.env`, exported before the session — never in a repo file and
+never read into the transcript.
 
 ```bash
 python3 $SKILL/deepvista_cards.py plan --repo . --week 2026-W35
