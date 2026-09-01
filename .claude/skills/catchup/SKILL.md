@@ -154,11 +154,29 @@ the mechanism worth borrowing, the number that meant something other than it
 looked like. Those findings are frequently the most valuable thing in the week
 and they appear nowhere in the commit log.
 
-**People, companies and products deserve their own entities.** When a week
-produces real learnings about an outside party — an architecture, an auth model,
-a benchmark — file it as an `org` or `person` entity rather than burying it in
-the note of the meeting it came from. It will recur, and next time it should
-accumulate rather than start over.
+**A meeting produces at least two entities, not one: the person and the
+organization.** Create both, and `link` them. Folding the person into the
+company is the most common modelling mistake here and the most expensive,
+because **people move and the relationship follows the person.** A founder whose
+company winds down and who turns up eighteen months later running a team at a
+public company is the *same relationship* — recorded against the company, that
+continuity is lost the moment they leave, and the next meeting starts a blank
+record.
+
+The split is clean once you see it:
+
+| Goes on the `person` | Goes on the `org` |
+|---|---|
+| What they said, and how they think | What the company is and does |
+| Their trajectory and where they've been | Product, traction, architecture |
+| The relationship — who introduced whom, what's owed | Position in the market, competitors |
+| Judgment that would follow them to a new company | Judgment that dies with the company |
+
+So a week with four founder conversations yields four `person` entities and the
+`org` entities they attach to — not four org entities with the humans buried in
+their notes. Where a week produces real learnings about an outside party — an
+architecture, an auth model, a benchmark — that lands on the org; where it
+produces a read of someone's judgment, that lands on the person.
 
 **Reuse ids.** Before creating an entity, check the store:
 

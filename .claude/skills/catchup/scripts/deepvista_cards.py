@@ -174,9 +174,12 @@ def cmd_plan(args, repo, cfg, sdir):
                 item["card"]["description"][:280].rstrip() + " …[truncated for the plan; "
                 "re-run with --show-body for the full markdown]")
         plan.append(item)
+        if args.limit and len(plan) >= args.limit:
+            break
 
     print(json.dumps({
         "endpoint": MCP_ENDPOINT,
+        "limited_to": args.limit or None,
         "repo": repo_label,
         "week": args.week,
         "project_id": dv_cfg.get("project_id"),
@@ -221,6 +224,8 @@ def main():
     p.add_argument("--force", action="store_true", help="re-push even if unchanged")
     p.add_argument("--show-body", action="store_true", help="full markdown, not truncated")
     p.add_argument("--include-skipped", action="store_true")
+    p.add_argument("--limit", type=int, default=0,
+                   help="plan at most N items — use --limit 1 for a first live push")
     p.set_defaults(fn=cmd_plan)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")

@@ -212,14 +212,68 @@ specifically its `/create_context_card` and `/update_context_card` calls. Prefer
 it over the rendered API reference, and reconcile against the live MCP tool list
 once connected.
 
-## First run, in order
+## Test run — the procedure for the first live push
 
-1. Add the `.mcp.json` entry (no headers), then run `/mcp` in an **interactive**
-   session and complete the browser sign-in. There is no key to obtain.
-2. Confirm the connection and **dump the MCP tool list** — reconcile it against
-   the field names above before pushing anything.
-3. `plan --week <week>` and read one full body with `--show-body`.
-4. Push **one** entity. Check it renders in DeepVista, is findable in search
-   (this is the `confirmed` test), and note the credit cost.
-5. `record` its card id, re-run `plan`, and confirm it now says `skip`.
-6. Only then push the rest.
+Nothing below this line has been exercised. Run it in order and stop at the
+first surprise; the point is to find out where the inferred contract is wrong,
+not to get cards in.
+
+**1. Register the server, once, at user scope**
+
+```bash
+claude mcp add --transport http --scope user deepvista https://api.deepvista.ai/mcp
+```
+
+**2. Authenticate.** In an interactive session, `/mcp` → `deepvista` → browser
+sign-in. Confirm it reports connected.
+
+**3. Dump the tool list before pushing anything.**
+
+Ask for the DeepVista MCP tool list verbatim and reconcile it against what this
+bridge emits. The card fields here — `card_type`, `title`, `description`,
+`tags`, `status` — were read off the CLI's REST calls, **not off a connected
+server**, so this is the step most likely to find a mismatch. Two things to check
+specifically:
+
+- Is there a `status` parameter at all? If the MCP tool does not expose it,
+  cards will land `unconfirmed` and search will not surface them — which changes
+  the plan from "push everything" to "push, then confirm in the UI".
+- Does `card_type` accept the value being sent (`note`, `topic`, `keypoint`,
+  `person`, `organization`)?
+
+**4. Plan exactly one card.**
+
+```bash
+python3 .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --limit 1 --show-body
+```
+
+Read the markdown body before it goes anywhere.
+
+**5. Push that one**, by calling the MCP create tool with the `card` object.
+
+**6. Check three things in the product**, in this order:
+
+| Check | Why it matters |
+|---|---|
+| The card renders — timeline and all | The body is markdown; if it lands as a wall of text the format is wrong |
+| **It is findable by search** | This is the `confirmed` test. If it does not appear, step 3's status question was the answer |
+| Credit balance moved by how much | The free tier is 100/month; 25 entities at an unknown per-card cost is the actual budget question |
+
+**7. Record the id and prove the skip works.**
+
+```bash
+python3 .claude/skills/catchup/scripts/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned-id>
+python3 .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --include-skipped
+```
+
+That entity must now say `skip`. If it says `create`, the write-back did not
+take and a full run would duplicate every card.
+
+**8. Only then** push the rest — and consider `--category meeting` first, since
+those entities are the ones whose value compounds.
+
+**What to report back:** the tool list, which step surprised you, the credit
+delta for one card, and whether search found it.
+
+---
+
