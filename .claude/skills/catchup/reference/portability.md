@@ -27,7 +27,7 @@ so edits to canon simply stop taking effect, with no error and no signal. This
 is not hypothetical: it is the observed failure mode when an external importer
 owns the directory instead of the repository.
 
-`deploy.sh` therefore checks the state of `.agents/skills` after every deploy
+`deploy.py` therefore checks the state of `.agents/skills` after every deploy
 and says which of the three cases the repo is in:
 
 | State | Meaning |

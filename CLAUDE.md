@@ -45,7 +45,7 @@ directly.
 | `fnr/<YYYY-WNN>.md` | One public weekly per ISO week, published Mondays about the week that just closed |
 | `fnr/.private/` | **A separate private repo** — [about-me-private](https://github.com/batmany13/about-me-private) — cloned into this gitignored path. Holds `repos.json` (which repos the weekly reads), `scrub_policy.md` (what may be published), and the unscrubbed drafts. Never commit its contents here, never quote it in public files |
 | **.claude/skills/** | |
-| `.claude/skills/catchup/` | **Source of truth** for the repo-agnostic `catchup` skill, deployed into other repos with its `deploy.sh`. Two passes: extract entities from a week, then summarize from them. Nothing repo-specific lives in it — that goes in each repo's `.claude/catchup.config.json` |
+| `.claude/skills/catchup/` | **Source of truth** for the repo-agnostic `catchup` skill, deployed into other repos with its `deploy.py`. Two passes: extract entities from a week, then summarize from them. Nothing repo-specific lives in it — that goes in each repo's `.claude/catchup.config.json` |
 | `.claude/skills/rollup/` | The summary-of-summaries: reads every registered repo's week records and entities and merges them into one cross-repo view. Private output only |
 | `.claude/skills/fnr/` | The public weekly — see **Writing the weekly** below |
 | **leadership/** | |
@@ -128,12 +128,22 @@ start disagreeing.
 `catchup` is **deployed** into other repos, not run from here:
 
 ```bash
-.claude/skills/catchup/scripts/deploy.sh /path/to/repo --config
+.claude/skills/catchup/scripts/deploy.py /path/to/repo --config
 ```
 
-Edit it here and redeploy; never edit a deployed copy, and never let another
-runtime hold a second copy (`.agents/skills` must be a symlink, not a directory
-— `deploy.sh` checks and reports this).
+Edit it here and redeploy — but **the copies go both ways**, because defects
+turn up where the skill *runs*, not where it is edited:
+
+```bash
+.claude/skills/catchup/scripts/deploy.py <repo> --check      # has it drifted?
+.claude/skills/catchup/scripts/deploy.py <repo> --pull-back  # carry a fix home
+```
+
+`--pull-back` overwrites canon with the copy, so review the resulting `git diff`
+before committing — pulling back from a target that is *behind* would regress
+the source. Never let another runtime hold a second copy either: `.agents/skills`
+must be a symlink, not a directory, and `deploy.py` reports which state a repo
+is in after every deploy.
 
 `rollup` output carries repo names and unscrubbed notes, so it is **private by
 construction**. Repo names live in `fnr/.private/repos.json` and nowhere else in

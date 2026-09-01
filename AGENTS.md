@@ -55,7 +55,7 @@ reads. Edit canon, never a copy.
 
 | Skill | What it does |
 |---|---|
-| `catchup` | Per-repo weekly: extract entities from a week, then summarize from them. **Source of truth** — deployed into other repos with its `deploy.sh`, so edit it here and redeploy |
+| `catchup` | Per-repo weekly: extract entities from a week, then summarize from them. **Source of truth** — deployed into other repos with its `deploy.py`, so edit it here and redeploy |
 | `rollup` | Cross-repo summary-of-summaries. Output is private by construction |
 | `fnr` | The public weekly, written under the scrub policy |
 

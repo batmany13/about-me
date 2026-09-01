@@ -366,12 +366,29 @@ catchups are working artifacts and the user decides when they land.
 
 ---
 
+## Keeping the copies honest
+
+This skill is edited in one repo and copied into the ones that run it, so the
+copies drift — and the fixes are usually found in a copy, because that is where
+the skill actually runs against a real week.
+
+```bash
+python3 $SKILL/deploy.py <repo> --check      # drifted?
+python3 $SKILL/deploy.py <repo> --pull-back  # carry a fix back to canon
+python3 $SKILL/deploy.py --check-all <repo> <repo> …
+```
+
+**Never hand-transcribe a fix between copies**, and never edit a deployed copy
+and leave it there. `--pull-back` overwrites canon, so read the resulting
+`git diff` before committing: pulling back from a target that is *behind* source
+silently regresses it.
+
 ## Running under another agent runtime
 
 `.claude/skills/` is the authored canon; a second runtime should **point at it**,
 never hold a copy. A copied `.agents/skills/` directory works the day it is made
 and diverges silently from then on, because the copy is what that runtime reads.
-`deploy.sh` reports which state a repo is in after every deploy. Details and the
+`deploy.py` reports which state a repo is in after every deploy. Details and the
 one-line fix: [`reference/portability.md`](reference/portability.md).
 
 The scripts are plain Python over `git` and `gh` with no runtime-specific calls,
