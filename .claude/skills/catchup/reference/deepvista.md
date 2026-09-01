@@ -43,7 +43,7 @@ client registration, so the client registers itself and the browser does the res
 **Register it once at user scope, not per repo:**
 
 ```bash
-claude mcp add --transport http --scope user deepvista https://api.deepvista.ai/mcp
+claude mcp add --transport http deepvista-server https://api.deepvista.ai/mcp
 ```
 
 Then, **in an interactive session**, run `/mcp`, pick `deepvista`, and complete
@@ -212,22 +212,104 @@ specifically its `/create_context_card` and `/update_context_card` calls. Prefer
 it over the rendered API reference, and reconcile against the live MCP tool list
 once connected.
 
+### When the connector will not start
+
+**`npm ERR! code E401 — Unable to authenticate, need: Bearer resource_metadata=...`**
+
+This is not an authentication problem, despite being an authentication message.
+npm 6's `npx` does not understand `-y`: it reads the rest of the line as
+packages to install and tries to `npm install` the server URL. npm fetches that
+URL, gets the OAuth challenge every MCP server answers with, and reports it as
+an npm auth failure. The proxy never starts.
+
+Check what would actually be spawned:
+
+```bash
+npx --version      # must be 7+; npm 6 ships 6.x and cannot run this entry
+node --version     # 18+
+```
+
+A machine can carry a modern npx that simply loses on PATH — a Homebrew node
+under `/opt/homebrew/bin` behind an older `/usr/local/bin`. Either reorder PATH
+or pin the working one in the entry:
+
+```json
+{ "mcpServers": { "deepvista": {
+    "command": "/opt/homebrew/bin/npx",
+    "args": ["-y", "mcp-remote", "https://api.deepvista.ai/mcp"] } } }
+```
+
+`install-mcp` runs this check and says which case a machine is in. A healthy
+launch is unmistakable — it discovers the authorization server, registers a
+client, opens a callback port and prints a sign-in URL:
+
+```
+Discovering OAuth server configuration...
+Discovered authorization server: <issuer>
+OAuth callback server running at http://127.0.0.1:<port>
+Please authorize this client by visiting: ...
+```
+
 ## Test run — the procedure for the first live push
 
 Nothing below this line has been exercised. Run it in order and stop at the
 first surprise; the point is to find out where the inferred contract is wrong,
 not to get cards in.
 
-**1. Register the server, once, at user scope**
+**1. Register the server** — from the skill, so the requirement travels with the
+code that has it rather than being re-derived per repo:
 
 ```bash
-claude mcp add --transport http --scope user deepvista https://api.deepvista.ai/mcp
+uv run <skill>/scripts/deepvista_cards.py install-mcp --repo .
 ```
 
-**2. Authenticate.** In an interactive session, `/mcp` → `deepvista` → browser
-sign-in. Confirm it reports connected.
+Idempotent, refuses to overwrite a conflicting entry, and writes **no
+credentials** — the server does OAuth 2.1 with dynamic client registration, so
+the entry is a name, a transport and a URL. `--scope user` instead prints the
+vendor's own one-liner, which registers once for every repo on the machine:
+
+```bash
+claude mcp add --transport http deepvista-server https://api.deepvista.ai/mcp
+```
+
+**2. Authenticate — and this is the step to plan around, not discover.**
+
+**There is no headless path today.** Every client the vendor documents ends in a
+browser OAuth flow: Cursor restarts and runs *MCP: Connect to server*, Claude
+Desktop quits and reopens, Claude Code runs `/mcp`. The docs also list API-key
+auth — `Authorization: Bearer <key>` from *Settings → Security & Access* — which
+would be headless, but **that setting is not exposed in the product yet**
+(checked 2026-09-01). Until it is, OAuth is the only route.
+
+**Which config you choose decides who runs the OAuth, and that is the whole
+question.** `type: http` hands it to the host app's MCP client — fine where the
+app exposes a connect flow you can reach, a dead end where it does not. The
+`mcp-remote` form runs a local stdio proxy that does the OAuth **itself** and
+caches the token under `~/.mcp-auth`, so one browser sign-in makes every later
+session headless, agent runs included. This repo uses the second, which is why
+`.mcp.json` carries `command`/`args` rather than a URL.
+
+So the sequence is:
+
+1. **Node 18+** — `npx` runs the proxy, and nothing works without it;
+2. a **fresh** session, because MCP servers connect at start-up and one added to
+   `.mcp.json` mid-session is invisible to that session;
+3. the first launch opens a browser once. After that the cached token carries.
+
+An agent run can do everything up to the handoff — `install-mcp`, then `plan`,
+which renders every card — and nothing past it. Plan for a human at step 2 rather
+than discovering it there.
+
+Do not reach for `deepvista auth login` to shortcut this; see the gotcha below.
 
 **3. Dump the tool list before pushing anything.**
+
+This step is not optional and the vendor docs are why. As of 2026-09-01 they
+publish the setup command and the auth model and **nothing else** — no tool
+names, no parameters, no `card_type` enum, no `status` field. The linked
+OpenAPI specification is still Mintlify's stock plant-store example. So every
+field this bridge sends is inferred from the CLI's REST calls and none of it is
+confirmed against a served contract.
 
 Ask for the DeepVista MCP tool list verbatim and reconcile it against what this
 bridge emits. The card fields here — `card_type`, `title`, `description`,

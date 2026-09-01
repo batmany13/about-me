@@ -34,6 +34,8 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -42,7 +44,30 @@ from entities import (  # noqa: E402
     load_all, load_config, store_dir, write_entity,
 )
 
+# The server this bridge needs, declared ONCE and travelling with the skill.
+# Registration used to be per-repo prose in the runbook, which meant every repo
+# adopting the sync re-derived the same three values by hand and could get any of
+# them wrong. `install-mcp` writes this into a target repo's .mcp.json, so the
+# requirement lives with the code that has the requirement.
+#
+# The `mcp-remote` proxy form, which is what the vendor documents for clients
+# without their own in-app Connect command. It matters which one you pick, and
+# the difference is not syntax:
+#
+#   type:http    -- the HOST APP's MCP client runs the OAuth. Fine where the app
+#                   exposes a connect flow you can reach; a dead end where it
+#                   does not, because there is nothing else to run it.
+#   mcp-remote   -- a local stdio proxy runs the OAuth ITSELF and caches the
+#                   token under ~/.mcp-auth. One browser sign-in on first launch,
+#                   headless from then on, INCLUDING from agent sessions.
+#
+# The second is why this is the default: it makes the push reachable without a
+# human in the loop after the first time. The cost is a hard Node 18+ dependency
+# for anyone whose client reads this file.
+MCP_SERVER_NAME = "deepvista"
 MCP_ENDPOINT = "https://api.deepvista.ai/mcp"
+MCP_ENTRY = {"command": "npx", "args": ["-y", "mcp-remote", MCP_ENDPOINT]}
+MCP_RELPATH = ".mcp.json"
 
 # Entity type -> DeepVista card_type. The right-hand side is DeepVista's fixed
 # vocabulary (from the CLI's CARD_TYPES), not ours, so the mapping is lossy on
@@ -173,6 +198,127 @@ def build_tags(e, cfg, repo_label):
     return sorted(t for t in tags if t)
 
 
+def npx_preflight():
+    """Whether the `npx` that would actually be spawned can run the proxy.
+
+    npm 6's npx does not understand `-y`, so it reads the whole remainder as
+    packages to install and tries to `npm install` the server URL. npm then
+    fetches that URL, gets the OAuth challenge every MCP server answers with,
+    and reports:
+
+        npm ERR! code E401
+        npm ERR! Unable to authenticate, need: Bearer resource_metadata="..."
+
+    Which is a message about authentication, on a connector whose authentication
+    is the thing you are trying to set up -- so it reads as "OAuth is broken"
+    and sends you to fix the wrong layer entirely. The proxy never starts. A
+    machine can also carry a modern npx that simply loses on PATH, which is what
+    makes this worth checking rather than assuming.
+
+    Returns (ok, message).
+    """
+    exe = shutil.which("npx")
+    if not exe:
+        return False, ("no `npx` on PATH -- mcp-remote runs through it. "
+                       "Install Node 18+ (which ships npm 7+).")
+    try:
+        ver = subprocess.run([exe, "--version"], capture_output=True, text=True,
+                             timeout=30).stdout.strip()
+    except (subprocess.SubprocessError, OSError) as e:
+        return False, f"could not run `{exe} --version`: {e}"
+
+    major = 0
+    try:
+        major = int(ver.split(".")[0])
+    except (ValueError, IndexError):
+        pass
+    if major >= 7:
+        return True, f"npx {ver} at {exe}"
+
+    alt = ""
+    for cand in ("/opt/homebrew/bin/npx", "/usr/local/bin/npx"):
+        if cand == exe or not os.path.isfile(cand):
+            continue
+        try:
+            av = subprocess.run([cand, "--version"], capture_output=True,
+                                text=True, timeout=30).stdout.strip()
+            if int(av.split(".")[0]) >= 7:
+                alt = (f"\n  A usable one exists at {cand} (npx {av}) but loses on "
+                       f"PATH.\n  Either put its directory first, or set "
+                       f'"command": "{cand}" in the entry.')
+                break
+        except (subprocess.SubprocessError, OSError, ValueError, IndexError):
+            continue
+    return False, (
+        f"npx {ver} at {exe} is too old to run this entry (needs 7+).\n"
+        "  npm 6's npx ignores `-y` and tries to npm-install the server URL,\n"
+        "  which fails with `E401 Unable to authenticate` -- a message about\n"
+        "  auth that has nothing to do with the connector's auth." + alt)
+
+
+def cmd_install_mcp(args, repo, cfg, sdir):
+    """Register the DeepVista server in a repo's .mcp.json, idempotently.
+
+    NO CREDENTIALS ARE WRITTEN and none belong here: the server does OAuth 2.1
+    with dynamic client registration, so the entry is a name, a transport and a
+    URL, and the browser sign-in happens once per machine through `/mcp`. A repo
+    file is never the place for a bearer token even where a server accepts one.
+
+    Project scope by default because that is what makes the skill portable -- the
+    repo that runs the sync carries its own declaration. `--scope user` prints
+    the one-line command instead, for someone who would rather authenticate once
+    for every repo; a user-scope registration is a machine setting and not
+    something a repo-level tool should write on anyone's behalf.
+    """
+    ok, msg = npx_preflight()
+    print(("  npx check: " if ok else "  !! ") + msg + "\n")
+
+    if args.scope == "user":
+        print("Run this once, in an interactive terminal:\n")
+        print(f"  claude mcp add {MCP_SERVER_NAME} -- npx -y mcp-remote {MCP_ENDPOINT}\n")
+        print("User scope covers every repo on this machine; project scope (the")
+        print("default here) keeps the declaration with the repo that uses it.")
+        print("Either way the first launch opens a browser once; the proxy caches")
+        print("the token under ~/.mcp-auth and every later session is headless.")
+        return
+
+    path = os.path.join(repo, MCP_RELPATH)
+    blob = {}
+    if os.path.isfile(path):
+        try:
+            with open(path) as fh:
+                blob = json.load(fh)
+        except json.JSONDecodeError as e:
+            die(f"{MCP_RELPATH} is not valid JSON ({e}) -- refusing to overwrite it")
+    servers = blob.setdefault("mcpServers", {})
+    existing = servers.get(MCP_SERVER_NAME)
+    if existing == MCP_ENTRY:
+        print(f"already registered: {MCP_SERVER_NAME} -> {MCP_ENDPOINT}")
+    elif existing and not args.force:
+        die(f"{MCP_SERVER_NAME} is already in {MCP_RELPATH} with different settings:\n"
+            f"  {json.dumps(existing)}\n"
+            f"expected:\n  {json.dumps(MCP_ENTRY)}\n"
+            f"Leaving it alone -- pass --force to replace it.")
+    else:
+        servers[MCP_SERVER_NAME] = dict(MCP_ENTRY)
+        if args.dry_run:
+            print(f"would write to {os.path.relpath(path, repo)}:")
+            print(json.dumps({MCP_SERVER_NAME: MCP_ENTRY}, indent=2))
+            return
+        with open(path, "w") as fh:
+            json.dump(blob, fh, indent=2)
+            fh.write("\n")
+        print(f"registered {MCP_SERVER_NAME} in {os.path.relpath(path, repo)}")
+
+    print("\nRequires Node 18+ -- `npx` runs the proxy. Start a FRESH session: MCP")
+    print("servers connect at start-up, so one added mid-session is invisible to it.")
+    print("The first launch opens a browser once; the proxy caches the token under")
+    print("~/.mcp-auth and every session after that is headless, agent runs included.")
+    print("\nThen dump the tool list before pushing anything: the vendor publishes the")
+    print("setup and the auth model but not the tool names, parameters, card_type")
+    print("values or status field, so every field this bridge sends is inferred.")
+
+
 def cmd_plan(args, repo, cfg, sdir):
     ents = load_all(sdir)
     if args.week:
@@ -291,6 +437,14 @@ def main():
     p.add_argument("--limit", type=int, default=0,
                    help="plan at most N items — use --limit 1 for a first live push")
     p.set_defaults(fn=cmd_plan)
+
+    p = sub.add_parser("install-mcp", parents=[common],
+                       help="register the DeepVista MCP server in this repo's .mcp.json")
+    p.add_argument("--scope", choices=["project", "user"], default="project",
+                   help="project writes .mcp.json; user prints the one-line command")
+    p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--force", action="store_true", help="replace a conflicting entry")
+    p.set_defaults(fn=cmd_install_mcp)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")
     p.add_argument("--id", required=True)

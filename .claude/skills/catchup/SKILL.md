@@ -493,6 +493,30 @@ Only when config sets `deepvista.enabled: true`. See
 [`reference/deepvista.md`](reference/deepvista.md) for the full prototype —
 endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
 
+**Register the server from the skill, not by hand.** The requirement travels
+with the code that has it:
+
+```bash
+uv run $SKILL/deepvista_cards.py install-mcp --repo .            # writes .mcp.json
+uv run $SKILL/deepvista_cards.py install-mcp --repo . --scope user   # prints the once-per-machine command
+```
+
+Idempotent, writes **no credentials** — the server does OAuth 2.1 with dynamic
+client registration, so a repo file holds a name, a transport and a URL and
+nothing else. It refuses to overwrite a conflicting entry.
+
+It registers the **`mcp-remote` proxy form** deliberately: that proxy runs the
+OAuth itself and caches the token under `~/.mcp-auth`, so one browser sign-in
+makes every later session headless — agent runs included. Handing the flow to the
+host app's own MCP client instead (`type: http`) means it can only ever be done
+wherever that app exposes a connect UI. The cost is a hard **Node 18+**
+dependency, since `npx` runs the proxy.
+
+The first sign-in is still a human step, and a *fresh* session is required
+because MCP servers connect at start-up. Sequence the work accordingly: an agent
+does `install-mcp` and `plan`, a human does the one browser flow, then an agent
+pushes — every time after that, an agent can do all of it.
+
 **No API key is required** — the server does MCP OAuth with dynamic client
 registration. Add the `.mcp.json` entry with no `headers`, then run `/mcp` in an
 **interactive** session and sign in through the browser; a non-interactive
@@ -533,20 +557,15 @@ catchups are working artifacts and the user decides when they land.
 
 ## Keeping the copies honest
 
-This skill is edited in one repo and copied into the ones that run it, so the
-copies drift — and the fixes are usually found in a copy, because that is where
-the skill actually runs against a real week.
+This skill is edited in one repo and pointed at from the others. When a copy
+does exist, a fix found in the copy has to travel back to canon — never
+hand-transcribed between them, because the two then differ in ways nobody
+diffed.
 
-```bash
-uv run $SKILL/deploy.py <repo> --check      # drifted?
-uv run $SKILL/deploy.py <repo> --pull-back  # carry a fix back to canon
-uv run $SKILL/deploy.py --check-all <repo> <repo> …
-```
-
-**Never hand-transcribe a fix between copies**, and never edit a deployed copy
-and leave it there. `--pull-back` overwrites canon, so read the resulting
-`git diff` before committing: pulling back from a target that is *behind* source
-silently regresses it.
+> **Note:** earlier versions of this document described a `scripts/deploy.py`
+> with `--check` / `--pull-back` / `--check-all`. **That script is not part of
+> this skill.** If a repo has one, it is that repo's own tooling; if you need the
+> behaviour, write it there rather than assuming it ships here.
 
 ## Running under another agent runtime
 
