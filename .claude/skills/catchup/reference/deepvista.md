@@ -38,25 +38,49 @@ No trailing slash. Scoped automatically to the account's **currently active
 project**. It exposes context-card read, search, create, update and delete.
 
 **No API key is needed.** The server implements the MCP OAuth flow with dynamic
-client registration, so the client registers itself and the browser does the
-rest. Add this to the target repo's `.mcp.json` — note there is no `headers`
-block:
+client registration, so the client registers itself and the browser does the rest.
 
-```json
-{
-  "mcpServers": {
-    "deepvista": {
-      "type": "http",
-      "url": "https://api.deepvista.ai/mcp"
-    }
-  }
-}
+**Register it once at user scope, not per repo:**
+
+```bash
+claude mcp add --transport http --scope user deepvista https://api.deepvista.ai/mcp
 ```
 
 Then, **in an interactive session**, run `/mcp`, pick `deepvista`, and complete
 the browser sign-in. A non-interactive session cannot do this — there is no
-prompt to answer — so authenticate once interactively and the stored credentials
-carry over.
+prompt to answer.
+
+User scope makes the server available in every repo without a `.mcp.json`
+committed anywhere. Since auth is OAuth rather than a key, there is no secret to
+place and nothing repo-specific to keep in sync — which is the whole reason to
+prefer it over N copies of the same five-line config.
+
+A project-scoped `.mcp.json` works too and is right when a repo's collaborators
+should all get the server. For a personal integration, user scope is less to
+maintain and leaves no trace in the repo:
+
+```json
+{ "mcpServers": { "deepvista": { "type": "http", "url": "https://api.deepvista.ai/mcp" } } }
+```
+
+### Which repo does the pushing
+
+**The repo that owns the entity pushes it.** Not a central pusher.
+
+`record` writes `card_id` and the content hash back onto the entity file, and
+that write-back is what makes the next run's create-vs-update-vs-skip decision
+possible. A central pusher would have to write into other repos' working trees —
+producing uncommitted changes in repos it does not own — or keep the sync state
+somewhere other than the entity, in which case re-running catchup in the source
+repo would not know a card already exists and would create duplicates.
+
+This is the same one-producer rule the rollup follows: it reads other repos'
+products and never re-derives them. Sync state is a product of the entity, so it
+belongs with the entity.
+
+The cost of that choice is that credit spend is spread across repos rather than
+visible in one place. `entities.py stats` reports `synced_to_deepvista` per repo,
+which is the per-repo half; there is no aggregate view yet.
 
 ### Why no key
 
