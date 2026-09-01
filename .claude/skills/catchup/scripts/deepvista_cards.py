@@ -55,6 +55,13 @@ CARD_TYPE = {
     "thread": "topic",
     "decision": "keypoint",
     "correction": "keypoint",
+    # A theme is an ongoing subject that accumulates weekly notes, which is what
+    # `topic` is for. A concept is a point of knowledge with a claim and a grade,
+    # which is `keypoint`. Both were missing here and fell through to the generic
+    # `note` default -- so the two types the format is actually built around were
+    # the two arriving in DeepVista untyped.
+    "theme": "topic",
+    "concept": "keypoint",
     "other": "note",
 }
 
@@ -70,9 +77,13 @@ def render_body(e, titles, repo_label):
     weeks = sorted(e.get("weeks") or {})
     lines = [e.get("summary", "").strip(), ""]
 
+    latest = (e.get("weeks") or {}).get(sorted(e.get("weeks") or {})[-1], {}) if e.get("weeks") else {}
     meta = [
         f"**Category:** {titles.get(e.get('category'), e.get('category'))}",
-        f"**Type:** {e.get('type')}",
+        f"**Type:** {e.get('type')}",]
+    if latest.get("subject"):
+        meta.append(f"**Subject:** {latest['subject']}")
+    meta += [
         f"**Status:** {e.get('status')}",
         f"**Source:** {repo_label}",
     ]
@@ -89,7 +100,44 @@ def render_body(e, titles, repo_label):
         if blk.get("date"):
             head += f" — {blk['date']}"
         lines.append(head)
-        lines.append(blk.get("note", "").strip())
+
+        # The structured fields FIRST, because they are the entity. This renderer
+        # predates them and emitted only `note`, so a theme's weight, what moved
+        # and why it matters -- and a learning's whole claim/grade/so_what/open --
+        # never reached the card at all. What arrived was the footnote.
+        if blk.get("moved"):
+            lines.append(blk["moved"].strip())
+        if blk.get("why_it_matters"):
+            lines.append("")
+            lines.append(f"**Why it matters:** {blk['why_it_matters'].strip()}")
+        wt = blk.get("weight") or {}
+        if wt.get("share") is not None:
+            bits = [f"{wt['share']:.0%} of the week's commits"]
+            if wt.get("line_share") is not None:
+                bits.append(f"{wt['line_share']:.0%} of its churn")
+            if wt.get("commits"):
+                bits.append(f"{wt['commits']} commits")
+            lines.append("")
+            lines.append("**Weight:** " + " · ".join(bits))
+        if blk.get("evidence"):
+            lines.append("")
+            lines.append("**Evidence:**")
+            lines += [f"- {x}" for x in blk["evidence"]]
+
+        if blk.get("claim"):
+            grade = blk.get("grade")
+            lines.append(f"**Claim:** {blk['claim'].strip()}"
+                         + (f"  *[{grade}]*" if grade else ""))
+        if blk.get("so_what"):
+            lines.append("")
+            lines.append(blk["so_what"].strip())
+        if blk.get("open"):
+            lines.append("")
+            lines.append(f"**Open:** {blk['open'].strip()}")
+
+        if blk.get("note"):
+            lines.append("")
+            lines.append(blk["note"].strip())
         ev = []
         if blk.get("people"):
             ev.append("People: " + ", ".join(blk["people"]))
