@@ -60,14 +60,8 @@ carry over.
 
 ### Why no key
 
-The docs describe generating one under *Settings → Security & Access*. **That
-screen does not exist in the product.** Nor is there a programmatic route: no
-key-minting endpoint appears anywhere in the CLI source, and the `auth` command
-group is only `login` / `status` / `list` / `switch` / `remove` / `logout`. Treat
-the API-key paragraph in the docs as aspirational until the UI catches up — it
-is of a piece with the published OpenAPI still being Mintlify's sample spec.
-
-What is verified, by probing the live endpoints:
+OAuth is the route this was built and verified against. Confirmed by probing the
+live endpoints:
 
 | Probe | Result |
 |---|---|
@@ -78,15 +72,14 @@ What is verified, by probing the live endpoints:
 That is the standard MCP OAuth discovery chain, complete and working, which is
 why no manual credential is required.
 
-**A trap worth naming.** `deepvista auth login` writes a field called `api_key`
-into `~/.config/deepvista/credentials.default.json`. That is **not** an API key
-for this — the source comments it as the Supabase *anon* key used to refresh the
-session: public by design and useless as a bearer credential. Don't copy it
-anywhere.
+One field is easy to misread: `deepvista auth login` writes an `api_key` into
+`~/.config/deepvista/credentials.default.json`, and the source documents it as
+the Supabase *anon* key used to refresh the session — a public client value, not
+a bearer credential. It is not the thing to reach for here.
 
 `rm -rf ~/.mcp-auth` clears a stuck auth cache.
 
-### If a key ever does become available
+### If a bearer key is used instead
 
 Follow the local-secrets convention rather than putting it in a repo file: keep
 it in `~/.config/secrets.env` as `DEEPVISTA_API_KEY`, never printed (transcripts
@@ -164,10 +157,9 @@ can be traced back to its entity even if its title is edited in the product.
 
 ## The gotcha
 
-**Agent-created cards default to `unconfirmed`, and unconfirmed cards are
-filtered out of search.** A card pushed without an explicit status is invisible
-in the product it was just pushed to — it exists, but nothing finds it. Every
-card this bridge sends therefore sets `status: "confirmed"` explicitly. Leave
+**Agent-created cards default to `unconfirmed`, and search filters those out** —
+so a card pushed without an explicit status exists but is not findable. Every
+card this bridge sends therefore sets `status: "confirmed"`. Leave
 `deepvista.card_status` alone unless you specifically want cards staged for
 review.
 
@@ -182,20 +174,19 @@ Honest list, so nothing here reads as tested when it isn't:
    which is the REST contract the MCP server sits in front of. The MCP tools
    almost certainly mirror it, but read the tool list once connected and adjust
    the mapping if it differs.
-3. ~~Whether an API key works.~~ **Resolved: there is no key to get.** The
-   documented settings screen does not exist and nothing mints one
-   programmatically. OAuth with dynamic client registration is the route, and its
-   discovery chain is verified live — but the *authenticated* session beyond the
-   401 challenge is still untested.
+3. ~~Whether a bearer key is needed.~~ **Resolved: OAuth is the route**, and its
+   discovery chain is verified live. The *authenticated* session beyond the 401
+   challenge is still untested.
 4. **Whether `status: confirmed` is settable through MCP.** It is a REST field;
    the MCP tool may not expose it. If it doesn't, cards will need confirming in
    the UI, and that is worth knowing before a bulk push.
 5. **Credit cost per card write.** Unmeasured. Push one entity first and check
    the balance before running a backfill.
 
-**The published OpenAPI at `docs.deepvista.ai/api-reference/openapi.json` is not
-DeepVista's** — it is still Mintlify's sample plant-store spec. Don't build
-against it. The CLI source is the real contract.
+**The contract this was built against is the `deepvista-cli` source** (Apache-2.0),
+specifically its `/create_context_card` and `/update_context_card` calls. Prefer
+it over the rendered API reference, and reconcile against the live MCP tool list
+once connected.
 
 ## First run, in order
 
