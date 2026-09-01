@@ -386,6 +386,20 @@ def classify(subject, files, matchers):
 # Git collection
 # ---------------------------------------------------------------------------
 
+def refresh_remote(path):
+    """Fetch before counting, because the mainline ref decides a published number.
+
+    `commit_count_primary` is what gets published, and it is computed against
+    `origin/HEAD`. A checkout whose remote ref is stale reports a smaller week
+    than actually happened -- on a real 20-PR week this read 12 instead of 55,
+    and nothing about the output looked wrong. Cheap insurance; failure is
+    non-fatal because an offline pull should still produce a week.
+    """
+    r = subprocess.run(["git", "fetch", "--quiet", "origin"], cwd=path,
+                       capture_output=True, text=True, timeout=120)
+    return r.returncode == 0
+
+
 def primary_ref(path):
     """The ref standing for the repo's mainline -- i.e. what is actually pushed."""
     head = run(["git", "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"],
@@ -503,7 +517,7 @@ def list_weeks(path):
 
 
 def collect(path, year, week, cfg, matchers, keep_ignored=False,
-            pr_bodies=True, pr_body_limit=6000):
+            pr_bodies=True, pr_body_limit=6000, fetch=True):
     """Walk one repo's git log for one week and classify it."""
     start, end = iso_week_bounds(year, week)
     label = week_label(year, week)
@@ -541,6 +555,7 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     since, until = f"{start - pad} 00:00", f"{end + pad} 23:59:59"
     lo, hi = str(start), str(end)
 
+    out["fetched"] = refresh_remote(path) if fetch else None
     ref = primary_ref(path)
     out["primary_ref"] = ref
     on_primary = set(run(["git", "log", ref, "--no-merges", "--format=%H",
@@ -660,6 +675,8 @@ def main():
                       help="list every week with commits and exit (for backfill)")
     ap.add_argument("--repo", default=".", help="repo to read (default: cwd)")
     ap.add_argument("--config", default=None, help=f"config path (default: <repo>/{CONFIG_RELPATH})")
+    ap.add_argument("--no-fetch", action="store_true",
+                    help="skip `git fetch origin` (offline; primary counts may be stale)")
     ap.add_argument("--no-prs", action="store_true",
                     help="skip fetching PR titles and bodies (faster, much less context)")
     ap.add_argument("--pr-body-limit", type=int, default=6000,
@@ -698,7 +715,8 @@ def main():
         targets = [default_week(today)]
 
     weeks = [collect(path, y, w, cfg, matchers, args.show_ignored,
-                     pr_bodies=not args.no_prs, pr_body_limit=args.pr_body_limit)
+                     pr_bodies=not args.no_prs, pr_body_limit=args.pr_body_limit,
+                     fetch=not args.no_fetch)
              for y, w in targets]
     print(json.dumps({
         "generated": dt.datetime.now().isoformat(timespec="seconds"),

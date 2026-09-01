@@ -129,6 +129,11 @@ Two things in that output decide how much to trust it:
   includes pre-squash worktree branches, so it is inflated and machine-specific.
   Publish the primary number. Prefer `prs_merged` (from `gh`) over the `prs`
   list, which is scraped from subjects and picks up cross-repo mentions.
+- **`fetched`** — the pull runs `git fetch origin` first, because the primary
+  count is measured against `origin/HEAD` and a stale remote ref silently
+  *undercounts* the week. On one real 20-PR week a stale ref reported 12 commits
+  instead of 55, and nothing in the output looked wrong. If `fetched` is `false`
+  the fetch failed and the primary number is suspect; `null` means `--no-fetch`.
 
 If the week has 0 commits, say so and stop. Don't write an empty file.
 
