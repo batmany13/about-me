@@ -173,14 +173,21 @@ def cmd_plan(args, repo, cfg, sdir):
             },
         }
         if not args.show_body:
-            item["card"]["description_lines"] = item["card"]["description"].count("\n") + 1
-            item["card"]["description"] = (
-                item["card"]["description"][:280].rstrip() + " …[truncated for the plan; "
-                "re-run with --show-body for the full markdown]")
+            # A preview, and named as one. This used to overwrite `description`
+            # in place with 280 characters plus a "[truncated]" marker, while the
+            # `next` line said to call the tool with `card` -- so following the
+            # instruction as written pushed a truncated body, with the marker
+            # text in it, into the product. The full body only ever lives under
+            # --show-body, so the preview now sits in its own key and `card` is
+            # never a payload the plan has quietly altered.
+            body = item["card"].pop("description")
+            item["card_body_preview"] = body[:280].rstrip() + " …"
+            item["card_body_lines"] = body.count("\n") + 1
         plan.append(item)
         if args.limit and len(plan) >= args.limit:
             break
 
+    ready = args.show_body
     print(json.dumps({
         "endpoint": MCP_ENDPOINT,
         "limited_to": args.limit or None,
@@ -189,9 +196,14 @@ def cmd_plan(args, repo, cfg, sdir):
         "project_id": dv_cfg.get("project_id"),
         "enabled": dv_cfg.get("enabled", False),
         "counts": counts,
+        "pushable": ready,
         "plan": plan,
-        "next": ("For each item call the DeepVista MCP create/update card tool with `card`, "
-                 "then run: deepvista_cards.py record --id <entity_id> --card-id <returned id>"),
+        "next": (
+            "For each item call the DeepVista MCP create/update card tool with `card`, "
+            "then run: deepvista_cards.py record --id <entity_id> --card-id <returned id>"
+            if ready else
+            "PREVIEW ONLY — `card` here has no `description`, so it is not a payload. "
+            "Re-run with --show-body to get the full card bodies before pushing anything."),
     }, indent=2))
 
 
@@ -203,7 +215,7 @@ def cmd_record(args, repo, cfg, sdir):
         e = json.load(fh)
     e.setdefault("deepvista", {})
     e["deepvista"]["card_id"] = args.card_id
-    e["deepvista"]["synced_at"] = dt.datetime.now().isoformat(timespec="seconds")
+    e["deepvista"]["synced_at"] = utc_now()
     # Hash the entity WITHOUT the deepvista block, matching plan's comparison.
     e["deepvista"]["content_hash"] = content_hash(e)
     write_entity(sdir, e)

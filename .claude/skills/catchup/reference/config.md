@@ -104,3 +104,31 @@ work — only a commit that is nothing but bookkeeping is bookkeeping.
 
 Both default off. A catchup is a working artifact; when it lands is the user's
 call, not the skill's.
+
+## `subjects` — where this repo's findings live
+
+The altitude rule in Step 2b says a learning is about the subject, not about a
+defect in it. That is unenforceable unless the skill can find what the repo
+writes *about* its subjects, and there is no generic way to guess.
+
+| Key | Default | What it does |
+|---|---|---|
+| `noun` | — | What a subject *is* here: "a technology under evaluation", "a customer", "a service" |
+| `artifacts[]` | none | Globs for the files that describe subjects — research bundles, evaluation reports, benchmarks, design docs |
+| `read_first` | — | Which field in those files carries the considered answer, e.g. a summary headline or a verdict line |
+
+`propose` lists whichever of those the week touched, ranked by how much each
+moved, so the read is a checklist rather than a reminder. Declare none and the
+command says so — a repo with no declared artifacts will get a catchup written
+from commit messages, which is a catchup of what changed rather than what was
+found.
+
+## `method_notes` — what this repo learned about its own catchups
+
+| Key | Default | What it does |
+|---|---|---|
+| `path` | `<out>/method-notes.md` | Where the repo keeps its accumulated catchup lessons |
+
+Deliberately outside the skill directory. Which themes recur here, which past
+summary went wrong and why, what the classifier keeps mis-filing — all of that is
+worth writing down and none of it travels to another repo.

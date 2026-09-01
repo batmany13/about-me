@@ -14,16 +14,21 @@ particular repo is compiled into this file.
 Emits a single JSON blob on stdout. Data collection only -- it classifies and
 counts, it does not judge or summarise. The skill does that.
 
-Two things about the counts, because they decide what gets written:
+Three things about the week, because they decide what gets written:
 
   * The week is decided by AUTHOR date, not committer date. Squash merges rewrite
     committer dates, and git's --since/--until filter on those, so the raw filter
     cuts the week in the wrong place. We query a padded window and re-filter.
-  * Every commit count comes in two flavours. `commit_count` spans all refs and
-    includes pre-squash worktree branches, so it is inflated and differs between
-    machines depending on which local branches exist. `commit_count_primary`
-    counts only what is reachable from the mainline ref -- stable everywhere the
-    repo is cloned.
+  * That date is read in UTC. Git renders author dates in the author's own zone,
+    so slicing `%aI` gave a LOCAL week -- while GitHub's `mergedAt` is UTC, so the
+    commit half and the PR half of the same pull disagreed about where the week
+    ended and the answer changed with the caller's timezone.
+  * `commits` carries only what is reachable from the mainline ref. A pre-squash
+    branch commit and the mainline commit it became share a subject but not a
+    sha, and the branch copy is reachable from nothing once the PR merges -- it
+    lives in one clone until git prunes it. What is dropped is reported by count
+    and reason. `commit_count_all_refs` is the all-refs figure, kept as a stat
+    because it is machine-specific and is not the number to publish.
 
 Usage:
     pull_week.py                      # last closed week, cwd repo
@@ -52,6 +57,9 @@ DATE_PAD_DAYS = 30
 
 # A path rule wins outright at this share of the commit's files, or at this many
 # files regardless of share. Below both, the subject gets the next word.
+# How many paths to carry per commit before truncating (the count is kept).
+PATHS_PER_COMMIT = 25
+
 PATH_SHARE_MIN = 0.25
 PATH_COUNT_MIN = 3
 
@@ -158,6 +166,26 @@ def iso_week_bounds(year, week):
     except ValueError:
         die(f"no such ISO week: {year}-W{week:02d} (that year has 52 weeks, not 53)")
     return monday, monday + dt.timedelta(days=6)
+
+
+def utc_date(iso):
+    """The UTC calendar date of a git `%aI` timestamp.
+
+    Git renders author dates in the AUTHOR's local zone (`2026-08-30T21:46:13-07:00`),
+    so slicing the first ten characters yields a LOCAL date. That silently moves
+    work across the week boundary: three PRs merged early on a Monday in UTC were
+    all counted into the previous week because Pacific time still read Sunday.
+    GitHub's own `mergedAt` is UTC, so the two halves of the same pull disagreed
+    about which week a PR belonged to, and the answer changed with the timezone of
+    whoever ran it.
+
+    Deciding the week in UTC makes it the same number for every caller, whatever
+    zone they are in.
+    """
+    try:
+        return dt.datetime.fromisoformat(iso).astimezone(dt.timezone.utc).date().isoformat()
+    except (ValueError, TypeError):
+        return (iso or "")[:10]
 
 
 def parse_week(arg, today):
@@ -337,41 +365,59 @@ def build_matchers(cfg):
     }
 
 
+def path_hits(files, matchers):
+    """How many of `files` each category owns, by MOST SPECIFIC matching pattern.
+
+    A file is owned once, by the longest pattern that matches it -- so a file
+    under `notes/events/` counts for whichever category declared
+    `**/notes/events/**`, not also for one that declared the broader `notes/**`.
+    Without that, a broad glob inflates its own count using files a narrower rule
+    already claims, and the broader category always looks bigger than the
+    specific one nested inside it.
+    """
+    hits = {}
+    for f in files:
+        best_key, best_pat = None, ""
+        for key in CATEGORY_ORDER:
+            for pat, rx in matchers[key]["paths"]:
+                if rx.match(f) and len(pat) > len(best_pat):
+                    best_key, best_pat = key, pat
+        if best_key:
+            matched, first = hits.get(best_key, (0, None))
+            hits[best_key] = (matched + 1, first or best_pat)
+    return hits
+
+
 def classify(subject, files, matchers):
     """Assign one commit to a category, and record which rule decided it.
 
     Paths outrank keywords: what a commit touched is harder evidence than how its
-    subject was worded. Within paths, the category with the most matching files
-    wins, so a commit that brushes one config file on its way through the service
-    layer still reads as technical.
-    """
-    hits = {}
-    for key in CATEGORY_ORDER:
-        pats = matchers[key]["paths"]
-        if not pats:
-            continue
-        matched, first = 0, None
-        for f in files:
-            for pat, rx in pats:
-                if rx.match(f):
-                    matched += 1
-                    if first is None:
-                        first = pat
-                    break
-        if matched:
-            hits[key] = (matched, first)
+    subject was worded.
 
-    if hits:
-        # max() over CATEGORY_ORDER position breaks ties toward `meeting`.
-        best = max(hits, key=lambda k: (hits[k][0], -CATEGORY_ORDER.index(k)))
-        matched, pat = hits[best]
-        # A commit that merely brushes one file of a category is not about that
-        # category. Require either a real share of the diff or an uncontested
-        # small one, otherwise fall through to the subject.
+    Among paths, CATEGORY_ORDER decides -- meeting, then technical, then other --
+    and the FIRST category to clear the evidence bar wins. It used to be whichever
+    category matched the most files, which quietly inverted the documented rule
+    ("a meeting note ABOUT a technical subject is still a meeting note") whenever
+    one category's glob contained another's. Any repo that gives one category a
+    broad glob and another a narrower one nested inside it hits this: the narrow
+    category can never win a commit, however specific its rule. Observed on a
+    real week whose headline was an event -- 268 of 270 commits went to the broad
+    category and ZERO to the narrow one.
+
+    The evidence bar itself is unchanged, and still does its own job: a commit
+    that merely brushes one file of a category is not about that category, so a
+    category must own a real share of the diff -- or an uncontested few files --
+    before precedence gets to speak for it.
+    """
+    hits = path_hits(files, matchers)
+
+    for key in CATEGORY_ORDER:
+        if key not in hits:
+            continue
+        matched, pat = hits[key]
         share = matched / max(1, len(files))
         if share >= PATH_SHARE_MIN or matched >= PATH_COUNT_MIN:
-            return best, (f"path:{pat} ({matched}/{len(files)} files, "
-                          f"{share:.0%})")
+            return key, f"path:{pat} ({matched}/{len(files)} files, {share:.0%})"
 
     for key in CATEGORY_ORDER:
         for kw, rx in matchers[key]["keywords"]:
@@ -379,6 +425,8 @@ def classify(subject, files, matchers):
                 return key, f"keyword:{kw}"
 
     if hits:
+        # Nothing cleared the bar and no keyword fired. Fall back to weight, with
+        # CATEGORY_ORDER breaking ties toward `meeting`.
         best = max(hits, key=lambda k: (hits[k][0], -CATEGORY_ORDER.index(k)))
         matched, pat = hits[best]
         return best, f"path-weak:{pat} ({matched}/{len(files)} files)"
@@ -457,6 +505,30 @@ def gh_pr_details(path, start, end_exclusive, body_limit):
     return out
 
 
+def gh_merged_numbers(path, start, end_exclusive):
+    """The set of PR numbers actually merged inside the week, or None without gh.
+
+    The authority for which week a PR belongs to. `mergedAt` is UTC, which is why
+    the commit side of the pull converts to UTC before deciding a week -- when the
+    two used different clocks they disagreed, and a PR merged at 02:43 UTC on the
+    Monday was filed under the Sunday that had just ended in Pacific time.
+
+    None means "no authority available", which is different from "nothing merged"
+    and must not be read as an empty week.
+    """
+    raw = run(["gh", "pr", "list", "--state", "merged", "--limit", "300",
+               "--json", "number,mergedAt", "--jq",
+               f'[.[] | select(.mergedAt >= "{start}" and .mergedAt < "{end_exclusive}") '
+               f'| .number] | @json'],
+              cwd=path, timeout=45).strip()
+    if not raw:
+        return None
+    try:
+        return {int(n) for n in json.loads(raw)}
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return None
+
+
 def gh_pr_counts(path, start, end_exclusive):
     """Merged-in-week and currently-open PR counts, straight from GitHub.
 
@@ -479,14 +551,19 @@ def gh_pr_counts(path, start, end_exclusive):
 
 
 def read_log(path, since, until):
-    """One pass over the padded window returning [(sha, iso, email, subject, files)].
+    """One pass over the padded window returning [(sha, iso, email, subject, files, adds, dels)].
 
-    One `git log --name-only` call, not one `git show` per commit: a 400-commit
+    One `git log --numstat` call, not one `git show` per commit: a 400-commit
     week is a real week, and N subprocesses would make the pull the slow part.
+
+    `--numstat` rather than `--name-only` because a commit's SIZE is most of what
+    decides whether it is worth opening. A subject line cannot tell a rename from
+    a rewrite, and the extraction has to know which commits carry the logic
+    before it can go read any of them.
     """
     fmt = "\x1e%H\x1f%aI\x1f%ae\x1f%s"
     log = run(["git", "log", "--all", "--no-merges", f"--format={fmt}",
-               "--name-only", f"--since={since}", f"--until={until}"], cwd=path,
+               "--numstat", f"--since={since}", f"--until={until}"], cwd=path,
               timeout=300)
     rows = []
     for rec in log.split("\x1e"):
@@ -497,9 +574,126 @@ def read_log(path, since, until):
         if len(parts) != 4:
             continue
         sha, when, email, subject = parts
-        files = [ln.strip() for ln in rest.splitlines() if ln.strip()]
-        rows.append((sha, when, email, subject, files))
+        files, adds, dels, per_file = [], 0, 0, {}
+        for ln in rest.splitlines():
+            cols = ln.split("\t")
+            if len(cols) != 3:
+                continue
+            a, d, f = cols
+            # "-" is git's marker for a binary file: countable as touched, not as lines.
+            fa = int(a) if a.isdigit() else 0
+            fd = int(d) if d.isdigit() else 0
+            adds += fa
+            dels += fd
+            f = f.strip()
+            files.append(f)
+            pa, pd = per_file.get(f, (0, 0))
+            per_file[f] = (pa + fa, pd + fd)
+        rows.append((sha, when, email, subject, files, adds, dels, per_file))
     return rows
+
+
+def rewritten_files(path, ref, structure, ins_by_file, del_by_file, touched, top=20):
+    """Pre-existing files ranked by how much of them changed.
+
+    `churn_ratio` is deletions over total churn: near 0 the file only grew, near
+    0.5 it was reworked line for line, near 1 it was stripped. `replaced_share`
+    compares the deletions to the file's CURRENT length, which is the closest
+    cheap answer to "was this rewritten or merely edited" -- a 40-line change to
+    a 4,000-line module and the same change to a 60-line one are different events
+    and identical numbers.
+    """
+    born = set(structure.get("added") or []) | set(structure.get("renamed") or [])
+    gone = set(structure.get("deleted") or [])
+    rows = []
+    for f, ins in ins_by_file.items():
+        if f in born or f in gone:
+            continue
+        dels = del_by_file.get(f, 0)
+        rows.append((ins + dels, f, ins, dels))
+    rows.sort(reverse=True)
+
+    out = []
+    for churn, f, ins, dels in rows[:top]:
+        size = None
+        blob = run(["git", "show", f"{ref}:{f}"], cwd=path, timeout=30) if ref else ""
+        if blob:
+            size = blob.count("\n") + 1
+        out.append({
+            "file": f,
+            "insertions": ins,
+            "deletions": dels,
+            "commits": touched.get(f, 0),
+            "current_lines": size,
+            "churn_ratio": round(dels / churn, 2) if churn else 0.0,
+            "replaced_share": round(min(dels / size, 1.0), 2) if size else None,
+        })
+    return out
+
+
+def pr_commit_map(path, ref, since, until):
+    """{sha: pr_number} for everything each merge brought in.
+
+    Scraping `#NN` from commit subjects only catches the commits that happen to
+    mention their PR, which is a minority -- so PR-to-work attribution was mostly
+    empty and any grouping built on it was guesswork. A merge commit knows
+    exactly what it merged: `rev-list <merge>^1..<merge>` is the set. One call per
+    merge, and it makes "which PR did this commit belong to" answerable instead
+    of approximate.
+    """
+    out = {}
+    if not ref:
+        return out
+    raw = run(["git", "log", ref, "--merges", "--format=%H\x1f%s",
+               f"--since={since}", f"--until={until}"], cwd=path, timeout=120)
+    for line in raw.splitlines():
+        sha, _, subject = line.partition("\x1f")
+        m = MERGE_RE.match(subject)
+        if not m:
+            continue
+        num = int(m.group(1))
+        brought = run(["git", "rev-list", f"{sha}^1..{sha}"], cwd=path, timeout=60).split()
+        for b in brought:
+            out.setdefault(b, num)
+    return out
+
+
+def read_structure(path, ref, since, until, lo, hi):
+    """What the week ADDED, DELETED and RENAMED on the mainline ref.
+
+    "What did we build" is not answerable from subject lines, and it is the
+    question a reader most wants answered — a week of 200 modifications and a
+    week that shipped four new contracts read identically in a commit log. Added
+    files are the closest mechanical proxy for construction; deletions and
+    renames are the closest one for what moved.
+    """
+    out = {"added": [], "deleted": [], "renamed": []}
+    if not ref:
+        return out
+    filters = {"added": "A", "deleted": "D", "renamed": "R"}
+    for key, flt in filters.items():
+        fmt = "\x1e%H\x1f%aI"
+        raw = run(["git", "log", ref, "--no-merges", f"--format={fmt}",
+                   "--name-only", f"--diff-filter={flt}", "-M",
+                   f"--since={since}", f"--until={until}"], cwd=path, timeout=180)
+        seen = set()
+        for rec in raw.split("\x1e"):
+            if not rec.strip():
+                continue
+            head, _, rest = rec.partition("\n")
+            bits = head.split("\x1f")
+            if len(bits) != 2 or not (lo <= utc_date(bits[1]) <= hi):
+                continue
+            for ln in rest.splitlines():
+                f = ln.strip()
+                if f and f not in seen:
+                    seen.add(f)
+                    out[key].append(f)
+    # A file added and then deleted inside one week built nothing.
+    churn = set(out["added"]) & set(out["deleted"])
+    out["added"] = [f for f in out["added"] if f not in churn]
+    out["deleted"] = [f for f in out["deleted"] if f not in churn]
+    return out
 
 
 def list_weeks(path):
@@ -512,7 +706,7 @@ def list_weeks(path):
         if not line:
             continue
         try:
-            d = dt.date.fromisoformat(line[:10])
+            d = dt.date.fromisoformat(utc_date(line))
         except ValueError:
             continue
         y, w, _ = d.isocalendar()
@@ -566,37 +760,75 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
                           f"--since={since}", f"--until={until}"],
                          cwd=path, timeout=120).split())
 
+    pr_of = pr_commit_map(path, ref, since, until)
     names = people_index(cfg)
     ign = build_ignore(cfg)
     seen, rows = set(), []
-    for sha, when, email, subject, files in read_log(path, since, until):
-        if not (lo <= when[:10] <= hi):
+    for sha, when, email, subject, files, adds, dels, per_file in read_log(path, since, until):
+        day = utc_date(when)
+        if not (lo <= day <= hi):
             continue
         if sha in seen:
             continue
         seen.add(sha)
-        rows.append((when, sha, email, subject, files))
+        rows.append((when, day, sha, email, subject, files, adds, dels, per_file))
 
     rows.sort()  # author-date order, oldest first
 
+    # A pre-squash branch commit and the mainline commit it became share a
+    # subject but not a sha. Cite the one that survives: everything reachable
+    # from the mainline ref is durable, and everything else exists only in this
+    # clone until git prunes it. On one real week five entity citations were
+    # dangling objects on no ref at all, each with an identical-subject twin on
+    # the mainline that went uncited. If nothing is reachable -- a local-only
+    # repo, or no remote --
+    # keep the lot rather than emitting an empty week.
+    on_primary_subjects = {r[4] for r in rows if r[2] in on_primary}
+    keep, dropped = [], []
+    for when, day, sha, email, subject, files, adds, dels, per_file in rows:
+        if not on_primary or sha in on_primary:
+            keep.append((when, day, sha, email, subject, files, adds, dels, per_file))
+        else:
+            dropped.append({
+                "sha": sha[:9],
+                "date": day,
+                "subject": subject,
+                "reason": ("superseded-on-" + ref if subject in on_primary_subjects
+                           else "not-reachable-from-" + ref),
+            })
+    rows = keep
+
     dirs = Counter()
+    touched = Counter()
+    ins_by_file, del_by_file = {}, {}
     by_cat = defaultdict(list)
     author_counts = Counter()
     author_cats = defaultdict(Counter)
 
     ignored = []
-    for when, sha, email, subject, files in rows:
+    for when, day, sha, email, subject, files, adds, dels, per_file in rows:
         who = names.get(email.lower(), email)
         skip = is_ignored(subject, files, ign)
         commit = {
             "sha": sha[:9],
-            "date": when[:10],
+            "date": day,
             "email": email,
             "author": who,
             "known_author": email.lower() in names,
             "subject": subject,
             "files": len(files),
-            "on_primary": sha in on_primary,
+            # Size and paths, so the extraction can decide WHICH commits to open
+            # and read. A subject line cannot distinguish a rename from a rewrite,
+            # and a catchup built only on subjects is a catchup of what people
+            # said they did.
+            "insertions": adds,
+            "deletions": dels,
+            # Which PR actually carried this commit, from the merge that brought
+            # it in -- not scraped from the subject, which usually says nothing.
+            "pr": pr_of.get(sha),
+            "paths": sorted(files)[:PATHS_PER_COMMIT],
+            "paths_truncated": max(0, len(files) - PATHS_PER_COMMIT),
+            "on_primary": (not on_primary) or sha in on_primary,
         }
         if skip:
             commit["ignored"] = skip
@@ -611,6 +843,10 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
         out["commits"].append(commit)
         by_cat[cat].append(commit["sha"])
         for f in files:
+            touched[f] += 1
+            fa, fd = per_file.get(f, (0, 0))
+            ins_by_file[f] = ins_by_file.get(f, 0) + fa
+            del_by_file[f] = del_by_file.get(f, 0) + fd
             seg = f.split("/")
             if len(seg) == 1:
                 dirs["(root)"] += 1
@@ -619,8 +855,17 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
             else:
                 dirs["/".join(seg[:2])] += 1
 
+    # `commits` now carries only what is reachable from the mainline ref, so the
+    # two counts agree by construction; `commit_count_primary` stays for readers
+    # that already publish it. The all-refs figure is kept as a stat because it
+    # is the only place the dropped duplicates are still visible.
     out["commit_count"] = len(out["commits"])
-    out["commit_count_primary"] = sum(1 for c in out["commits"] if c["on_primary"])
+    out["commit_count_primary"] = len(out["commits"])
+    out["commit_count_all_refs"] = len(out["commits"]) + len(ignored) + len(dropped)
+    # Reported, never hidden -- same rule as the bookkeeping commits below.
+    out["off_primary_count"] = len(dropped)
+    out["off_primary_reasons"] = dict(Counter(c["reason"] for c in dropped).most_common())
+    out["off_primary"] = dropped if keep_ignored else []
     # Reported, never hidden: the summary should be able to say "plus N
     # bookkeeping commits" rather than quietly showing a smaller week.
     out["ignored_count"] = len(ignored)
@@ -640,17 +885,35 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     }
     out["top_dirs"] = [{"dir": d, "files": n} for d, n in dirs.most_common(12)]
 
-    prs = {int(n) for c in out["commits"] for n in PR_RE.findall(c["subject"])}
+    # "What did we build" and "what moved" -- neither is answerable from subject
+    # lines, and both are what a reader actually wants from a week.
+    out["structure"] = read_structure(path, ref, since, until, lo, hi)
+    out["structure_counts"] = {k: len(v) for k, v in out["structure"].items()}
+    # The files the week kept coming back to. A file touched by nine commits is
+    # where the week's argument actually happened; open that, not the biggest diff.
+    out["hot_files"] = [{"file": f, "commits": n} for f, n in touched.most_common(15)]
+    # What changed INSIDE files that already existed. Without this, a module
+    # rewritten in place and a module with one line touched are the same entry in
+    # every view -- the added/deleted lists only see files appearing and
+    # disappearing, so a week of substantial rework reads as a quiet week.
+    out["modified"] = rewritten_files(path, ref, out["structure"], ins_by_file,
+                                      del_by_file, touched)
+    out["biggest_commits"] = [
+        {"sha": c["sha"], "subject": c["subject"],
+         "insertions": c["insertions"], "deletions": c["deletions"], "files": c["files"]}
+        for c in sorted(out["commits"],
+                        key=lambda c: -(c["insertions"] + c["deletions"]))[:15]]
+
+    scraped = {int(n) for c in out["commits"] for n in PR_RE.findall(c["subject"])}
     merges = run(["git", "log", "--all", "--merges", "--format=%aI\x1f%s",
                   f"--since={since}", f"--until={until}"], cwd=path, timeout=120)
     for line in merges.splitlines():
         when, _, subject = line.partition("\x1f")
-        if not (lo <= when[:10] <= hi):
+        if not (lo <= utc_date(when) <= hi):
             continue
         m = MERGE_RE.match(subject)
         if m:
-            prs.add(int(m.group(1)))
-    out["prs"] = sorted(prs)
+            scraped.add(int(m.group(1)))
 
     end_excl = (end + dt.timedelta(days=1)).isoformat()
     merged, opened = gh_pr_counts(path, str(start), end_excl)
@@ -660,6 +923,22 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     out["pr_details"] = (gh_pr_details(path, str(start), end_excl, pr_body_limit)
                          if pr_bodies else [])
     out["pr_body_chars_total"] = sum(p["body_chars"] for p in out["pr_details"])
+
+    # A scraped `#NN` says a commit MENTIONED a PR, never that the PR belongs to
+    # this week: a subject that merely cites "the PR #64 session" pulls #64 into
+    # this week even when #64 merged in the next one. GitHub's `mergedAt` is the only
+    # authority on which week a PR landed in, so `prs` is now that set and the
+    # rest is reported separately rather than blended in. Without gh there is no
+    # authority to bound against, so the scraped set stands and says so.
+    in_week = gh_merged_numbers(path, str(start), end_excl)
+    if in_week is None:
+        out["prs"] = sorted(scraped)
+        out["prs_source"] = "commit-subjects (gh unavailable -- NOT week-bounded)"
+        out["prs_mentioned_outside_week"] = []
+    else:
+        out["prs"] = sorted(scraped & in_week)
+        out["prs_source"] = "gh mergedAt within the week"
+        out["prs_mentioned_outside_week"] = sorted(scraped - in_week)
 
     out["output_path"] = os.path.join(
         (cfg.get("output") or {}).get("dir", DEFAULT_OUTPUT_DIR), f"{label}.md")

@@ -57,6 +57,8 @@ def walk(root):
     for base, dirs, files in os.walk(root):
         dirs[:] = [d for d in dirs if d != "__pycache__"]
         for f in files:
+            if f.endswith((".pyc", ".pyo")):
+                continue
             rel = os.path.relpath(os.path.join(base, f), root)
             if os.path.basename(rel) == SELF_NAME:
                 continue
@@ -107,7 +109,11 @@ def copy_part(src, dst, dry):
     elif os.path.exists(dst):
         os.remove(dst)
     if os.path.isdir(src):
-        shutil.copytree(src, dst)
+        # Build artifacts are not part of the skill and must not travel in
+        # either direction -- a pulled-back __pycache__ would land compiled
+        # bytecode in the source repo.
+        shutil.copytree(src, dst, ignore=shutil.ignore_patterns(
+            "__pycache__", "*.pyc", "*.pyo"))
     else:
         shutil.copy2(src, dst)
 

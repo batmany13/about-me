@@ -34,13 +34,14 @@ Usage:
 
 import argparse
 import datetime as dt
+import fnmatch
 import hashlib
 import json
 import os
 import re
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 
 CONFIG_RELPATH = os.path.join(".claude", "catchup.config.json")
 DEFAULT_OUTPUT_DIR = os.path.join(".claude", "catchups")
@@ -62,18 +63,98 @@ ENTITY_TYPES = [
     "thread",      # a line of technical work: a feature, a migration, a refactor
     "decision",    # a choice made, with its reason
     "correction",  # something found wrong and put right -- the highest-signal type
+    # A technical idea, mechanism, or composition -- the thing that was LEARNED,
+    # as opposed to the meeting where it was said or the vendor who said it.
+    # Every other type on this list is a unit of activity or of actor, so a week
+    # that produced knowledge had nowhere to put it except inside some company's
+    # note, where it comes out as "what they showed" instead of "what is now
+    # understood". The worked example is an event week: the brief written from it
+    # carried a five-stage composition and a seam table with evidence grades, and
+    # what survived into entities was four company records plus the story of our
+    # own drafting. Concepts outlive the vendors that evidence them, which is also
+    # why they are the entities most worth accumulating across weeks.
+    "concept",
+    # An arc of work large enough to be the answer to "what moved this week".
+    # Themes exist because every other type is a LEAF: nothing could hold "the
+    # research pipeline was rebuilt" as one thing owning the radar work, the tier
+    # ladder, the product lens and the fast-vet retirement, so the reader had to
+    # assemble it from twenty fragments and the summary led with whatever was
+    # easiest to state. A theme must carry measured weight -- share of the week's
+    # commits and churn -- which is the gate that stops an easily-phrased trifle
+    # from outranking 58% of the work.
+    "theme",
     "other",
 ]
 
+# Themes are ranked by WEIGHT, learnings by GRADE. Keeping those apart is the
+# point: a test-harness fix can be perfectly `measured` and weigh nothing, and
+# under one combined ranking it outranked a redesign spanning nine PRs.
+THEME_DISPOSITIONS = ["confirmed", "merged", "dropped"]
+
 STATUSES = ["active", "done", "parked", "dropped"]
+
+# How strongly a claim is held, weakest first. The DEFAULT ladder is deliberately
+# generic -- it has to mean something in a product repo, a marketing repo and an
+# evaluation corpus alike. A repo whose own surfaces already grade evidence should
+# override it in config with the words it actually uses, so the catchup grades a
+# learning the way that repo does rather than introducing a second scale nobody
+# reconciles. `measured` is the only grade that survives someone else disagreeing
+# with you, whatever the rungs below it are called.
+DEFAULT_GRADES = ["asserted", "reported", "observed", "verified", "measured"]
+DEFAULT_GRADE_MARKS = {
+    "asserted": "asserted",
+    "reported": "reported",
+    "observed": "seen",
+    "verified": "verified",
+    "measured": "MEASURED",
+}
+
+# What share of a week's commits a candidate must carry to lead it. Defaults, not
+# law: a repo of many tiny commits and one of few large ones do not agree about
+# what 15% means, so both are tunable per repo.
+DEFAULT_THEME_SHARES = {"confirm": 0.15, "thin": 0.05}
+
+# How long a theme child's line may run before it is probably a finding.
+CHILD_NOTE_CHARS = 260
+
+
+def grade_scale(cfg):
+    """(ladder, marks) for this repo -- config first, generic default otherwise."""
+    lc = (cfg or {}).get("learnings") or {}
+    grades = [str(g).strip().lower() for g in (lc.get("grades") or []) if str(g).strip()]
+    if not grades:
+        return list(DEFAULT_GRADES), dict(DEFAULT_GRADE_MARKS)
+    marks = dict(lc.get("grade_marks") or {})
+    return grades, {g: marks.get(g, g) for g in grades}
+
+
+def theme_shares(cfg):
+    tc = (cfg or {}).get("themes") or {}
+    out = dict(DEFAULT_THEME_SHARES)
+    for k in list(out):
+        v = tc.get(k + "_share")
+        if isinstance(v, (int, float)):
+            out[k] = float(v)
+    return out
 
 WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
+PR_NUM_RE = re.compile(r"#(\d+)")
 
 
 def die(msg, code=1):
     print(f"entities: {msg}", file=sys.stderr)
     sys.exit(code)
+
+
+def utc_now():
+    """Timestamps written into the store are UTC, and say so.
+
+    Same reason the week boundary is UTC: a naive local timestamp means a
+    different instant on every machine, and this project dates its artifacts by
+    UTC — evening-Pacific work belongs to the next UTC day.
+    """
+    return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
 
 def slugify(text):
@@ -154,7 +235,7 @@ def content_hash(e):
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
 
-def normalize(raw, week):
+def normalize(raw, week, grades=None):
     """Coerce one extraction record into a full entity. Raises ValueError on junk."""
     if not isinstance(raw, dict):
         raise ValueError("entity must be an object")
@@ -183,6 +264,81 @@ def normalize(raw, week):
     if not note:
         raise ValueError(f"{eid}: needs a `note` -- what happened this week")
 
+    claim = (raw.get("claim") or "").strip()
+    grade = (raw.get("grade") or "").strip().lower()
+    subject = (raw.get("subject") or "").strip()
+    grades = grades or DEFAULT_GRADES
+    if etype == "concept":
+        if not claim:
+            raise ValueError(f"{eid}: a concept needs a `claim` -- one sentence of what is now true")
+        if grade not in grades:
+            raise ValueError(f"{eid}: a concept needs a `grade` -- one of {', '.join(grades)}")
+        # The bar that keeps aphorisms out. A learning is ABOUT something -- a
+        # technology, a company, an architecture. "A test that accepts either
+        # outcome is not a test" names no subject, was true before this week, and
+        # will be true after it; it is not something the week taught anyone.
+        if not subject:
+            raise ValueError(
+                f"{eid}: a concept needs a `subject` -- the technology, company or "
+                f"architecture it is about. If you cannot name one, it is a general "
+                f"engineering maxim rather than something this week taught.")
+    if grade and grade not in grades:
+        raise ValueError(f"bad grade {grade!r} -- one of {', '.join(grades)}")
+
+    # Concepts live in Learnings and nowhere else. Allowing one under a theme is
+    # how the two sections came to say the same thing twice: the theme restated
+    # the finding as part of the work, and the learning stated it again as the
+    # finding. A theme's children are units of WORK -- what changed. What the work
+    # taught is a concept, one section down.
+    if etype == "concept" and (raw.get("theme") or "").strip():
+        raise ValueError(
+            f"{eid}: a concept cannot hang off a theme -- learnings are their own "
+            f"section. Put the WORK under the theme and let the concept carry what "
+            f"it taught, or the two sections will repeat each other.")
+
+    moved = (raw.get("moved") or "").strip()
+    why = (raw.get("why_it_matters") or "").strip()
+    weight = raw.get("weight") or {}
+    disposition = (raw.get("disposition") or "confirmed").strip().lower()
+    if etype == "theme":
+        if disposition not in THEME_DISPOSITIONS:
+            raise ValueError(f"{eid}: bad disposition {disposition!r} -- "
+                             f"one of {', '.join(THEME_DISPOSITIONS)}")
+        if not moved:
+            raise ValueError(f"{eid}: a theme needs `moved` -- what advanced this week")
+        if disposition == "confirmed":
+            if not why:
+                raise ValueError(f"{eid}: a confirmed theme needs `why_it_matters` -- "
+                                 f"one line, for a reader who was not here")
+            if not isinstance(weight, dict) or not weight.get("commits"):
+                raise ValueError(f"{eid}: a confirmed theme needs a measured `weight` "
+                                 f"(run `entities.py weigh`) -- a theme nobody weighed "
+                                 f"is an opinion about the week")
+
+    entry = {
+        # A theme's four parts: what advanced, why a reader should care, what it
+        # weighed, and what proves it happened.
+        "moved": moved or None,
+        "why_it_matters": why or None,
+        "weight": weight or None,
+        "evidence": [str(x).strip() for x in (raw.get("evidence") or []) if str(x).strip()] or None,
+        "disposition": disposition if etype == "theme" else None,
+        # The learning, in the four parts a learning actually has. Prose in a
+        # single `note` cannot be compressed by a renderer -- it can only be
+        # re-narrated at the same length, which is why the summary read as a lot
+        # of text and few learnings. Structured, the markdown becomes derived.
+        "claim": claim or None,
+        "grade": grade or None,
+        "subject": subject or None,
+        "so_what": (raw.get("so_what") or "").strip() or None,
+        "open": (raw.get("open") or "").strip() or None,
+        "note": note,
+        "commits": sorted({str(c)[:9] for c in (raw.get("commits") or [])}),
+        "prs": sorted({int(p) for p in (raw.get("prs") or []) if str(p).isdigit()}),
+        "paths": sorted({str(p) for p in (raw.get("paths") or []) if str(p).strip()}),
+        "people": sorted({str(p).strip() for p in (raw.get("people") or []) if str(p).strip()}),
+        "date": raw.get("date"),
+    }
     return {
         "id": eid,
         "type": etype,
@@ -192,14 +348,10 @@ def normalize(raw, week):
         "status": status,
         "tags": sorted({str(t).strip().lower() for t in (raw.get("tags") or []) if str(t).strip()}),
         "links": sorted({str(l).strip().lower() for l in (raw.get("links") or []) if str(l).strip()}),
-        "week_entry": {
-            "note": note,
-            "commits": sorted({str(c)[:9] for c in (raw.get("commits") or [])}),
-            "prs": sorted({int(p) for p in (raw.get("prs") or []) if str(p).isdigit()}),
-            "paths": sorted({str(p) for p in (raw.get("paths") or []) if str(p).strip()}),
-            "people": sorted({str(p).strip() for p in (raw.get("people") or []) if str(p).strip()}),
-            "date": raw.get("date"),
-        },
+        # A DIRECTED parent edge, unlike `links`, so the renderer can group work
+        # under the arc it belongs to instead of listing leaves side by side.
+        "theme": (raw.get("theme") or "").strip().lower() or None,
+        "week_entry": {k: v for k, v in entry.items() if v is not None},
         "_week": week,
     }
 
@@ -223,6 +375,7 @@ def merge(existing, incoming):
             "status": incoming["status"],
             "tags": incoming["tags"],
             "links": incoming["links"],
+            "theme": incoming.get("theme"),
             "first_seen": week,
             "last_seen": week,
             "weeks": {},
@@ -239,6 +392,8 @@ def merge(existing, incoming):
             e["status"] = incoming["status"]
             e["category"] = incoming["category"]
             e["type"] = incoming["type"]
+            if incoming.get("theme"):
+                e["theme"] = incoming["theme"]
         e["tags"] = sorted(set(e.get("tags", [])) | set(incoming["tags"]))
         e["links"] = sorted(set(e.get("links", [])) | set(incoming["links"]))
         e["first_seen"] = min(e.get("first_seen", week), week)
@@ -248,7 +403,7 @@ def merge(existing, incoming):
 
     e["weeks"][week] = incoming["week_entry"]
     e["weeks"] = {k: e["weeks"][k] for k in sorted(e["weeks"])}
-    e["updated_at"] = dt.datetime.now().isoformat(timespec="seconds")
+    e["updated_at"] = utc_now()
     return e
 
 
@@ -284,7 +439,7 @@ def cmd_upsert(args, repo, cfg, sdir):
     normed, errors = [], []
     for i, raw in enumerate(records):
         try:
-            normed.append(normalize(raw, args.week))
+            normed.append(normalize(raw, args.week, grade_scale(cfg)[0]))
         except ValueError as e:
             errors.append(f"  [{i}] {e}")
     if errors:
@@ -418,6 +573,29 @@ def cmd_week(args, repo, cfg, sdir):
                 print("    " + " · ".join(bits))
             print()
 
+    # Two lenses across all three categories, not a fourth category. Concepts
+    # lead, because they are what the week is FOR: a reader with none of the
+    # context needs the idea before the room it was said in or the vendor that
+    # said it. A week with meetings and no concepts is the signature of a
+    # procedural extraction -- something was presented and nothing was learned.
+    concepts = [e for e in ents if e.get("type") == "concept"]
+    if concepts:
+        print(f"## Concepts — what the week taught  ({len(concepts)})\n")
+        for e in sorted(concepts, key=lambda x: x["id"]):
+            weeks = sorted(e.get("weeks") or {})
+            cont = "" if len(weeks) < 2 else f"  [building since {weeks[0]}, {len(weeks)} weeks]"
+            print(f"### {e['title']}{cont}")
+            print(f"    id: {e['id']}  ({titles.get(e.get('category'), e.get('category'))})")
+            print(f"    stands as: {e.get('summary', '').strip()}")
+            print(f"    this week: {e['weeks'][args.week]['note']}")
+            if e.get("links"):
+                print(f"    evidenced by: {', '.join(e['links'])}")
+            print()
+    elif any(e.get("category") == "meeting" for e in ents):
+        print("## Concepts — what the week taught  (0)\n")
+        print("    The week has meeting entities and no concepts. Check that the")
+        print("    extraction did not stop at who presented and what we did.\n")
+
 
 def cmd_record_week(args, repo, cfg, sdir):
     """Store the week's stats beside its entities, from a pull_week.py blob."""
@@ -453,16 +631,20 @@ def cmd_record_week(args, repo, cfg, sdir):
         "end": w.get("end"),
         "partial": w.get("partial"),
         "repo": w.get("repo_label"),
-        "generated": dt.datetime.now().isoformat(timespec="seconds"),
+        "generated": utc_now(),
         "stats": {
-            # `commits` is the honest headline: real work, bookkeeping removed.
-            # `commits_primary` is what to publish when only one number fits;
-            # `commits_wide` spans all refs and is machine-specific.
+            # `commits` is the honest headline: real work on the mainline ref,
+            # bookkeeping removed. `commits_primary` is the same number, kept for
+            # readers that already publish it. `commits_wide` spans all refs and
+            # is machine-specific — it exists so the commits dropped as
+            # off-mainline stay visible, never as something to publish.
             "commits": w.get("commit_count"),
             "commits_primary": w.get("commit_count_primary"),
-            "commits_wide": (w.get("commit_count") or 0) + (w.get("ignored_count") or 0),
+            "commits_wide": w.get("commit_count_all_refs"),
             "ignored": w.get("ignored_count"),
             "ignored_reasons": w.get("ignored_reasons"),
+            "off_primary": w.get("off_primary_count"),
+            "off_primary_reasons": w.get("off_primary_reasons"),
             "prs_merged": w.get("prs_merged"),
             "prs_open_now": w.get("prs_open_now"),
             "pr_numbers": [p["number"] for p in (w.get("pr_details") or [])] or w.get("prs"),
@@ -482,6 +664,7 @@ def cmd_record_week(args, repo, cfg, sdir):
         "entity_count": len(ents),
         "entity_types": dict(sorted(
             Counter(e.get("type") for e in ents).items())),
+        "concepts": sorted(e["id"] for e in ents if e.get("type") == "concept"),
         "corrections": sorted(e["id"] for e in ents if e.get("type") == "correction"),
         "carried_over": sorted(e["id"] for e in ents
                                if len(e.get("weeks") or {}) > 1
@@ -500,10 +683,76 @@ def cmd_record_week(args, repo, cfg, sdir):
                       "stats": rec["stats"]}, indent=2))
 
 
+def git(repo, args, timeout=120):
+    r = subprocess.run(["git"] + args, cwd=repo, capture_output=True,
+                       text=True, timeout=timeout)
+    return r.stdout if r.returncode == 0 else ""
+
+
+def mainline_shas(repo):
+    """Every commit reachable from the mainline ref, or None if there is no ref.
+
+    Provenance has to survive leaving this machine. A pre-squash branch commit
+    and the mainline commit it became share a subject but not a sha, and the
+    branch copy is reachable from nothing once the PR merges -- it lives in the
+    local object store until git prunes it and does not exist in a fresh clone.
+    Five of W35's citations were exactly that: dangling objects, each with an
+    identical-subject twin on main that went uncited.
+    """
+    head = git(repo, ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"]).strip()
+    ref = head[len("refs/remotes/"):] if head.startswith("refs/remotes/") else None
+    if not ref:
+        for cand in ("origin/main", "origin/master", "main", "master"):
+            if git(repo, ["rev-parse", "--verify", "--quiet", cand]).strip():
+                ref = cand
+                break
+    if not ref:
+        return None, None
+    return ref, set(git(repo, ["rev-list", ref]).split())
+
+
+def merged_pr_weeks(repo):
+    """{pr_number: 'YYYY-Www'} by UTC merge date, or None without gh.
+
+    `mergedAt` is UTC and is the only authority on which week a PR landed in. A
+    scraped `#NN` says a commit mentioned a PR, not that the PR belongs to the
+    week -- `align-block4` cited #64 in W35, and #64 merged on 2026-08-31, W36.
+    """
+    raw = subprocess.run(
+        ["gh", "pr", "list", "--state", "merged", "--limit", "500",
+         "--json", "number,mergedAt"],
+        cwd=repo, capture_output=True, text=True, timeout=60)
+    if raw.returncode != 0 or not raw.stdout.strip():
+        return None
+    try:
+        items = json.loads(raw.stdout)
+    except json.JSONDecodeError:
+        return None
+    out = {}
+    for pr in items:
+        when = (pr.get("mergedAt") or "").replace("Z", "+00:00")
+        try:
+            d = dt.datetime.fromisoformat(when).astimezone(dt.timezone.utc).date()
+        except (ValueError, TypeError):
+            continue
+        y, w, _ = d.isocalendar()
+        out[pr["number"]] = f"{y}-W{w:02d}"
+    return out
+
+
 def cmd_validate(args, repo, cfg, sdir):
     ents = load_all(sdir)
     problems = []
+    notes = []
     ids = {e.get("id") for e in ents}
+
+    ref, reachable = mainline_shas(repo)
+    if reachable is None:
+        notes.append("no mainline ref found — commit provenance NOT checked")
+    pr_weeks = None if args.no_gh else merged_pr_weeks(repo)
+    if pr_weeks is None:
+        notes.append("gh unavailable or skipped — PR weeks NOT checked")
+
     for e in ents:
         eid = e.get("id") or "(no id)"
         base = os.path.splitext(os.path.basename(e["_path"]))[0]
@@ -517,18 +766,506 @@ def cmd_validate(args, repo, cfg, sdir):
             problems.append(f"{eid}: bad status {e.get('status')!r}")
         if not (e.get("weeks") or {}):
             problems.append(f"{eid}: no weeks recorded")
-        for w in (e.get("weeks") or {}):
-            if not WEEK_RE.match(w):
-                problems.append(f"{eid}: bad week key {w!r}")
+        for wk, entry in (e.get("weeks") or {}).items():
+            if not WEEK_RE.match(wk):
+                problems.append(f"{eid}: bad week key {wk!r}")
+                continue
+            for sha in (entry.get("commits") or []):
+                if reachable is None:
+                    break
+                if not any(full.startswith(sha) for full in reachable):
+                    problems.append(
+                        f"{eid} [{wk}]: commit {sha} is not reachable from {ref} — "
+                        f"a citation nobody else can resolve")
+            for n in (entry.get("prs") or []):
+                if pr_weeks is None:
+                    break
+                got = pr_weeks.get(int(n))
+                if got is None:
+                    problems.append(f"{eid} [{wk}]: PR #{n} is not a merged PR here")
+                elif got != wk:
+                    problems.append(
+                        f"{eid} [{wk}]: PR #{n} merged in {got}, not {wk}")
         for link in e.get("links") or []:
             if link not in ids:
                 problems.append(f"{eid}: link to unknown entity {link!r}")
+
+    for n in notes:
+        print(f"note: {n}")
     if problems:
         print(f"{len(problems)} problem(s):")
         for p in problems:
             print("  " + p)
         sys.exit(1)
     print(f"ok — {len(ents)} entities valid")
+
+
+def _load_pull(arg):
+    src = sys.stdin if arg in (None, "-") else open(arg)
+    try:
+        blob = json.load(src)
+    except json.JSONDecodeError as e:
+        die(f"--pull input is not valid JSON: {e}")
+    finally:
+        if src is not sys.stdin:
+            src.close()
+    weeks = blob.get("weeks") or []
+    if not weeks:
+        die("--pull input has no weeks")
+    return weeks
+
+
+def _week_from_pull(arg, week):
+    for w in _load_pull(arg):
+        if w.get("week") == week:
+            return w
+    die(f"--pull input does not contain {week}")
+
+
+def _commit_prs(commit):
+    """Every PR this commit can be attributed to, best source first."""
+    out = set()
+    if commit.get("pr"):
+        out.add(int(commit["pr"]))
+    out |= {int(n) for n in PR_NUM_RE.findall(commit.get("subject", ""))}
+    return out
+
+
+def _path_matches(path, pattern):
+    """A `--paths` entry matches as a glob when it looks like one, else as a prefix.
+
+    Every other path input in this skill -- category rules, ignore rules,
+    subject artifacts -- is a glob, so a glob is what a caller reaches for here
+    too. Prefix-only matching turned `src/**` into zero hits and the weigh
+    verdict then read `DROPPED -- too small to be a theme`, which is a confident
+    wrong answer to a question the caller did not ask. Both forms work now.
+    """
+    if any(ch in pattern for ch in "*?["):
+        return fnmatch.fnmatch(path, pattern) or fnmatch.fnmatch(path, pattern.rstrip("/") + "/*")
+    return path.startswith(pattern)
+
+
+def _match(commit, paths, prs):
+    if prs and (_commit_prs(commit) & prs):
+        return True
+    return any(_path_matches(p, pat) for p in commit.get("paths", []) for pat in paths)
+
+
+def _unmatched_patterns(commits, paths):
+    """Patterns that matched nothing anywhere in the week.
+
+    Reported separately from the weight, because "your hypothesis is too small"
+    and "your pattern is wrong" are different answers and only one of them means
+    the theme should be dropped.
+    """
+    seen = {p for c in commits for p in c.get("paths", [])}
+    return [pat for pat in paths
+            if not any(_path_matches(p, pat) for p in seen)]
+
+
+def _weigh(commits, paths, prs):
+    hit = [c for c in commits if _match(c, paths, prs)]
+    lines = sum(c.get("insertions", 0) + c.get("deletions", 0) for c in hit)
+    total_lines = sum(c.get("insertions", 0) + c.get("deletions", 0) for c in commits) or 1
+    return {
+        "commits": len(hit),
+        "share": round(len(hit) / len(commits), 2) if commits else 0.0,
+        "lines": lines,
+        "line_share": round(lines / total_lines, 2),
+        "prs": sorted({n for c in hit for n in _commit_prs(c)}),
+        "days": sorted({c["date"] for c in hit}),
+    }, hit
+
+
+def cmd_propose(args, repo, cfg, sdir):
+    """Cluster the week mechanically, so the theme hypothesis starts from data.
+
+    The first pass used to be recall: read everything, then decide what mattered.
+    That reliably surfaced whatever was easiest to phrase -- a self-contained test
+    fix has one commit and a crisp lesson, while a redesign spanning nine PRs has
+    neither. Clustering first means the hypothesis starts from where the work
+    actually went, and the model's job is to NAME the cluster rather than to
+    remember the week.
+
+    Nothing here decides anything. It reports where the mass is; `weigh` then
+    tests a named hypothesis against it.
+    """
+    w = _week_from_pull(args.pull, args.week)
+    commits = w.get("commits") or []
+    if not commits:
+        die(f"no commits in {args.week}")
+
+    dirs, dir_lines = Counter(), Counter()
+    for c in commits:
+        churn = c.get("insertions", 0) + c.get("deletions", 0)
+        for d in {"/".join(p.split("/")[:2]) if p.count("/") > 1 else p.split("/")[0]
+                  for p in c.get("paths", [])}:
+            dirs[d] += 1
+            dir_lines[d] += churn
+
+    print(f"# {args.week} — where the work went ({len(commits)} mainline commits)\n")
+    print("## Directories by commits touching them\n")
+    print(f"{'dir':<42} {'commits':>8} {'share':>7} {'lines':>10}")
+    for d, n in dirs.most_common(18):
+        print(f"{d:<42} {n:>8} {n / len(commits):>6.0%} {dir_lines[d]:>10,}")
+
+    # PRs are already a human grouping of work -- the best hypothesis seed there
+    # is, because someone decided those commits belonged together and wrote why.
+    prs = {p["number"]: p for p in (w.get("pr_details") or [])}
+    by_pr = defaultdict(list)
+    for c in commits:
+        for n in _commit_prs(c):
+            if n in prs:
+                by_pr[n].append(c)
+    print(f"\n## Merged PRs, largest first — read these titles for candidate themes\n")
+    rows = sorted(prs.values(), key=lambda p: -p.get("body_chars", 0))
+    for p in rows:
+        hits = by_pr.get(p["number"], [])
+        top = Counter("/".join(x.split("/")[:2]) if x.count("/") > 1 else x.split("/")[0]
+                      for c in hits for x in c.get("paths", []))
+        where = ", ".join(d for d, _ in top.most_common(3)) or "—"
+        print(f"  #{p['number']:<3} {p.get('body_chars', 0):>6}ch  {p['title'][:62]:<64} {where}")
+
+    # The subject artifacts this repo declares, and which of them the week moved.
+    # Without this the altitude rule is a reminder: a commit log says what changed
+    # in the repo, and only these say anything about the thing being evaluated.
+    # A catchup that never opens them reports which files moved in an evaluation
+    # rather than what the evaluation found.
+    sub = (cfg or {}).get("subjects") or {}
+    globs = [g for g in (sub.get("artifacts") or []) if str(g).strip()]
+    if globs:
+        # Ranked by how much each artifact MOVED, not alphabetically. A truncated
+        # alphabetical list drops whatever sorts last, which is how the product-view
+        # runs -- the ones carrying the actual product-level findings -- fell off
+        # the end of this very list the first time it ran.
+        churn = Counter()
+        for c in commits:
+            per = c.get("insertions", 0) + c.get("deletions", 0)
+            paths = c.get("paths", [])
+            share = per / max(1, len(paths))
+            for p in paths:
+                if any(fnmatch.fnmatch(p, g) for g in globs):
+                    churn[p] += share
+        hits = [p for p, _ in churn.most_common()]
+        print(f"\n## Subject artifacts this week touched — READ THESE for learnings\n")
+        if sub.get("noun"):
+            print(f"  (a subject here is {sub['noun']}; most-changed first)\n")
+        for p in hits[:25]:
+            print(f"  {int(churn[p]):>7,}  {p}")
+        if len(hits) > 25:
+            print(f"  … {len(hits) - 25} more, smaller")
+        if not hits:
+            print("  none matched — either a quiet week for subjects, or the globs in")
+            print("  `subjects.artifacts` no longer match where this repo keeps them.")
+        if sub.get("read_first"):
+            print(f"\n  Read first: {sub['read_first']}")
+    else:
+        print("\n## Subject artifacts\n")
+        print("  This repo declares none. If it produces evaluations, research bundles or")
+        print("  reports ABOUT something, list them under `subjects.artifacts` in config —")
+        print("  they are where subject-level learnings come from, and commit logs are not.")
+
+    print("\nNext: name 2-5 candidate themes from the clusters above, then test each with")
+    print("`entities.py weigh` before writing a single one down. A candidate that cannot be")
+    print("weighed is a hypothesis that failed, and that is a result worth recording.")
+
+
+def cmd_weigh(args, repo, cfg, sdir):
+    """Test one named theme hypothesis against the week's actual mass.
+
+    This is the gate. A theme is an assertion that a real share of the week went
+    somewhere, and until it is weighed it is an opinion -- which is how "22 files
+    were deleted" once led a summary over a redesign touching 58% of the commits.
+    """
+    w = _week_from_pull(args.pull, args.week)
+    commits = w.get("commits") or []
+    paths = tuple(p.strip() for p in (args.paths or "").split(",") if p.strip())
+    prs = {int(n) for n in (args.prs or "").replace("#", "").split(",") if n.strip().isdigit()}
+    if not paths and not prs:
+        die("give --paths and/or --prs to weigh")
+
+    weight, hit = _weigh(commits, paths, prs)
+    # A pattern that matches nothing is a typo, not a verdict. Surfaced before
+    # the weight so it cannot be read as "the theme is too small".
+    stray = _unmatched_patterns(commits, paths)
+    weight["unmatched_patterns"] = stray
+    if args.json:
+        print(json.dumps(weight, indent=2))
+        return
+    if stray:
+        print(f"  !! matched no file in this week: {', '.join(stray)}")
+        print("     Check the pattern before believing the verdict below —")
+        print("     these contributed nothing to the weight.\n")
+    print(f"{args.week} · hypothesis: {args.label or '(unnamed)'}")
+    print(f"  commits      {weight['commits']} of {len(commits)}  ({weight['share']:.0%} of the week)")
+    print(f"  lines        {weight['lines']:,}  ({weight['line_share']:.0%} of the week's churn)")
+    print(f"  PRs          {', '.join('#' + str(n) for n in weight['prs']) or '—'}")
+    print(f"  active on    {len(weight['days'])} of 7 days")
+    sh = theme_shares(cfg)
+    verdict = ("CONFIRMED — big enough to lead" if weight["share"] >= sh["confirm"]
+               else "THIN — real work, but supporting detail rather than a theme"
+               if weight["share"] >= sh["thin"] else
+               "DROPPED — too small to be a theme; record it as `dropped` so the "
+               "hypothesis is not silently forgotten")
+    print(f"  verdict      {verdict}")
+    print(f"\n  the commits that carry it (largest first):")
+    for c in sorted(hit, key=lambda c: -(c.get("insertions", 0) + c.get("deletions", 0)))[:12]:
+        churn = c.get("insertions", 0) + c.get("deletions", 0)
+        print(f"    {c['sha']}  {churn:>7,}  {c['subject'][:70]}")
+
+
+def cmd_learned(args, repo, cfg, sdir):
+    """Render the week's learnings as markdown, DERIVED from the concept fields.
+
+    The section this produces used to be written by hand beside the entities,
+    which meant two prose renderings of the same thing at the same length -- and
+    no compression anywhere, because a paragraph in `note` gives a renderer
+    nothing to compress. With claim/grade/so_what/open as fields, the markdown is
+    a projection: the claim leads, the grade is a word rather than a clause, and
+    everything that is not the learning is dropped.
+
+    Ordered by evidence, strongest first. What was MEASURED should be read before
+    what somebody put on a slide, and sorting by grade is the cheapest way to
+    stop those two reading alike.
+    """
+    if not WEEK_RE.match(args.week or ""):
+        die(f"week must look like 2026-W35, got {args.week!r}")
+    ents = [e for e in load_all(sdir)
+            if e.get("type") == "concept" and args.week in (e.get("weeks") or {})]
+    if not ents:
+        print(f"no concepts recorded for {args.week}")
+        return
+
+    grades, marks = grade_scale(cfg)
+
+    def rank(e):
+        g = (e["weeks"][args.week] or {}).get("grade")
+        return (-(grades.index(g) if g in grades else -1), e["id"])
+
+    graded = [e for e in ents if (e["weeks"][args.week] or {}).get("claim")]
+    ungraded = [e for e in ents if not (e["weeks"][args.week] or {}).get("claim")]
+
+    shown = sorted(graded, key=rank)
+    held = []
+    if args.top and len(shown) > args.top:
+        # Cutting by grade, not by taste: what was MEASURED survives a trim and
+        # what somebody asserted does not. The remainder is named, never dropped
+        # silently, so the summary can say what it left in the store.
+        #
+        # The cut SNAPS TO A GRADE BOUNDARY rather than landing wherever N falls.
+        # Inside one band the order is only a tiebreak, so slicing mid-band drops
+        # findings for alphabetical reasons -- which is exactly how the week's
+        # largest build lost its place to a sort key. `--top` is a target, and
+        # the boundary wins.
+        cut = args.top
+        grade_at = lambda i: (shown[i]["weeks"][args.week] or {}).get("grade")
+        while cut < len(shown) and grade_at(cut) == grade_at(cut - 1):
+            cut += 1
+        shown, held = shown[:cut], shown[cut:]
+
+    for e in shown:
+        w = e["weeks"][args.week]
+        claim = (w.get("claim") or "").strip().rstrip(".")
+        grade = w.get("grade")
+        bits = []
+        if w.get("so_what"):
+            bits.append(w["so_what"].strip())
+        if w.get("open") and not args.no_open:
+            bits.append("**Open:** " + w["open"].strip())
+        refs = ", ".join(f"#{p}" for p in (w.get("prs") or []))
+        tail = f" ({refs})" if refs and not args.no_refs else ""
+        mark = f" *[{marks.get(grade, grade)}]*" if grade else ""
+        print(f"- **{claim}.**{mark} " + " ".join(bits) + tail)
+    if held:
+        print()
+        by_grade = Counter((e["weeks"][args.week] or {}).get("grade") for e in held)
+        tally = ", ".join(f"{by_grade[g]} {g}" for g in reversed(grades) if by_grade.get(g))
+        print(f"*{len(held)} more concepts stay in the store and not here ({tally}): "
+              + ", ".join(f"`{e['id']}`" for e in held) + ".*")
+    if not args.no_refs:
+        print()
+        counts = Counter((e["weeks"][args.week] or {}).get("grade") for e in graded)
+        line = " · ".join(f"{counts[g]} {g}" for g in reversed(grades) if counts.get(g))
+        print(f"*{len(graded)} of {len(ents)} concepts carry a graded claim — {line}.*")
+    if ungraded:
+        # Never emit an empty bullet for one. A concept that is prose-only is a
+        # concept nothing can compress, which is the whole failure this command
+        # exists to make visible -- so it is reported as a gap, by name.
+        print(f"\n<!-- {len(ungraded)} concept(s) carry prose but no claim/grade and are "
+              f"NOT rendered above: {', '.join(sorted(e['id'] for e in ungraded))} -->",
+              file=sys.stderr)
+
+
+def cmd_render(args, repo, cfg, sdir):
+    """The whole summary, derived: Themes, Meetings & Notes, What we learned.
+
+    Three sections because a reader asks three different questions -- what moved,
+    who did we meet, what do we now know -- and they rank on different axes.
+    Themes rank by WEIGHT, learnings by evidence GRADE. Running them on one scale
+    is what let a 4-commit test fix outrank a redesign carrying 80% of the week's
+    churn: forensic findings grade `measured` trivially, and grade was standing in
+    for importance.
+
+    Dropped theme hypotheses land in `Other`, one line each. They are kept because
+    "we thought X was a theme and it was four commits" is a real result about the
+    week, and deleting it hides that the question was asked.
+    """
+    if not WEEK_RE.match(args.week or ""):
+        die(f"week must look like 2026-W35, got {args.week!r}")
+    ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
+    if not ents:
+        die(f"no entities recorded for {args.week}")
+    here = lambda e: e["weeks"][args.week]
+
+    themes = [e for e in ents if e.get("type") == "theme"]
+    live = [t for t in themes if (here(t) or {}).get("disposition", "confirmed") == "confirmed"]
+    dropped = [t for t in themes if (here(t) or {}).get("disposition") in ("dropped", "merged")]
+    live.sort(key=lambda t: -((here(t).get("weight") or {}).get("share") or 0))
+
+    print("## Themes\n")
+    for t in live:
+        w = here(t)
+        wt = w.get("weight") or {}
+        share = f"{wt.get('share', 0):.0%} of the week's commits"
+        churn = f" · {wt['line_share']:.0%} of its churn" if wt.get("line_share") else ""
+        print(f"### {t['title']}  ·  {share}{churn}\n")
+        print(w["moved"].strip() + "\n")
+        print(f"**Why it matters:** {w['why_it_matters'].strip()}\n")
+        kids = [e for e in ents if e.get("theme") == t["id"] and e is not t]
+        for k in sorted(kids, key=lambda e: e["id"]):
+            mark = " *(correction)*" if k.get("type") == "correction" else ""
+            note = " ".join(here(k).get("note", "").split())
+            # A theme child says what changed, in a line. When it runs long it is
+            # usually because a finding crept in, and the finding belongs in
+            # Learnings -- so the overflow is flagged rather than printed.
+            if len(note) > CHILD_NOTE_CHARS:
+                cut = note[:CHILD_NOTE_CHARS].rsplit(" ", 1)[0]
+                note = cut + f" …[{len(note) - len(cut)} chars trimmed — if this is a finding, it belongs in Learnings]"
+            print(f"- **{k['title']}**{mark} — {note}")
+        if kids:
+            print()
+
+    meets = [e for e in ents if e.get("type") in ("meeting", "org", "person")]
+    if meets:
+        print("## Meetings & Notes\n")
+        for e in sorted(meets, key=lambda e: (e.get("type") != "meeting", e["id"])):
+            # One bullet, like every other section. The standing description
+            # leads because a reader who has never heard of the company needs to
+            # know what it IS before being told what its slide showed -- but it
+            # is a clause, not a heading. Every section of this summary uses the
+            # same shape, and a section that invents its own formatting reads as
+            # a different document stapled in.
+            parts = [" ".join((e.get("summary") or "").split()),
+                     " ".join(here(e).get("note", "").split())]
+            print(f"- **{e['title']}** — " + " ".join(p for p in parts if p))
+        print()
+
+    concepts = [e for e in ents if e.get("type") == "concept" and here(e).get("claim")]
+    if concepts:
+        grades, marks = grade_scale(cfg)
+        rank = lambda e: (-(grades.index(here(e).get("grade")) if here(e).get("grade") in grades else -1), e["id"])
+        print("## What we learned\n")
+        shown = sorted(concepts, key=rank)
+        held = []
+        if args.learnings_top and len(shown) > args.learnings_top:
+            shown, held = shown[:args.learnings_top], shown[args.learnings_top:]
+        for e in shown:
+            w = here(e)
+            mark = marks.get(w.get("grade"), w.get("grade"))
+            bits = [w["so_what"].strip()] if w.get("so_what") else []
+            if w.get("open") and not args.no_open:
+                bits.append("**Open:** " + w["open"].strip())
+            refs = ", ".join(f"#{p}" for p in (w.get("prs") or []))
+            tail = f" ({refs})" if refs else ""
+            subj = f"*{w['subject']}* · " if w.get("subject") else ""
+            print(f"- **{w['claim'].strip().rstrip('.')}.** *[{mark}]* {subj}"
+                  + " ".join(bits) + tail)
+        if held:
+            # Named, never silently dropped -- a learning cut for length is still
+            # a thing the week established, and the store is where it lives.
+            subjects = []
+            for e in held:
+                sub = (here(e).get("subject") or e["id"])
+                if sub not in subjects:
+                    subjects.append(sub)
+            print(f"\n*{len(held)} more learnings are in the store and not here, on "
+                  + ", ".join(subjects) + ".*")
+        print()
+
+    other = [e for e in ents if e.get("type") in ("decision", "other")
+             and not e.get("theme")]
+    if dropped or other:
+        print("## Other\n")
+        for t in dropped:
+            w = here(t)
+            wt = w.get("weight") or {}
+            why = (f"{wt.get('commits', 0)} commits, {wt.get('line_share', 0):.0%} of the week's churn"
+                   if wt else "not weighed")
+            print(f"- *Considered as a theme and dropped* — **{t['title']}**: {why}. "
+                  + (w.get("moved") or "").strip())
+        for e in sorted(other, key=lambda e: e["id"]):
+            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}")
+        print()
+
+
+def cmd_check_summary(args, repo, cfg, sdir):
+    """Every citation in the week's prose must be carried by some entity.
+
+    The format's core claim is that the entities are the record and the summary
+    is a rendering of them -- so anything the prose can cite that the store
+    cannot is a rendering of something else. W35 is what that looks like in
+    practice: seventeen PR numbers in the prose, seven in the entities, twelve
+    belonging to neither. The summary read fine, and re-generating it from the
+    store would have quietly lost every one of them.
+
+    Deliberately one-directional. An entity the summary chose not to mention is
+    editing; a citation the store cannot back is drift.
+    """
+    if not WEEK_RE.match(args.week or ""):
+        die(f"week must look like 2026-W35, got {args.week!r}")
+    out = (cfg.get("output") or {}).get("dir", DEFAULT_OUTPUT_DIR)
+    path = os.path.join(repo, out, f"{args.week}.md")
+    if not os.path.isfile(path):
+        die(f"no summary at {os.path.relpath(path, repo)}")
+    prose = open(path).read()
+
+    ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
+    held_prs, held_shas = set(), set()
+    for e in ents:
+        entry = e["weeks"][args.week]
+        held_prs |= {int(p) for p in (entry.get("prs") or [])}
+        held_shas |= {str(s) for s in (entry.get("commits") or [])}
+
+    # Only the citation forms the template defines: `(#NN)` groups, and the
+    # `PRs merged:` line. A bare `#NN` mid-sentence is prose -- W35 says a
+    # benchmark came "rank #1", and #1 is also a real PR in this repo, so no
+    # amount of cross-checking against GitHub separates the two. The format
+    # decides what a citation looks like; the check follows the format.
+    cited_prs = set()
+    for group in re.findall(r"\(([^()]*)\)", prose):
+        cited_prs |= {int(n) for n in re.findall(r"#(\d+)", group)}
+    for line in prose.splitlines():
+        if line.strip().lower().startswith("prs merged:"):
+            cited_prs |= {int(n) for n in re.findall(r"#(\d+)", line)}
+    # A sha needs a digit: `defaced` is seven characters of valid hex.
+    cited_shas = {s for s in re.findall(r"\b[0-9a-f]{7,40}\b", prose)
+                  if any(c.isdigit() for c in s)}
+
+    problems = []
+    for n in sorted(cited_prs - held_prs):
+        problems.append(f"PR #{n} is cited in the summary but carried by no entity")
+    for s in sorted(cited_shas):
+        if not any(h.startswith(s) or s.startswith(h) for h in held_shas):
+            problems.append(f"commit {s} is cited in the summary but carried by no entity")
+
+    if problems:
+        print(f"{args.week}: {len(problems)} citation(s) the entity store cannot back:")
+        for p in problems:
+            print("  " + p)
+        print("\nAdd the missing entities — do not delete the citations.")
+        sys.exit(1)
+    print(f"ok — {args.week}: every citation in the summary is carried by an entity "
+          f"({len(cited_prs)} PRs, {len(cited_shas)} shas, {len(ents)} entities)")
 
 
 def cmd_stats(args, repo, cfg, sdir):
@@ -594,8 +1331,50 @@ def main():
     p.add_argument("--pull", default="-", help="pull_week.py JSON, or - for stdin")
     p.set_defaults(fn=cmd_record_week)
 
-    p = sub.add_parser("validate", parents=[common], help="schema-check the store")
+    p = sub.add_parser("validate", parents=[common],
+                       help="schema-check the store, and verify its provenance")
+    p.add_argument("--no-gh", action="store_true",
+                   help="skip the PR-week check (offline, or no gh)")
     p.set_defaults(fn=cmd_validate)
+
+    p = sub.add_parser("propose", parents=[common],
+                       help="cluster the week so the theme hypothesis starts from data")
+    p.add_argument("week")
+    p.add_argument("--pull", help="pull_week.py JSON, or - for stdin")
+    p.set_defaults(fn=cmd_propose)
+
+    p = sub.add_parser("weigh", parents=[common],
+                       help="test one theme hypothesis against the week's mass")
+    p.add_argument("week")
+    p.add_argument("--pull", help="pull_week.py JSON, or - for stdin")
+    p.add_argument("--paths", help="comma-separated path globs or prefixes")
+    p.add_argument("--prs", help="comma-separated PR numbers")
+    p.add_argument("--label", help="what you are calling this hypothesis")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(fn=cmd_weigh)
+
+    p = sub.add_parser("learned", parents=[common],
+                       help="the week's learnings as markdown, derived from the concept fields")
+    p.add_argument("week")
+    p.add_argument("--no-refs", action="store_true", help="omit PR refs and the grade tally")
+    p.add_argument("--top", type=int, metavar="N",
+                   help="strongest N by evidence grade; the rest are named, not dropped")
+    p.add_argument("--no-open", action="store_true",
+                   help="omit the `open` clause — the store keeps it, a length-bound summary may not")
+    p.set_defaults(fn=cmd_learned)
+
+    p = sub.add_parser("render", parents=[common],
+                       help="the whole summary, derived: Themes / Meetings / Learnings / Other")
+    p.add_argument("week")
+    p.add_argument("--no-open", action="store_true")
+    p.add_argument("--learnings-top", type=int, metavar="N",
+                   help="strongest N learnings by grade; the rest are named, not dropped")
+    p.set_defaults(fn=cmd_render)
+
+    p = sub.add_parser("check-summary", parents=[common],
+                       help="every citation in the week's prose is carried by an entity")
+    p.add_argument("week")
+    p.set_defaults(fn=cmd_check_summary)
 
     p = sub.add_parser("stats", parents=[common], help="store overview")
     p.set_defaults(fn=cmd_stats)
