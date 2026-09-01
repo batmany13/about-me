@@ -29,6 +29,26 @@ git -C <repo> worktree add -b <branch> .claude/worktrees/<name>
   merging is a human action.
 - Clean the worktree up after the PR lands: `git worktree remove <path>`.
 
+### Python runs through `uv`
+
+**`uv run <script>`, never `python3 <script>`** — matching the source repos.
+
+```bash
+uv run .claude/skills/catchup/scripts/pull_week.py --repo . --list-weeks
+```
+
+Every script here carries a [PEP 723](https://peps.python.org/pep-0723/) header
+declaring `requires-python` and its dependencies, so `uv run` resolves an
+interpreter and an environment on its own. There is no virtualenv to activate,
+no project to install, and nothing to keep in sync — which is what makes these
+scripts safe to copy into another repo and run there unchanged.
+
+They are deliberately **stdlib-only**. A skill that has to be copied between
+repos should not carry a dependency list that has to be copied with it, so
+`dependencies = []` is a constraint on the code, not a description of it. If a
+script ever needs a third-party package, declare it in that script's own header
+rather than adding a project file to this repo.
+
 This mirrors the rule already codified in the source repos the weekly reads, and
 it is the same rule here — a public repo is the last place to be editing `main`
 directly.

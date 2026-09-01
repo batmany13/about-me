@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 Move the catchup skill between its source of truth and a target repo.
 
@@ -190,7 +194,7 @@ def do_deploy(target, tskill, want_config, dry):
             print("  seeded .claude/catchup.config.json — edit repo.label and authors.people")
 
     check_runtime_pointer(target)
-    print(f"done. Try: cd {target} && python3 .claude/skills/catchup/scripts/pull_week.py --list-weeks")
+    print(f"done. Try: cd {target} && uv run .claude/skills/catchup/scripts/pull_week.py --list-weeks")
 
 
 def main():

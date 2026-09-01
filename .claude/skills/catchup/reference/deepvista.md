@@ -125,9 +125,9 @@ between are made by the model, because MCP tools are model-called — a shell
 script cannot make them.
 
 ```bash
-python3 scripts/deepvista_cards.py plan --repo . --week 2026-W35
+uv run scripts/deepvista_cards.py plan --repo . --week 2026-W35
 #   → [model calls the DeepVista MCP card tool per item]
-python3 scripts/deepvista_cards.py record --repo . --id <entity> --card-id <returned>
+uv run scripts/deepvista_cards.py record --repo . --id <entity> --card-id <returned>
 ```
 
 Each plan item carries `action`:
@@ -244,7 +244,7 @@ specifically:
 **4. Plan exactly one card.**
 
 ```bash
-python3 .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --limit 1 --show-body
+uv run .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --limit 1 --show-body
 ```
 
 Read the markdown body before it goes anywhere.
@@ -262,8 +262,8 @@ Read the markdown body before it goes anywhere.
 **7. Record the id and prove the skip works.**
 
 ```bash
-python3 .claude/skills/catchup/scripts/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned-id>
-python3 .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --include-skipped
+uv run .claude/skills/catchup/scripts/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned-id>
+uv run .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --include-skipped
 ```
 
 That entity must now say `skip`. If it says `create`, the write-back did not

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 Catchup week pull -- gather one ISO week of activity for ONE repo.
 

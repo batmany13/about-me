@@ -132,7 +132,7 @@ More than 4 weeks resolved?  Confirm before running — each week is a real amou
 ## Step 2 — Pull the raw material
 
 ```bash
-python3 .claude/skills/fnr/scripts/pull_week.py 2026-W34 > /tmp/fnr_week.json
+uv run .claude/skills/fnr/scripts/pull_week.py 2026-W34 > /tmp/fnr_week.json
 ```
 
 Emits per-repo commits (author-filtered), PR numbers, the directories that moved, attended calendar events, and lane totals.  It collects; it does not judge.  `--this-week` for the in-progress week, `--today YYYY-MM-DD` to test against a fixed date.

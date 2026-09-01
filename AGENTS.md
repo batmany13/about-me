@@ -45,6 +45,13 @@ Leave the main checkout on `main`, untouched. Create a feature branch in a
 worktree, make every change there, push the branch, and open or update a PR.
 **Agents never merge pull requests** and never push directly to `main`.
 
+## Python runs through `uv`
+
+**`uv run <script>`, never `python3 <script>`.** Every script carries a PEP 723
+header, so there is no virtualenv to activate and no project to install. Scripts
+are stdlib-only on purpose: a skill copied between repos must not carry a
+dependency list that has to be copied with it.
+
 ## One skill source for every runtime
 
 Repository skills live canonically under `.claude/skills/`. Claude discovers them

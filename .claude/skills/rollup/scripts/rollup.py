@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 Rollup -- read every repo's week record and merge them into one cross-repo view.
 

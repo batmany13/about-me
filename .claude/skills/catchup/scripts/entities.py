@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 Catchup entity store -- the durable half of the catchup.
 

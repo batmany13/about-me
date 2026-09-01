@@ -63,7 +63,7 @@ otherwise. Nothing in this skill knows about any particular repo.
 
 ```bash
 SKILL=<this skill dir>/scripts
-python3 $SKILL/pull_week.py --repo . --list-weeks | head -40
+uv run $SKILL/pull_week.py --repo . --list-weeks | head -40
 ```
 
 Config is optional and lives at `.claude/catchup.config.json` in the target
@@ -97,7 +97,7 @@ earlier weeks left behind.
 ## Step 2: Pull the week
 
 ```bash
-python3 $SKILL/pull_week.py --repo . 2026-W35 > /tmp/week.json
+uv run $SKILL/pull_week.py --repo . 2026-W35 > /tmp/week.json
 ```
 
 Emits classified commits, per-category counts, per-author counts, the
@@ -181,8 +181,8 @@ produces a read of someone's judgment, that lands on the person.
 **Reuse ids.** Before creating an entity, check the store:
 
 ```bash
-python3 $SKILL/entities.py list
-python3 $SKILL/entities.py show <id>
+uv run $SKILL/entities.py list
+uv run $SKILL/entities.py show <id>
 ```
 
 If the week continues existing work, **reuse that entity's id** — that is the
@@ -217,8 +217,8 @@ Write the extraction as JSON and pipe it in:
 what lets the card read as current while the timeline stays honest.
 
 ```bash
-python3 $SKILL/entities.py upsert --repo . --week 2026-W35 --file extraction.json
-python3 $SKILL/entities.py validate --repo .
+uv run $SKILL/entities.py upsert --repo . --week 2026-W35 --file extraction.json
+uv run $SKILL/entities.py validate --repo .
 ```
 
 Upsert is idempotent — re-running a week **replaces** that week's block rather
@@ -231,7 +231,7 @@ transcribed rather than entities extracted; two means a week got flattened.
 ## Step 3b: Record the week's stats
 
 ```bash
-python3 $SKILL/entities.py record-week --repo . --week 2026-W35 --pull /tmp/week.json
+uv run $SKILL/entities.py record-week --repo . --week 2026-W35 --pull /tmp/week.json
 ```
 
 Writes `<out>/weeks/<YYYY-WNN>.json`: commit and PR counts, what was ignored and
@@ -248,7 +248,7 @@ Run it *after* the entity upsert, so the record captures the entity ids.
 ## Step 4 (pass 2): Write the summary from the entities
 
 ```bash
-python3 $SKILL/entities.py week 2026-W35 --repo .
+uv run $SKILL/entities.py week 2026-W35 --repo .
 ```
 
 That scaffold — grouped by category, with the multi-week ones marked
@@ -336,14 +336,14 @@ session has no prompt to answer. If a key path ever appears, it belongs in
 never read into the transcript.
 
 ```bash
-python3 $SKILL/deepvista_cards.py plan --repo . --week 2026-W35
+uv run $SKILL/deepvista_cards.py plan --repo . --week 2026-W35
 ```
 
 Emits one item per entity with `action: create | update | skip`. Call the
 DeepVista MCP card tool for each, then record what came back:
 
 ```bash
-python3 $SKILL/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned>
+uv run $SKILL/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned>
 ```
 
 `skip` means the entity has not changed since its last push — **let it skip.**
@@ -373,9 +373,9 @@ copies drift — and the fixes are usually found in a copy, because that is wher
 the skill actually runs against a real week.
 
 ```bash
-python3 $SKILL/deploy.py <repo> --check      # drifted?
-python3 $SKILL/deploy.py <repo> --pull-back  # carry a fix back to canon
-python3 $SKILL/deploy.py --check-all <repo> <repo> …
+uv run $SKILL/deploy.py <repo> --check      # drifted?
+uv run $SKILL/deploy.py <repo> --pull-back  # carry a fix back to canon
+uv run $SKILL/deploy.py --check-all <repo> <repo> …
 ```
 
 **Never hand-transcribe a fix between copies**, and never edit a deployed copy

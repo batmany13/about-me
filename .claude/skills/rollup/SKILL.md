@@ -67,8 +67,8 @@ Default is the **last closed week**. `this week`, `last week`, `last N weeks`,
 ## Step 2: Run the rollup
 
 ```bash
-python3 .claude/skills/rollup/scripts/rollup.py 2026-W35 --table   # human read
-python3 .claude/skills/rollup/scripts/rollup.py 2026-W35           # full JSON
+uv run .claude/skills/rollup/scripts/rollup.py 2026-W35 --table   # human read
+uv run .claude/skills/rollup/scripts/rollup.py 2026-W35           # full JSON
 ```
 
 The table is the orientation pass; the JSON carries every entity body.
