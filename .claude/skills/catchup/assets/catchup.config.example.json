@@ -45,9 +45,15 @@
     }
   },
   "summary": {
-    "$comment": "Raise these for a repo that routinely runs hundreds of commits a week.",
+    "$comment": "Raise these for a repo that routinely runs hundreds of commits a week. Once the summary has sections doing different jobs, budget them separately — a single total gets hit by trimming whichever section is easiest rather than whichever is weakest.",
     "bullets": "6-12",
-    "words": "150-250"
+    "words": "150-250",
+    "sections": {
+      "themes": "500-800",
+      "meetings": "400-700",
+      "learnings": "500-800",
+      "other": "50-150"
+    }
   },
   "ignore": {
     "$comment": "Bookkeeping commits \u2014 excluded from counts but always reported as a number. These EXTEND the built-ins (.claude/transcripts, lockfiles, chore(transcripts): ...).",

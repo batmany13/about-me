@@ -59,7 +59,26 @@ is marked `path-weak` so the extraction pass knows not to trust it. Ties go to
 | Key | Default | Meaning |
 |---|---|---|
 | `bullets` | `"6-12"` | Target bullet count for the week's summary |
-| `words` | `"150-250"` | Target word count |
+| `words` | `"150-250"` | Target word count for the whole document |
+| `sections{}` | — | Per-section word budgets, keyed by section |
+
+**Prefer `sections` once a summary has more than one job.** A single total
+governs a one-list summary fine, but a document whose sections answer different
+questions cannot be trimmed against one number — hitting it means cutting
+whichever section is easiest rather than whichever is weakest, and the section
+that survives is the one that was already too long.
+
+```json
+"summary": {
+  "words": "1800-2400",
+  "sections": { "themes": "500-800", "meetings": "400-700",
+                "learnings": "500-800", "other": "50-150" }
+}
+```
+
+Weight-proportionality is a rule *within* a section, not across them. An evening
+that is 2% of a week's churn can still deserve a third of the summary, because
+"what moved" is not the question every section answers.
 
 The default is sized for a normal week. A repo that routinely runs hundreds of
 commits should raise it rather than overflow it every week — an unmeetable
