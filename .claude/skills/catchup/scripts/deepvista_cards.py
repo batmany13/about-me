@@ -34,6 +34,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -41,7 +42,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from entities import (  # noqa: E402
     CATEGORY_ORDER, category_titles, content_hash, die, entity_path,
-    load_all, load_config, store_dir, write_entity,
+    load_all, load_config, store_dir, utc_now, write_entity,
 )
 
 # The server this bridge needs, declared ONCE and travelling with the skill.
@@ -50,24 +51,108 @@ from entities import (  # noqa: E402
 # them wrong. `install-mcp` writes this into a target repo's .mcp.json, so the
 # requirement lives with the code that has the requirement.
 #
-# The `mcp-remote` proxy form, which is what the vendor documents for clients
-# without their own in-app Connect command. It matters which one you pick, and
-# the difference is not syntax:
+# There are two ways to register it, and it matters which one you pick:
 #
-#   type:http    -- the HOST APP's MCP client runs the OAuth. Fine where the app
-#                   exposes a connect flow you can reach; a dead end where it
-#                   does not, because there is nothing else to run it.
+#   type:http    -- the HOST APP's MCP client runs the OAuth. Needs nothing
+#                   installed, but the app must expose a connect flow you can
+#                   reach; a dead end where it does not.
 #   mcp-remote   -- a local stdio proxy runs the OAuth ITSELF and caches the
 #                   token under ~/.mcp-auth. One browser sign-in on first launch,
-#                   headless from then on, INCLUDING from agent sessions.
+#                   headless from then on, INCLUDING from agent sessions. Costs a
+#                   hard Node 18+ dependency, because `npx` runs the proxy.
 #
-# The second is why this is the default: it makes the push reachable without a
-# human in the loop after the first time. The cost is a hard Node 18+ dependency
-# for anyone whose client reads this file.
+# The proxy is preferred WHEN IT CAN RUN, because it makes the push reachable
+# without a human in the loop after the first time. It was previously the only
+# form this script would write, unconditionally -- and that is the bug fixed on
+# 2026-09-01: `install-mcp` wrote an `npx` entry onto a machine with no Node at
+# all, cheerfully reported success, and the failure surfaced one session later as
+# `deepvista (ENOENT): Executable not found in $PATH: npx` at start-up, far from
+# the command that caused it. A precondition a tool never checks is a precondition
+# its user discovers at the worst moment.
+#
+# So: the entry is chosen against the runtime that is actually present. The http
+# form is the fallback rather than a downgrade -- DeepVista serves the RFC 9728
+# protected-resource metadata and RFC 8414 authorization-server metadata (with
+# dynamic client registration) that a native MCP client needs, verified against
+# the live endpoint 2026-09-01. What it costs is the headless property: the host
+# app owns the token, so re-auth happens on the app's terms, not `~/.mcp-auth`'s.
 MCP_SERVER_NAME = "deepvista"
 MCP_ENDPOINT = "https://api.deepvista.ai/mcp"
-MCP_ENTRY = {"command": "npx", "args": ["-y", "mcp-remote", MCP_ENDPOINT]}
+MCP_ENTRY_PROXY = {"command": "npx", "args": ["-y", "mcp-remote", MCP_ENDPOINT]}
+# npm 6's npx cannot run the proxy entry: it does not understand `-y`.
+MCP_MIN_NPX = 7
+MCP_ENTRY_HTTP = {"type": "http", "url": MCP_ENDPOINT}
+MCP_ENTRIES = {"mcp-remote": MCP_ENTRY_PROXY, "http": MCP_ENTRY_HTTP}
 MCP_RELPATH = ".mcp.json"
+MCP_MIN_NODE = 18
+
+
+def node_runtime():
+    """What Node is actually on PATH, as (npx_path, major, label).
+
+    `npx` is what the entry names, so `npx` is what gets probed -- not `node`.
+    A Node install missing npx, or an npx too old to run the proxy, is exactly
+    the case a `node --version` check would wave through.
+    """
+    npx = shutil.which("npx")
+    if not npx:
+        return None, None, "no `npx` on PATH"
+    node = shutil.which("node")
+    if not node:
+        return npx, None, "`npx` found but no `node` on PATH"
+    try:
+        out = subprocess.run([node, "--version"], capture_output=True, text=True,
+                             timeout=20)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return npx, None, f"`node --version` failed ({exc})"
+    m = re.match(r"v(\d+)\.", (out.stdout or "").strip())
+    if not m:
+        return npx, None, f"could not parse `node --version` ({(out.stdout or '').strip()!r})"
+    major = int(m.group(1))
+    if major < MCP_MIN_NODE:
+        return npx, major, f"Node {major} is older than the required {MCP_MIN_NODE}+"
+
+    # And the npx version, which is a SEPARATE question from Node's. A machine
+    # can carry a current node beside an npm 6 npx -- npm 6's npx does not
+    # understand `-y`, so it reads the rest of the line as packages and tries to
+    # npm-install the server URL. npm fetches it, gets the OAuth challenge every
+    # MCP server answers with, and reports `E401 Unable to authenticate`: an auth
+    # error, on a connector whose auth you are setting up, pointing at the wrong
+    # layer entirely. Probing npx by PRESENCE and node by VERSION waves exactly
+    # this through, which is the case this function set out to catch.
+    try:
+        nv = subprocess.run([npx, "--version"], capture_output=True, text=True,
+                            timeout=20)
+        nver = (nv.stdout or "").strip()
+        nmaj = int(nver.split(".")[0])
+    except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+        return npx, major, f"Node v{major} at {node} (could not read `npx --version`)"
+    if nmaj < MCP_MIN_NPX:
+        alt = ""
+        for cand in ("/opt/homebrew/bin/npx", "/usr/local/bin/npx"):
+            if cand == npx or not os.path.isfile(cand):
+                continue
+            try:
+                av = subprocess.run([cand, "--version"], capture_output=True,
+                                    text=True, timeout=20).stdout.strip()
+                if int(av.split(".")[0]) >= MCP_MIN_NPX:
+                    alt = f"; npx {av} at {cand} would work but loses on PATH"
+                    break
+            except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+                continue
+        return npx, None, (f"npx {nver} is older than the required {MCP_MIN_NPX}+ "
+                           f"and cannot run this entry{alt}")
+    return npx, major, f"Node v{major} at {node}, npx {nver}"
+
+
+def choose_transport(pref):
+    """Resolve --transport into (key, entry, why). `auto` follows the runtime."""
+    if pref in MCP_ENTRIES:
+        return pref, MCP_ENTRIES[pref], f"--transport {pref}"
+    npx, major, label = node_runtime()
+    if npx and major and major >= MCP_MIN_NODE:
+        return "mcp-remote", MCP_ENTRY_PROXY, label
+    return "http", MCP_ENTRY_HTTP, label
 
 # Entity type -> DeepVista card_type. The right-hand side is DeepVista's fixed
 # vocabulary (from the CLI's CARD_TYPES), not ours, so the mapping is lossy on
@@ -89,6 +174,29 @@ CARD_TYPE = {
     "concept": "keypoint",
     "other": "note",
 }
+
+# `upsert_context_card`'s `status` enum, verbatim from the served tool schema
+# (2026-09-01). Kept as a set so a config typo fails HERE, with the vocabulary
+# printed, instead of at the 21st push -- an out-of-vocabulary value is the kind
+# of thing an "unknown keys are ignored" server accepts and quietly discards.
+CARD_STATUS = {"pending", "not_started", "in_progress", "completed",
+               "for_review", "active", "archived"}
+CARD_STATUS_DEFAULT = "active"
+
+
+def card_status(dv_cfg):
+    """The card `status` to send, validated against the served enum.
+
+    Config carried `confirmed` -- a REST-era search-visibility flag, not a member
+    of this enum. `active` is its intent here: live, not archived.
+    """
+    want = dv_cfg.get("card_status") or CARD_STATUS_DEFAULT
+    if want == "confirmed":
+        return CARD_STATUS_DEFAULT
+    if want not in CARD_STATUS:
+        die(f"card_status {want!r} is not one of the served values: "
+            f"{', '.join(sorted(CARD_STATUS))}")
+    return want
 
 
 def render_body(e, titles, repo_label):
@@ -198,64 +306,6 @@ def build_tags(e, cfg, repo_label):
     return sorted(t for t in tags if t)
 
 
-def npx_preflight():
-    """Whether the `npx` that would actually be spawned can run the proxy.
-
-    npm 6's npx does not understand `-y`, so it reads the whole remainder as
-    packages to install and tries to `npm install` the server URL. npm then
-    fetches that URL, gets the OAuth challenge every MCP server answers with,
-    and reports:
-
-        npm ERR! code E401
-        npm ERR! Unable to authenticate, need: Bearer resource_metadata="..."
-
-    Which is a message about authentication, on a connector whose authentication
-    is the thing you are trying to set up -- so it reads as "OAuth is broken"
-    and sends you to fix the wrong layer entirely. The proxy never starts. A
-    machine can also carry a modern npx that simply loses on PATH, which is what
-    makes this worth checking rather than assuming.
-
-    Returns (ok, message).
-    """
-    exe = shutil.which("npx")
-    if not exe:
-        return False, ("no `npx` on PATH -- mcp-remote runs through it. "
-                       "Install Node 18+ (which ships npm 7+).")
-    try:
-        ver = subprocess.run([exe, "--version"], capture_output=True, text=True,
-                             timeout=30).stdout.strip()
-    except (subprocess.SubprocessError, OSError) as e:
-        return False, f"could not run `{exe} --version`: {e}"
-
-    major = 0
-    try:
-        major = int(ver.split(".")[0])
-    except (ValueError, IndexError):
-        pass
-    if major >= 7:
-        return True, f"npx {ver} at {exe}"
-
-    alt = ""
-    for cand in ("/opt/homebrew/bin/npx", "/usr/local/bin/npx"):
-        if cand == exe or not os.path.isfile(cand):
-            continue
-        try:
-            av = subprocess.run([cand, "--version"], capture_output=True,
-                                text=True, timeout=30).stdout.strip()
-            if int(av.split(".")[0]) >= 7:
-                alt = (f"\n  A usable one exists at {cand} (npx {av}) but loses on "
-                       f"PATH.\n  Either put its directory first, or set "
-                       f'"command": "{cand}" in the entry.')
-                break
-        except (subprocess.SubprocessError, OSError, ValueError, IndexError):
-            continue
-    return False, (
-        f"npx {ver} at {exe} is too old to run this entry (needs 7+).\n"
-        "  npm 6's npx ignores `-y` and tries to npm-install the server URL,\n"
-        "  which fails with `E401 Unable to authenticate` -- a message about\n"
-        "  auth that has nothing to do with the connector's auth." + alt)
-
-
 def cmd_install_mcp(args, repo, cfg, sdir):
     """Register the DeepVista server in a repo's .mcp.json, idempotently.
 
@@ -269,17 +319,23 @@ def cmd_install_mcp(args, repo, cfg, sdir):
     the one-line command instead, for someone who would rather authenticate once
     for every repo; a user-scope registration is a machine setting and not
     something a repo-level tool should write on anyone's behalf.
+
+    The transport is CHOSEN, not assumed -- see the MCP_ENTRIES comment. `auto`
+    writes the proxy form where Node 18+ can run it and the http form where it
+    cannot, so the entry that lands is one this machine can actually start.
     """
-    ok, msg = npx_preflight()
-    print(("  npx check: " if ok else "  !! ") + msg + "\n")
+    key, entry, why = choose_transport(args.transport)
 
     if args.scope == "user":
+        cmd = (f"claude mcp add {MCP_SERVER_NAME} -- npx -y mcp-remote {MCP_ENDPOINT}"
+               if key == "mcp-remote" else
+               f"claude mcp add --transport http {MCP_SERVER_NAME} {MCP_ENDPOINT}")
+        print(f"Transport: {key} ({why})\n")
         print("Run this once, in an interactive terminal:\n")
-        print(f"  claude mcp add {MCP_SERVER_NAME} -- npx -y mcp-remote {MCP_ENDPOINT}\n")
+        print(f"  {cmd}\n")
         print("User scope covers every repo on this machine; project scope (the")
         print("default here) keeps the declaration with the repo that uses it.")
-        print("Either way the first launch opens a browser once; the proxy caches")
-        print("the token under ~/.mcp-auth and every later session is headless.")
+        print("Either way the first launch opens a browser once.")
         return
 
     path = os.path.join(repo, MCP_RELPATH)
@@ -292,31 +348,158 @@ def cmd_install_mcp(args, repo, cfg, sdir):
             die(f"{MCP_RELPATH} is not valid JSON ({e}) -- refusing to overwrite it")
     servers = blob.setdefault("mcpServers", {})
     existing = servers.get(MCP_SERVER_NAME)
-    if existing == MCP_ENTRY:
+
+    # flush: `die` writes to stderr, and block-buffered stdout would otherwise
+    # report the transport AFTER the error explaining it.
+    print(f"Transport: {key} ({why})", flush=True)
+
+    if existing == entry:
         print(f"already registered: {MCP_SERVER_NAME} -> {MCP_ENDPOINT}")
     elif existing and not args.force:
+        # Naming the OTHER known form explicitly, because the overwhelmingly
+        # common case for this branch is a repo carrying the entry for a
+        # transport this machine cannot run -- which is a one-flag fix, not a
+        # mystery worth reading the source over.
+        other = next((k for k, v in MCP_ENTRIES.items() if v == existing), None)
+        hint = (f"\nThat is the {other} form and this machine resolved to {key}."
+                f"\nRe-run with --force to switch it, or --transport {other} to keep it."
+                if other and other != key else
+                "\nLeaving it alone -- pass --force to replace it.")
         die(f"{MCP_SERVER_NAME} is already in {MCP_RELPATH} with different settings:\n"
             f"  {json.dumps(existing)}\n"
-            f"expected:\n  {json.dumps(MCP_ENTRY)}\n"
-            f"Leaving it alone -- pass --force to replace it.")
+            f"expected:\n  {json.dumps(entry)}" + hint)
     else:
-        servers[MCP_SERVER_NAME] = dict(MCP_ENTRY)
+        servers[MCP_SERVER_NAME] = dict(entry)
         if args.dry_run:
             print(f"would write to {os.path.relpath(path, repo)}:")
-            print(json.dumps({MCP_SERVER_NAME: MCP_ENTRY}, indent=2))
+            print(json.dumps({MCP_SERVER_NAME: entry}, indent=2))
             return
         with open(path, "w") as fh:
             json.dump(blob, fh, indent=2)
             fh.write("\n")
         print(f"registered {MCP_SERVER_NAME} in {os.path.relpath(path, repo)}")
 
-    print("\nRequires Node 18+ -- `npx` runs the proxy. Start a FRESH session: MCP")
-    print("servers connect at start-up, so one added mid-session is invisible to it.")
-    print("The first launch opens a browser once; the proxy caches the token under")
-    print("~/.mcp-auth and every session after that is headless, agent runs included.")
+    if key == "mcp-remote":
+        print("\nNeeds Node 18+ on the PATH the MCP CLIENT sees -- `npx` runs the proxy.")
+        print("The first launch opens a browser once; the proxy caches the token under")
+        print("~/.mcp-auth and every session after that is headless, agent runs included.")
+    else:
+        print("\nNo Node needed: the host app's own MCP client runs the OAuth. In Claude")
+        print("Code that is `/mcp` -> authenticate, which needs an INTERACTIVE session.")
+        print("Install Node 18+ and re-run with --force for the headless-after-first-run")
+        print("proxy form instead.")
+
+    print("\nStart a FRESH session either way: MCP servers connect at start-up, so one")
+    print("added mid-session is invisible to it. Verify with `doctor` before pushing.")
     print("\nThen dump the tool list before pushing anything: the vendor publishes the")
     print("setup and the auth model but not the tool names, parameters, card_type")
     print("values or status field, so every field this bridge sends is inferred.")
+
+
+def cmd_doctor(args, repo, cfg, sdir):
+    """Diagnose the registration BEFORE a session start-up failure does.
+
+    This exists because the original failure mode was silent at the only moment
+    anyone could have acted on it. `install-mcp` wrote an `npx` entry, printed
+    success, and the machine had no Node; the first evidence was a start-up line
+    in the NEXT session -- `ENOENT: Executable not found in $PATH: npx` -- which
+    names neither the file that asked for npx nor the command that put it there.
+
+    So `doctor` checks the three things that are separately capable of breaking
+    it, and reports each one on its own: the runtime, the registered entry, and
+    the endpoint. It is read-only and exits non-zero when the registration
+    cannot work as written, which makes it usable as a preflight.
+    """
+    ok = True
+
+    print("== runtime ==")
+    npx, major, label = node_runtime()
+    proxy_ok = bool(npx and major and major >= MCP_MIN_NODE)
+    print(f"  {'OK  ' if proxy_ok else 'note'}  {label}")
+    if npx:
+        print(f"        npx: {npx}")
+    if not proxy_ok:
+        print(f"        -> the mcp-remote proxy form CANNOT run here (needs Node {MCP_MIN_NODE}+).")
+        print("        -> `brew install node`, or use --transport http.")
+
+    print("\n== registration ==")
+    path = os.path.join(repo, MCP_RELPATH)
+    if not os.path.isfile(path):
+        print(f"  FAIL  no {MCP_RELPATH} in {repo}")
+        print(f"        -> run: install-mcp --repo {repo}")
+        ok = False
+    else:
+        try:
+            blob = json.load(open(path))
+        except json.JSONDecodeError as e:
+            print(f"  FAIL  {MCP_RELPATH} is not valid JSON ({e})")
+            return 1
+        entry = (blob.get("mcpServers") or {}).get(MCP_SERVER_NAME)
+        if not entry:
+            print(f"  FAIL  {MCP_SERVER_NAME} is not registered in {MCP_RELPATH}")
+            print(f"        -> run: install-mcp --repo {repo}")
+            ok = False
+        else:
+            key = next((k for k, v in MCP_ENTRIES.items() if v == entry), None)
+            print(f"  OK    {MCP_SERVER_NAME} -> {json.dumps(entry)}")
+            if key is None:
+                print("  note  that is neither known form; it may still be valid, but this")
+                print("        script cannot vouch for it.")
+            elif key == "mcp-remote" and not proxy_ok:
+                # Say it in the words the failure will actually use, so the two
+                # are recognisably the same problem -- which means predicting the
+                # RIGHT one. A missing npx and an npx too old fail at different
+                # moments with different messages, and naming the wrong symptom
+                # sends the reader to the wrong layer just as surely as no
+                # diagnosis at all.
+                if shutil.which("npx"):
+                    print("  FAIL  this entry runs `npx -y`, which the `npx` on this PATH")
+                    print("        is too old to understand. It will read the URL as a")
+                    print("        package and try to install it, failing with:")
+                    print("          npm ERR! code E401")
+                    print("          npm ERR! Unable to authenticate, need: Bearer resource_metadata=...")
+                    print("        That is npm's auth error, not the connector's — the proxy")
+                    print("        never starts.")
+                else:
+                    print("  FAIL  this entry runs `npx`, which this machine cannot resolve.")
+                    print("        Every session will fail at start-up with:")
+                    print("          deepvista (ENOENT): Executable not found in $PATH: npx")
+                print(f"        -> `brew install node` (then restart the session), or")
+                print(f"        -> install-mcp --repo {repo} --transport http --force")
+                ok = False
+
+    print("\n== endpoint ==")
+    import urllib.error
+    import urllib.request
+    req = urllib.request.Request(
+        MCP_ENDPOINT, method="POST",
+        data=json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                         "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                                    "clientInfo": {"name": "catchup-doctor", "version": "0"}}}).encode(),
+        headers={"Content-Type": "application/json",
+                 "Accept": "application/json, text/event-stream"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            print(f"  OK    {MCP_ENDPOINT} answered {r.status} (already authorized)")
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            # 401 is the HEALTHY answer for an unauthenticated probe. The header
+            # is the interesting part: it is what tells a native MCP client where
+            # to run the OAuth, and its presence is why --transport http is a
+            # real option here rather than a hopeful one.
+            www = e.headers.get("www-authenticate", "")
+            print(f"  OK    {MCP_ENDPOINT} -> 401 + OAuth discovery (expected when signed out)")
+            if www:
+                print(f"        {www[:160]}")
+        else:
+            print(f"  FAIL  {MCP_ENDPOINT} -> HTTP {e.code}")
+            ok = False
+    except (urllib.error.URLError, OSError) as e:
+        print(f"  FAIL  {MCP_ENDPOINT} unreachable ({e})")
+        ok = False
+
+    print("\n" + ("all checks passed" if ok else "PROBLEMS FOUND -- see -> lines above"))
+    return 0 if ok else 1
 
 
 def cmd_plan(args, repo, cfg, sdir):
@@ -355,15 +538,34 @@ def cmd_plan(args, repo, cfg, sdir):
             "entity_id": e["id"],
             "card_id": dv.get("card_id"),
             "content_hash": h,
+            # Keyed to match `upsert_context_card`'s `properties` object, which is
+            # the served contract -- reconciled against the connected server on
+            # 2026-09-01, the step the runbook insists on before a first push.
+            # Two of the three inferred fields were wrong, and the interesting
+            # part is that they were wrong in OPPOSITE ways:
+            #
+            #   card_type -> type   The tool takes `type` and says so: "Use the
+            #                       key 'type', NOT 'card_type'." Unknown keys
+            #                       are IGNORED rather than rejected, and `type`
+            #                       is required on create -- so the old payload
+            #                       would have been dropped on the floor and then
+            #                       failed for a missing field it was in fact
+            #                       sending, under another name.
+            #   status              Exists, but with a vocabulary that has no
+            #                       `confirmed` in it at all. The old value came
+            #                       from the REST-era confirmed/unconfirmed
+            #                       search filter, which is not this enum.
+            #
+            # The card_type VALUES were right: note, topic, keypoint, person and
+            # organization are all in the served type list. It was the key and
+            # the status vocabulary that were inferred wrong, which is exactly
+            # why the runbook says to dump the tool list rather than trust this.
             "card": {
-                "card_type": type_map.get(e.get("type"), "note"),
+                "type": type_map.get(e.get("type"), "note"),
                 "title": e["title"],
                 "description": render_body(e, titles, repo_label),
                 "tags": build_tags(e, cfg, repo_label),
-                # Agent-created cards default to `unconfirmed`, and unconfirmed
-                # cards are filtered out of search -- so a card pushed without
-                # this is invisible in the product it was pushed to.
-                "status": dv_cfg.get("card_status", "confirmed"),
+                "status": card_status(dv_cfg),
             },
         }
         if not args.show_body:
@@ -444,7 +646,14 @@ def main():
                    help="project writes .mcp.json; user prints the one-line command")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--force", action="store_true", help="replace a conflicting entry")
+    p.add_argument("--transport", choices=["auto", "mcp-remote", "http"], default="auto",
+                   help="auto (default) picks mcp-remote where Node 18+ can run it, "
+                        "else the http form the host app authenticates itself")
     p.set_defaults(fn=cmd_install_mcp)
+
+    p = sub.add_parser("doctor", parents=[common],
+                       help="check the runtime, the registered entry and the endpoint")
+    p.set_defaults(fn=cmd_doctor)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")
     p.add_argument("--id", required=True)
@@ -454,7 +663,9 @@ def main():
     args = ap.parse_args()
     repo = os.path.abspath(os.path.expanduser(args.repo_sub or args.repo))
     cfg = load_config(repo)
-    args.fn(args, repo, cfg, store_dir(repo, cfg))
+    # Propagated so `doctor` can be a preflight: a check that always exits 0 is
+    # not a gate anything can be chained behind.
+    raise SystemExit(args.fn(args, repo, cfg, store_dir(repo, cfg)) or 0)
 
 
 if __name__ == "__main__":

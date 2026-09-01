@@ -505,12 +505,23 @@ Idempotent, writes **no credentials** — the server does OAuth 2.1 with dynamic
 client registration, so a repo file holds a name, a transport and a URL and
 nothing else. It refuses to overwrite a conflicting entry.
 
-It registers the **`mcp-remote` proxy form** deliberately: that proxy runs the
-OAuth itself and caches the token under `~/.mcp-auth`, so one browser sign-in
-makes every later session headless — agent runs included. Handing the flow to the
-host app's own MCP client instead (`type: http`) means it can only ever be done
-wherever that app exposes a connect UI. The cost is a hard **Node 18+**
-dependency, since `npx` runs the proxy.
+It prefers the **`mcp-remote` proxy form**: that proxy runs the OAuth itself and
+caches the token under `~/.mcp-auth`, so one browser sign-in makes every later
+session headless — agent runs included. Handing the flow to the host app's own
+MCP client instead (`type: http`) means it can only be done wherever that app
+exposes a connect UI. The proxy costs a **Node 18+** dependency, since `npx`
+runs it.
+
+That preference is now **conditional on the runtime being there**. It used to be
+unconditional, which meant `install-mcp` would write an `npx` entry onto a
+machine with no Node, report success, and leave the failure to surface a session
+later as `deepvista (ENOENT): Executable not found in $PATH: npx`. `--transport
+auto` (the default) picks the form this machine can actually start;
+`--transport mcp-remote|http` forces one. Verify before trusting it:
+
+```bash
+uv run $SKILL/deepvista_cards.py doctor --repo .    # runtime + entry + endpoint; exits 1 on a break
+```
 
 The first sign-in is still a human step, and a *fresh* session is required
 because MCP servers connect at start-up. Sequence the work accordingly: an agent

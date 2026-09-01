@@ -67,7 +67,8 @@
     "tags": [
       "catchup"
     ],
-    "card_status": "confirmed",
+    "$comment_status": "One of the values the server actually serves: pending, not_started, in_progress, completed, for_review, active, archived. `active` means live rather than archived. An older `confirmed` is accepted and mapped to `active` — it came from a REST-era search-visibility flag and is not in this enum.",
+    "card_status": "active",
     "card_types": {
       "$comment": "Override the entity-type -> DeepVista card_type mapping. Values must be DeepVista's own card types.",
       "thread": "topic"

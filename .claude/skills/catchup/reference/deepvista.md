@@ -212,44 +212,6 @@ specifically its `/create_context_card` and `/update_context_card` calls. Prefer
 it over the rendered API reference, and reconcile against the live MCP tool list
 once connected.
 
-### When the connector will not start
-
-**`npm ERR! code E401 — Unable to authenticate, need: Bearer resource_metadata=...`**
-
-This is not an authentication problem, despite being an authentication message.
-npm 6's `npx` does not understand `-y`: it reads the rest of the line as
-packages to install and tries to `npm install` the server URL. npm fetches that
-URL, gets the OAuth challenge every MCP server answers with, and reports it as
-an npm auth failure. The proxy never starts.
-
-Check what would actually be spawned:
-
-```bash
-npx --version      # must be 7+; npm 6 ships 6.x and cannot run this entry
-node --version     # 18+
-```
-
-A machine can carry a modern npx that simply loses on PATH — a Homebrew node
-under `/opt/homebrew/bin` behind an older `/usr/local/bin`. Either reorder PATH
-or pin the working one in the entry:
-
-```json
-{ "mcpServers": { "deepvista": {
-    "command": "/opt/homebrew/bin/npx",
-    "args": ["-y", "mcp-remote", "https://api.deepvista.ai/mcp"] } } }
-```
-
-`install-mcp` runs this check and says which case a machine is in. A healthy
-launch is unmistakable — it discovers the authorization server, registers a
-client, opens a callback port and prints a sign-in URL:
-
-```
-Discovering OAuth server configuration...
-Discovered authorization server: <issuer>
-OAuth callback server running at http://127.0.0.1:<port>
-Please authorize this client by visiting: ...
-```
-
 ## Test run — the procedure for the first live push
 
 Nothing below this line has been exercised. Run it in order and stop at the
@@ -282,19 +244,47 @@ would be headless, but **that setting is not exposed in the product yet**
 (checked 2026-09-01). Until it is, OAuth is the only route.
 
 **Which config you choose decides who runs the OAuth, and that is the whole
-question.** `type: http` hands it to the host app's MCP client — fine where the
-app exposes a connect flow you can reach, a dead end where it does not. The
+question.** `type: http` hands it to the host app's MCP client — needs nothing
+installed, but the app must expose a connect flow you can reach. The
 `mcp-remote` form runs a local stdio proxy that does the OAuth **itself** and
 caches the token under `~/.mcp-auth`, so one browser sign-in makes every later
-session headless, agent runs included. This repo uses the second, which is why
-`.mcp.json` carries `command`/`args` rather than a URL.
+session headless, agent runs included — at the cost of a **Node 18+**
+dependency, since `npx` runs the proxy.
+
+`install-mcp` **chooses between them against the runtime that is actually
+present** (`--transport auto`, the default), and `--transport mcp-remote|http`
+overrides it. Prefer the proxy where Node can run it; the http form is a genuine
+fallback rather than a downgrade, because DeepVista serves the discovery
+metadata a native MCP client needs — verified live 2026-09-01:
+
+| Probe | Result |
+|---|---|
+| `POST /mcp` unauthenticated | `401` + `WWW-Authenticate: Bearer resource_metadata=…` (RFC 9728) |
+| Protected-resource metadata | `resource: https://api.deepvista.ai/mcp`, auth server `…supabase.co/auth/v1` |
+| Authorization-server metadata | authorize + token + **`registration_endpoint`** (dynamic client registration), PKCE `S256` |
 
 So the sequence is:
 
-1. **Node 18+** — `npx` runs the proxy, and nothing works without it;
+1. **Node 18+ only if you take the proxy form** — `npx` runs it, and nothing
+   works without it. This is a *conditional* prerequisite, not an absolute one;
 2. a **fresh** session, because MCP servers connect at start-up and one added to
    `.mcp.json` mid-session is invisible to that session;
 3. the first launch opens a browser once. After that the cached token carries.
+
+**Check it before the session start-up does**, which is the step whose absence
+caused the 2026-09-01 break — `install-mcp` wrote an `npx` entry onto a machine
+with no Node, reported success, and the failure appeared a session later as
+`deepvista (ENOENT): Executable not found in $PATH: npx`, naming neither the
+file nor the command responsible:
+
+```bash
+uv run <skill>/scripts/deepvista_cards.py doctor --repo .
+```
+
+It reports the runtime, the registered entry and the endpoint separately, exits
+non-zero when the registration cannot work as written, and — for the exact
+ENOENT case — prints the start-up error it is predicting, so the two are
+recognisable as one problem.
 
 An agent run can do everything up to the handoff — `install-mcp`, then `plan`,
 which renders every card — and nothing past it. Plan for a human at step 2 rather

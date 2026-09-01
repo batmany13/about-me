@@ -111,8 +111,15 @@ work — only a commit that is nothing but bookkeeping is bookkeeping.
 | `enabled` | `false` | Whether Step 5 runs at all |
 | `project_id` | `null` | Target project; unset means the account's active project |
 | `tags[]` | `["catchup"]` | Base tags on every card |
-| `card_status` | `"confirmed"` | Leave this alone — see [`deepvista.md`](deepvista.md) |
+| `card_status` | `"active"` | Must be one of the values the server serves |
 | `card_types{}` | built-in map | Override entity-type → DeepVista card_type |
+
+**`card_status` is checked against the served enum** — `pending`,
+`not_started`, `in_progress`, `completed`, `for_review`, `active`, `archived` —
+and a value outside it fails at the first card with the vocabulary printed,
+rather than being accepted and quietly discarded by a server that ignores
+unknown keys. An older `confirmed` is mapped to `active`; it came from a
+REST-era search-visibility flag and was never a member of this enum.
 
 ## `git`
 
