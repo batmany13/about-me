@@ -375,6 +375,13 @@ anyone. What belongs here is what the work found out about the world: a vendor's
 number that did not survive your own measurement, a service granting more
 authority than it documents, a dependency that turns out to be someone else's.
 
+**Cite what landed under `prs`, and what did not under `open_prs`.** The
+validator holds `prs` to PRs that actually merged in that week, because a
+catchup reports what shipped. Work that happened but is still on a branch is
+still the week's work — put its PR in `open_prs` and it stays checkable while
+open. Never cite a branch commit: it is reachable from nothing once the PR
+merges, so it becomes a reference no other clone can resolve.
+
 **Reuse ids.** Check the store before creating anything; themes especially
 accumulate across weeks, and a new id for continuing work silently forks the
 arc.

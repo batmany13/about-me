@@ -118,8 +118,8 @@ def gh_pr_counts(path, start, end):
     """Merged-in-week and currently-open PR counts, straight from GitHub.
 
     The subject-parsed `prs` list below is unreliable as a count: it scrapes #NN
-    out of commit subjects, so it picks up cross-repo references ("close out
-    aifund #330"), PRs merely mentioned, and the same PR referenced twice. For
+    out of commit subjects, so it picks up cross-repo references ("close out the
+    fund repo's #330"), PRs merely mentioned, and the same PR referenced twice. For
     W34 it read 37 where GitHub said 24. Squash-merging makes commit counts a
     soft number too, but a PR is one unit of work however it was merged -- so
     these are the figures worth publishing.

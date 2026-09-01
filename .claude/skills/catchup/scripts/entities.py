@@ -335,6 +335,12 @@ def normalize(raw, week, grades=None):
         "note": note,
         "commits": sorted({str(c)[:9] for c in (raw.get("commits") or [])}),
         "prs": sorted({int(p) for p in (raw.get("prs") or []) if str(p).isdigit()}),
+        # Work that happened but has not landed. `prs` is what merged, and the
+        # validator holds it to that; without a separate field, in-flight work
+        # could only be recorded as prose with no resolvable evidence at all --
+        # so a real thread sitting on an open branch looked like an unevidenced
+        # claim. Cite the PR here and it stays checkable while it is still open.
+        "open_prs": sorted({int(p) for p in (raw.get("open_prs") or []) if str(p).isdigit()}),
         "paths": sorted({str(p) for p in (raw.get("paths") or []) if str(p).strip()}),
         "people": sorted({str(p).strip() for p in (raw.get("people") or []) if str(p).strip()}),
         "date": raw.get("date"),
@@ -777,12 +783,21 @@ def cmd_validate(args, repo, cfg, sdir):
                     problems.append(
                         f"{eid} [{wk}]: commit {sha} is not reachable from {ref} — "
                         f"a citation nobody else can resolve")
+            for n in (entry.get("open_prs") or []):
+                if pr_weeks is None:
+                    break
+                if pr_weeks.get(int(n)) is not None:
+                    problems.append(
+                        f"{eid} [{wk}]: PR #{n} is listed as open but has merged — "
+                        f"move it to `prs`")
             for n in (entry.get("prs") or []):
                 if pr_weeks is None:
                     break
                 got = pr_weeks.get(int(n))
                 if got is None:
-                    problems.append(f"{eid} [{wk}]: PR #{n} is not a merged PR here")
+                    problems.append(
+                        f"{eid} [{wk}]: PR #{n} is not a merged PR here "
+                        f"(if it is still open, cite it under `open_prs`)")
                 elif got != wk:
                     problems.append(
                         f"{eid} [{wk}]: PR #{n} merged in {got}, not {wk}")
