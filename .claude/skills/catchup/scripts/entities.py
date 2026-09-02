@@ -343,6 +343,15 @@ def normalize(raw, week, grades=None):
         "open_prs": sorted({int(p) for p in (raw.get("open_prs") or []) if str(p).isdigit()}),
         "paths": sorted({str(p) for p in (raw.get("paths") or []) if str(p).strip()}),
         "people": sorted({str(p).strip() for p in (raw.get("people") or []) if str(p).strip()}),
+        # What the conversation PRODUCED, kept apart from what it said. A
+        # meeting note that only narrates is a transcript; the reason anyone
+        # re-reads one before the next call is to find what they promised and
+        # what they still have to ask. Repos that keep meeting notes almost
+        # always already have this -- a "Support / follow-up" section, an
+        # action list, a checklist -- and rendering the narration while
+        # dropping it is how a summary ends up long and useless at once.
+        "owed": [str(x).strip() for x in (raw.get("owed") or []) if str(x).strip()],
+        "asks": [str(x).strip() for x in (raw.get("asks") or []) if str(x).strip()],
         "date": raw.get("date"),
     }
     return {
@@ -961,14 +970,30 @@ def cmd_propose(args, repo, cfg, sdir):
             for p in paths:
                 if any(fnmatch.fnmatch(p, g) for g in globs):
                     churn[p] += share
-        hits = [p for p, _ in churn.most_common()]
+        # An artifact that was ADDED is a NEW SUBJECT, and outranks any amount of
+        # churn on one that already existed. Ranking purely by size buries it:
+        # a first conversation with a company is one small new file, while a
+        # re-scored profile is a big edit, and under one size ranking the small
+        # new file falls past the cut and is never opened. Two founder meetings
+        # were lost exactly that way -- their artifacts sorted 26th and 31st,
+        # their PR bodies were the two shortest of the week (the substance had
+        # gone into the file), and nothing in the output said they existed.
+        added = {p for p in ((w.get("structure") or {}).get("added") or [])
+                 if any(fnmatch.fnmatch(p, g) for g in globs)}
+        hits = sorted(churn, key=lambda p: (p not in added, -churn[p], p))
         print(f"\n## Subject artifacts this week touched — READ THESE for learnings\n")
         if sub.get("noun"):
-            print(f"  (a subject here is {sub['noun']}; most-changed first)\n")
-        for p in hits[:25]:
-            print(f"  {int(churn[p]):>7,}  {p}")
+            print(f"  (a subject here is {sub['noun']}; NEW subjects first, then most-changed)\n")
+        shown, n_added = hits[:25], len(added)
+        for p in shown:
+            print(f"  {'NEW ' if p in added else '    '}{int(churn[p]):>7,}  {p}")
+        if n_added:
+            print(f"\n  {n_added} of these did not exist before this week. A new subject "
+                  f"artifact is\n  a new subject: open every one, whatever its size.")
         if len(hits) > 25:
-            print(f"  … {len(hits) - 25} more, smaller")
+            missed = sum(1 for p in hits[25:] if p in added)
+            tail = f"  … {len(hits) - 25} more, smaller"
+            print(tail + (f" ({missed} of them NEW — raise the cap)" if missed else ""))
         if not hits:
             print("  none matched — either a quiet week for subjects, or the globs in")
             print("  `subjects.artifacts` no longer match where this repo keeps them.")
@@ -1163,16 +1188,146 @@ def cmd_render(args, repo, cfg, sdir):
     meets = [e for e in ents if e.get("type") in ("meeting", "org", "person")]
     if meets:
         print("## Meetings & Notes\n")
-        for e in sorted(meets, key=lambda e: (e.get("type") != "meeting", e["id"])):
-            # One bullet, like every other section. The standing description
-            # leads because a reader who has never heard of the company needs to
-            # know what it IS before being told what its slide showed -- but it
-            # is a clause, not a heading. Every section of this summary uses the
-            # same shape, and a section that invents its own formatting reads as
-            # a different document stapled in.
-            parts = [" ".join((e.get("summary") or "").split()),
-                     " ".join(here(e).get("note", "").split())]
-            print(f"- **{e['title']}** — " + " ".join(p for p in parts if p))
+        # Meetings lead and run in DATE order -- the section's whole contract is
+        # "who did we meet, in what order", and an id sort renders a week of
+        # conversations alphabetically by company, which is not a chronology of
+        # anything. Undated meetings sort last rather than to the top, so a
+        # missing date is visible instead of silently leading the section.
+        def meet_key(e):
+            if e.get("type") == "meeting":
+                return (0, here(e).get("date") or "9999-99-99", e["id"])
+            return (1, e.get("type"), e["id"])
+
+        # WHO WAS ACTUALLY MET is derived from the meeting entities, never
+        # asserted on the person. A person tracked because the repo researched
+        # them and a person tracked because someone sat down with them are
+        # different relationships, and rendering them identically turns a
+        # roster into a claim of contact nobody made -- three founders of one
+        # company were listed beside the people they had never met, on a deal
+        # whose own profile said "no founder contact yet". Deriving it from the
+        # meeting's own attendee list means the two cannot drift: to mark
+        # someone met, record the meeting.
+        # A meeting tagged `prep` is a note written BEFORE the room, and it is
+        # not evidence anyone was in it. Counting it as contact is the same
+        # error one level down: the artifact exists, so the meeting is assumed
+        # to have happened and gone the way the prep imagined. It stays a
+        # separate state until the note is updated with what actually occurred.
+        all_meetings = [x for x in ents if x.get("type") == "meeting"]
+        met_on, prepped = {}, {}
+        for m in all_meetings:
+            is_prep = "prep" in (m.get("tags") or [])
+            for wk in (m.get("weeks") or {}).values():
+                d = wk.get("date") or ""
+                for pid in (m.get("links") or []):
+                    tgt = prepped if is_prep else met_on
+                    tgt[pid] = max(tgt.get(pid, ""), d)
+        def contact(e):
+            if e.get("type") != "person":
+                return ""
+            if e["id"] in met_on:
+                d = met_on[e["id"]]
+                return f" *(met{' ' + d if d else ''})*"
+            if e["id"] in prepped:
+                d = prepped[e["id"]]
+                return f" *(meeting prepped{' for ' + d if d else ''} — outcome unrecorded)*"
+            # Before a meeting exists there is nothing to derive from, so the
+            # pre-contact states come from the person's own tags. That is not
+            # the assertion this guards against: the danger is claiming someone
+            # was MET without a meeting to show for it. Saying an email went out
+            # cannot overstate contact in that direction, and the distinction
+            # between a live thread and a cold name is the one a relationship
+            # repo most needs -- an open intro is exactly the thing that
+            # quietly expires.
+            tags = set(e.get("tags") or [])
+            if "meeting-upcoming" in tags:
+                return " *(contacted — meeting upcoming)*"
+            if "contacted" in tags:
+                return " *(contacted — not met)*"
+            return " *(tracked — no contact)*"
+
+        # ONE ENTRY PER CONVERSATION, synthesised -- not one bullet per entity.
+        #
+        # The store keeps meeting, org and person apart because each accumulates
+        # across weeks and they are genuinely different records. The SUMMARY is
+        # a view, and printing all three verbatim tells the same conversation
+        # three times: the meeting narrates it, the company restates it as
+        # company state, and the person restates it again as what they are like.
+        # Grouping them under a shared parent fixed the layout and not the
+        # redundancy -- a company still appeared twice inside its own group,
+        # once as the meeting and once as the company, saying nearly the same
+        # thing. The fix is not more nesting: it is that the meeting's `note`
+        # must be the synthesis, and what the company and the people
+        # contributed belongs inside it.
+        #
+        # What a reader actually needs from a conversation is three things --
+        # who was in it, the one thing that came out, and what is now owed or
+        # still to ask. The last of those is the part that expires, and it was
+        # the part being dropped while three overlapping narrations were kept.
+        def body(e):
+            # `summary` defaults to `note` at write time when none is given, so
+            # printing both renders the same paragraph twice. The standing
+            # description leads when there IS one; otherwise the week's note is
+            # the whole entry.
+            s = " ".join((e.get("summary") or "").split())
+            n = " ".join(here(e).get("note", "").split())
+            if s and (s == n or n.startswith(s)):
+                s = ""
+            return " ".join(x for x in (s, n) if x)
+
+        def actions(e):
+            w = here(e)
+            for label, key in (("Owed", "owed"), ("Ask", "asks")):
+                items = [" ".join(str(i).split()) for i in (w.get(key) or [])]
+                if items:
+                    print(f"  - **{label}:** " + " · ".join(items))
+
+        done, by_id = set(), {x["id"]: x for x in ents}
+
+        def linked(seed, kind):
+            return sorted((x for x in meets
+                           if x.get("type") == kind and x["id"] not in done
+                           and (x["id"] in (seed.get("links") or [])
+                                or seed["id"] in (x.get("links") or []))),
+                          key=lambda x: x["id"])
+
+        # Conversations, in date order. The company and the humans in the room
+        # are absorbed into the entry rather than re-listed under it.
+        for m in sorted((x for x in meets if x.get("type") == "meeting"), key=meet_key):
+            done.add(m["id"])
+            orgs = linked(m, "org")
+            for o in orgs:
+                done.add(o["id"])
+            for o in orgs:
+                for person in linked(o, "person"):
+                    done.add(person["id"])
+            for person in linked(m, "person"):
+                done.add(person["id"])
+            print(f"- **{m['title']}** — {body(m)}")
+            actions(m)
+
+        # Companies nobody sat down with. Their people become a contact clause
+        # rather than bullets of their own -- an unmet founder on an active deal
+        # is an action item, not a profile.
+        for o in sorted((x for x in meets if x.get("type") == "org" and x["id"] not in done),
+                        key=lambda x: x["id"]):
+            done.add(o["id"])
+            folk = linked(o, "person")
+            for person in folk:
+                done.add(person["id"])
+            note = f"- **{o['title']}** — {body(o)}"
+            if folk:
+                who = " · ".join(f"{x['title'].split(' — ')[0].split(',')[0]}"
+                                 f"{contact(x).replace(' *(', ' (').replace(')*', ')')}"
+                                 for x in folk)
+                note += f" **Who:** {who}."
+            print(note)
+            actions(o)
+
+        # Anyone attached to neither -- a network contact with no company here.
+        for e in sorted((x for x in meets if x["id"] not in done), key=lambda x: x["id"]):
+            done.add(e["id"])
+            print(f"- **{e['title']}**{contact(e)} — {body(e)}")
+            actions(e)
         print()
 
     concepts = [e for e in ents if e.get("type") == "concept" and here(e).get("claim")]

@@ -130,7 +130,17 @@ only part worth reading later.
 
 A busy week can run 100k+ characters of PR bodies (`pr_body_chars_total` says how
 many). Budget for it: skim titles first, then read the long ones in full —
-length correlates with substance. `--pr-body-limit N` truncates, `0` disables the
+length correlates with substance.
+
+**That correlation inverts for relationship work, and it inverts hardest on the
+weeks most worth reading.** When a repo's convention is that a conversation lands
+in a file, the PR carrying it has almost nothing to say — the substance is in the
+artifact, and the body is a sentence pointing at it. On one 20-PR week the two
+shortest bodies in the week (1,209 and 539 characters, ranked 17th and 20th of
+20) were two portfolio founder meetings, and both were dropped from the summary
+entirely. **Never rank a PR's importance by its body length alone. Cross-check
+against the subject artifacts it touched** — which is what the `NEW` rows in
+`propose` are for. `--pr-body-limit N` truncates, `0` disables the
 cap, `--no-prs` skips them entirely when you only need counts.
 
 ## Step 2b: Read the code — mandatory, not optional
@@ -300,6 +310,48 @@ actually needs: one sentence, no jargon, for someone who was not here.
 **Meetings, orgs and people are their own section** and are not themes, however
 interesting the evening was — a five-company event that is 9% of commits and 2%
 of churn is a real evening and not a movement.
+
+**A conversation is a `meeting` entity. It is not a field on the company.** The
+company is `org`, the humans are `person`, and the dated conversation between
+them is its own record with its own date — which is what the section is ranked
+by. Folding the meeting into the org looks harmless and costs three things: two
+conversations with the same company in different weeks collapse into one record;
+a conversation with no company — an event, an intro, a 1x1 — has nowhere to live;
+and, worst, **a company whose week was *only* a conversation produces no entity
+at all**, because there was no company-state change to justify an `org`. A real
+week created eight conversation logs, wrote zero `meeting` entities, and lost the
+two portfolio founder meetings that had no other news attached. If someone sat
+down with someone, there is a `meeting`.
+
+**Name every person, including the ones who were only researched.** A `person` is
+warranted by the repo doing work on them, not by their being the headline of a
+meeting — a founder who got a full research profile written this week is tracked;
+a founder named only in passing is not. The test is whether the repo now knows
+something durable about that human.
+
+**But never render a researched person and a met person the same way.** They are
+different relationships, and flattening them turns a roster into a claim of
+contact nobody made: three founders of one company were once listed beside the
+people they had actually met, on a deal whose own profile said *"no founder
+contact yet"*. The states are: **met**, **contacted — meeting
+upcoming**, **contacted — not met**, **meeting prepped but outcome unrecorded**,
+and **tracked — no contact**. None of those middle rungs is pedantic. A prep note
+is written before the room and is no evidence anyone was in it; an open intro
+that nobody has answered is the thing that most quietly expires; and a name the
+repo researched but never wrote to is not a relationship at all.
+
+**Who was met is derived from the meeting's own attendee list — never asserted on
+the person.** (The pre-meeting rungs come from the person's own `contacted` /
+`meeting-upcoming` tags, because before a meeting exists there is nothing to
+derive from — and saying an email went out cannot overstate contact in the
+direction that matters.) The renderer reads it from the `meeting` entities, so the only way
+to mark someone met is to record the meeting. That is deliberate: the two cannot
+drift, and a person who shows as not-met either genuinely wasn't, or the meeting
+is missing from the store. **Both of those are findings.** The second one is how
+you discover that a conversation happened and was never written down — which,
+in a repo whose convention is that conversations live in files, also means the
+evaluation is still carrying open questions the conversation may already have
+answered. Say so, and say which records are now stale.
 
 ### Altitude: a learning is about the subject, not about a defect in it
 
@@ -483,6 +535,31 @@ its own formatting reads as a different document stapled in, which is exactly ho
 Meetings looked when it briefly used sub-headings and paragraphs while everything
 around it used bullets.
 
+**Meetings & Notes is one synthesised entry per conversation — not one bullet per
+entity.** The store keeps `meeting`, `org` and `person` apart because each
+accumulates across weeks and they are genuinely different records. The summary is
+a *view*, and printing all three verbatim tells the same conversation three times:
+the meeting narrates it, the company restates it as company state, and the person
+restates it again as what they are like. Grouping them under a shared parent fixes
+the layout and not the redundancy — the company still appears twice inside its own
+group, saying nearly the same thing.
+
+So the meeting's `note` **is** the synthesis, and what the company and the people
+contributed belongs inside it. A reader needs three things from a conversation:
+**who was in it** (the title carries the names), **the one thing that came out**,
+and **what is now owed or still to ask** — which go in the entity's `owed[]` and
+`asks[]` and render as two sub-bullets. That last part is the half that expires,
+and it was the half being dropped while three overlapping narrations were kept.
+
+**Read the repo's own follow-up sections to fill them.** A repo that keeps meeting
+notes almost always already has this — a "Support / follow-up" list, an action
+list, a checklist. It is the densest part of the artifact and a commit log cannot
+reproduce it.
+
+Companies nobody sat down with get one entry, and their people become a **`Who:`**
+contact clause rather than bullets of their own — an unmet founder on an active
+deal is an action item, not a profile. **Every entity appears exactly once.**
+
 **Voice:** direct, terse, past tense, active. The reader was not here and does
 not have the context; a bullet that only makes sense to someone who lived the
 week is a bullet that failed.
@@ -563,6 +640,15 @@ Tell the user:
 
 Commit only if the repo's config asks for it (`git.commit`). Default is off:
 catchups are working artifacts and the user decides when they land.
+
+---
+
+## Relationship to FNR
+
+This catchup is the **ground truth** for this repo in one week: unscrubbed,
+names and all. The public weekly at `about-me/fnr/<week>.md` is *derived* from
+these across several repos and run through a scrub policy. Write freely here —
+the scrubbing happens downstream, never in this file.
 
 ---
 

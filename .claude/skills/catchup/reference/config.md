@@ -76,6 +76,11 @@ that survives is the one that was already too long.
 }
 ```
 
+Declare every section a repo actually renders. `sections` is read per key, so a
+partial map leaves the undeclared ones governed only by the overall `words` —
+which is the single-number problem the split exists to avoid, reintroduced for
+whichever sections were left out.
+
 Weight-proportionality is a rule *within* a section, not across them. An evening
 that is 2% of a week's churn can still deserve a third of the summary, because
 "what moved" is not the question every section answers.
