@@ -36,6 +36,11 @@ and says which of the three cases the repo is in:
 | **copied directory** | **Broken.** The other runtime reads the stale copy, not canon. |
 | absent, but `AGENTS.md` present | The other runtime cannot see the skill at all yet. |
 
+`deploy.py` also writes a `.deployed.json` manifest into the target recording
+what it put there. On the next run it compares against that, so it can tell a
+target that is merely *different* from one that is *ahead* — and refuses rather
+than overwriting work the target gained after the copy.
+
 The fix for a copied directory is always the same:
 
 ```bash

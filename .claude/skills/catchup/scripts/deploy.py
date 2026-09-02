@@ -20,7 +20,10 @@ into a manual transcription.
 """
 
 import argparse
+import datetime as dt
 import filecmp
+import hashlib
+import json
 import os
 import shutil
 import sys
@@ -33,6 +36,14 @@ SRC_ROOT = os.path.abspath(os.path.join(SRC_SKILL, "..", "..", ".."))
 # target, and never counts as drift in either direction.
 SELF_NAME = os.path.basename(SCRIPT)
 PARTS = ["SKILL.md", "assets", "reference", "scripts"]
+
+# What the last deploy put there, hashed. Without it a deploy cannot tell which
+# side is newer -- it sees only that two files differ -- so it happily
+# overwrites work the target gained after the copy. That is not hypothetical: a
+# deploy run straight after merging a branch into a consuming repo destroyed the
+# two fixes that merge existed to bring in, and the merge commit still looked
+# clean because the files it touched were the ones the deploy replaced.
+MANIFEST = ".deployed.json"
 
 
 def die(msg, code=1):
@@ -52,7 +63,7 @@ def resolve_target(path):
 
 
 def walk(root):
-    """Every file under root, relative, excluding this script."""
+    """Every file under root, relative, excluding this script and the manifest."""
     out = set()
     for base, dirs, files in os.walk(root):
         dirs[:] = [d for d in dirs if d != "__pycache__"]
@@ -60,10 +71,53 @@ def walk(root):
             if f.endswith((".pyc", ".pyo")):
                 continue
             rel = os.path.relpath(os.path.join(base, f), root)
-            if os.path.basename(rel) == SELF_NAME:
+            if os.path.basename(rel) in (SELF_NAME, MANIFEST):
                 continue
             out.add(rel)
     return out
+
+
+def digest(path):
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()[:16]
+
+
+def write_manifest(tskill):
+    """Record what this deploy put there, so the next one can tell it apart."""
+    body = {"deployed": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+            "source": SRC_ROOT,
+            "files": {r: digest(os.path.join(tskill, r)) for r in sorted(walk(tskill))}}
+    with open(os.path.join(tskill, MANIFEST), "w") as fh:
+        json.dump(body, fh, indent=2)
+        fh.write("\n")
+
+
+def local_changes(tskill):
+    """Files the TARGET changed since it was last deployed to.
+
+    The direction a plain file comparison cannot give. `None` means there is no
+    manifest -- an older deploy, or a copy made by hand -- and the honest answer
+    is then "unknown", never "unchanged".
+    """
+    mpath = os.path.join(tskill, MANIFEST)
+    if not os.path.isfile(mpath):
+        return None
+    try:
+        with open(mpath) as fh:
+            known = (json.load(fh) or {}).get("files") or {}
+    except (json.JSONDecodeError, OSError):
+        return None
+    changed = []
+    for rel in sorted(walk(tskill)):
+        was = known.get(rel)
+        now = digest(os.path.join(tskill, rel))
+        if was is None:
+            changed.append((rel, "added in the target"))
+        elif was != now:
+            changed.append((rel, "modified in the target"))
+    for rel in sorted(set(known) - walk(tskill)):
+        changed.append((rel, "deleted in the target"))
+    return changed
 
 
 def differences(tskill):
@@ -84,9 +138,18 @@ def report(tskill, target):
         print(f"not deployed: {tskill}")
         return 1
     only_src, only_tgt, changed = d
+    local = local_changes(tskill)
     if not (only_src or only_tgt or changed):
         print(f"in sync: {target}")
         return 0
+    if local:
+        print(f"{target} is AHEAD — changed since it was last deployed to:")
+        for rel, how in local:
+            print(f"  {how:<22} {rel}")
+        print()
+        print(f"  Carry it home:  deploy.py {target} --pull-back")
+        print("  A deploy would overwrite these.")
+        return 1
     print(f"DRIFT between source and {target}:")
     for r in changed:
         print(f"  differs           {r}")
@@ -153,6 +216,12 @@ def do_pull_back(target, tskill, dry):
             fh.write(keep)
         os.chmod(SCRIPT, 0o755)
 
+    # Source and target now match, so the manifest has to say so -- otherwise
+    # the refusal the pull-back was run to clear survives it, and the documented
+    # recovery does not actually recover.
+    if not dry:
+        write_manifest(tskill)
+
     print()
     print("  Now REVIEW before committing — this overwrote canon with a copy,")
     print("  and a target that is BEHIND source would regress it:")
@@ -174,7 +243,25 @@ def check_runtime_pointer(target):
         print("        Codex cannot see this skill until one is added.")
 
 
-def do_deploy(target, tskill, want_config, dry):
+def do_deploy(target, tskill, want_config, dry, force=False):
+    # A deploy overwrites. If the target changed since it was last deployed to,
+    # those changes are newer than the source and this would destroy them --
+    # which is what happens right after a merge lands work in a consuming repo.
+    if os.path.isdir(tskill):
+        local = local_changes(tskill)
+        if local is None:
+            print("  note: no deploy manifest here, so local changes cannot be")
+            print("        detected. This deploy will overwrite whatever is there.")
+        elif local and not force:
+            print(f"REFUSING: {target} has changes since it was last deployed to.")
+            for rel, how in local:
+                print(f"  {how:<22} {rel}")
+            print()
+            print("  These are NEWER than the source and a deploy would destroy them.")
+            print(f"  Carry them home first:  deploy.py {target} --pull-back")
+            print("  Or overwrite anyway:    add --force")
+            return 1
+
     print(f"deploy catchup -> {target}")
     if not dry:
         os.makedirs(os.path.join(target, ".claude", "skills"), exist_ok=True)
@@ -199,8 +286,11 @@ def do_deploy(target, tskill, want_config, dry):
                                       "catchup.config.example.json"), cfg)
             print("  seeded .claude/catchup.config.json — edit repo.label and authors.people")
 
+    if not dry:
+        write_manifest(tskill)
     check_runtime_pointer(target)
     print(f"done. Try: cd {target} && uv run .claude/skills/catchup/scripts/pull_week.py --list-weeks")
+    return 0
 
 
 def main():
@@ -211,6 +301,8 @@ def main():
     ap.add_argument("--check", action="store_true", help="compare only; exit 1 on drift")
     ap.add_argument("--check-all", action="store_true", help="check every target, exit 1 if any drift")
     ap.add_argument("--pull-back", action="store_true", help="target -> source (reverse review)")
+    ap.add_argument("--force", action="store_true",
+                    help="deploy even when the target has changes of its own")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -228,7 +320,7 @@ def main():
         elif args.pull_back:
             do_pull_back(target, tskill, args.dry_run)
         else:
-            do_deploy(target, tskill, args.config, args.dry_run)
+            rc |= do_deploy(target, tskill, args.config, args.dry_run, args.force) or 0
     sys.exit(rc)
 
 
