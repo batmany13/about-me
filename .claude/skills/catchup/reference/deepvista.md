@@ -187,25 +187,25 @@ card this bridge sends therefore sets `status: "confirmed"`. Leave
 `deepvista.card_status` alone unless you specifically want cards staged for
 review.
 
-## What is not verified yet
+## First live push — 2026-09-02, verified
 
-Honest list, so nothing here reads as tested when it isn't:
+The runbook below was run in order against a live account, and this is what
+it found. Everything above the `plan` output is now exercised.
 
-1. **A live account.** No card has been pushed. Everything below the `plan`
-   output is unexercised.
-2. **The MCP tool names and their exact parameters.** The field names above come
-   from the `deepvista-cli` source (`/create_context_card`, `/update_context_card`),
-   which is the REST contract the MCP server sits in front of. The MCP tools
-   almost certainly mirror it, but read the tool list once connected and adjust
-   the mapping if it differs.
-3. ~~Whether a bearer key is needed.~~ **Resolved: OAuth is the route**, and its
-   discovery chain is verified live. The *authenticated* session beyond the 401
-   challenge is still untested.
-4. **Whether `status: confirmed` is settable through MCP.** It is a REST field;
-   the MCP tool may not expose it. If it doesn't, cards will need confirming in
-   the UI, and that is worth knowing before a bulk push.
-5. **Credit cost per card write.** Unmeasured. Push one entity first and check
-   the balance before running a backfill.
+| Question | Answer |
+|---|---|
+| Tool name and shape | `upsert_context_card` — `card_id` (null to create), `properties` (`type`, `title`, `description`, `tags`, `status`), `related_context_card_ids`. One tool for create and update. |
+| `card_type` key | Wrong: the key is `type`, and unknown keys are silently ignored. The values (`note`, `topic`, `keypoint`, `person`, `organization`) were right. |
+| `status: confirmed` | Not in the enum. `active` is, and it is searchable. |
+| Card renders | Markdown body, timeline and all, returned byte-for-byte on create. |
+| Findable by search | The pushed card was the top hit for a paraphrase of its own summary. |
+| `record` → `skip` | Held: after `record`, `plan --include-skipped` showed the entity as `skip` and a full run reported `create: 0, update: 0, skip: 54`. |
+| Graph edges | `related_context_card_ids` is mirrored by the server: `list_related_context_cards` on a meeting card returns the company, the people met, and the owed-follow-up thread, each tagged `RELATED`. |
+| Credit cost | Not measurable from the MCP surface — there is no balance tool. The account was on a 2,000-credit tier for this run; 54 creates plus 42 link passes plus 41 repairs went through without a refusal. Check the balance in the product. |
+
+What surprised: the links-only pass (see the gotchas). What the first push of
+54 W35 entities produced: 10 meetings, 15 people, 13 organizations, 8 topics,
+8 keypoints, and 42 of them carrying graph edges.
 
 **The contract this was built against is the `deepvista-cli` source** (Apache-2.0),
 specifically its `/create_context_card` and `/update_context_card` calls. Prefer

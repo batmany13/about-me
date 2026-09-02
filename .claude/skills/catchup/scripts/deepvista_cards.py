@@ -572,6 +572,11 @@ def cmd_plan(args, repo, cfg, sdir):
     repo_label = (cfg.get("repo") or {}).get("label") or os.path.basename(repo)
     type_map = dict(CARD_TYPE, **(dv_cfg.get("card_types") or {}))
 
+    # Entity id -> card id, for every entity already pushed. Graph edges are
+    # resolved from this so `related_card_ids` only ever names cards that exist.
+    card_of = {x["id"]: (x.get("deepvista") or {}).get("card_id")
+               for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
+
     plan, counts = [], {"create": 0, "update": 0, "skip": 0}
     for e in sorted(ents, key=lambda x: (CATEGORY_ORDER.index(x.get("category", "other"))
                                          if x.get("category") in CATEGORY_ORDER else 9, x["id"])):
@@ -621,6 +626,21 @@ def cmd_plan(args, repo, cfg, sdir):
                 "tags": build_tags(e, cfg, repo_label, all_ents),
                 "status": card_status(dv_cfg),
             },
+            # Graph edges, passed as the tool's `related_context_card_ids` IN THE
+            # SAME CALL as `properties`. Never as a second, links-only call: on
+            # the 2026-09-02 first live push a links-only upsert re-saved the
+            # existing description through an HTML-escaping pass -- `&` became
+            # `&amp;` and the `<!-- catchup-entity -->` tracer became literal
+            # `&lt;!-- ... --&gt;` text -- on all 41 cards it touched. Sending
+            # description and links together left the body untouched. Only
+            # links whose target already has a card are emitted, so a first
+            # push of a linked pair lands the edge on whichever side is pushed
+            # second (or on the next run, when both have ids and the hash of
+            # the earlier one is unchanged -- use --force to re-send it).
+            "related_card_ids": sorted({
+                card_of[l] for l in list(e.get("links") or []) + [e.get("theme")]
+                if l and l in card_of and card_of[l] != dv.get("card_id")
+            }),
         }
         if not args.show_body:
             # A preview, and named as one. This used to overwrite `description`
