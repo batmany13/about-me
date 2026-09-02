@@ -138,11 +138,16 @@ runs *that repo's* deployed `deepvista_cards.py fetch` and, once a summary
 exists, its `compare`, and files the results beside the sources they are the
 control for:
 
-| File under `rollups/<W>/<repo>/` | Produced by | What it is |
+Machine files stay with the snapshot; everything a person reads goes in
+`drafts/`, beside the manual draft, so the whole DeepVista version of a week
+is in one place:
+
+| File | Produced by | What it is |
 |---|---|---|
-| `deepvista-cards.json` | `fetch` (headless) | What DeepVista holds for the week: card bodies plus a fidelity read per card — tracer intact/escaped/missing, body matches/cosmetic/differs — and the repo's unpushed entities and orphan cards |
-| `deepvista-summary.md` | **you**, by hand | The week written from the cards **alone**, in the catchup's shape. Write it before opening the local summary or the store, or it is not a control |
-| `deepvista-compare.json` | `compare` | Coverage diff: covered by both, only local, only DeepVista, neither |
+| `rollups/<W>/<repo>/deepvista-cards.json` | `fetch` (headless) | What DeepVista holds for the week: card bodies plus a fidelity read per card — tracer intact/escaped/missing, body matches/cosmetic/differs — and the repo's unpushed entities and orphan cards |
+| `drafts/<W>.deepvista.<repo>.md` | **you**, by hand | That repo's week written from the cards **alone**, in the catchup's shape. Write it before opening the local summary or the store, or it is not a control. (The rollup also accepts it at `rollups/<W>/<repo>/deepvista-summary.md`, for a repo running the read on its own) |
+| `rollups/<W>/<repo>/deepvista-compare.json` | `compare` | Coverage diff: covered by both, only local, only DeepVista, neither |
+| `drafts/<W>.deepvista-draft1.md` | **you**, by hand | The sum-up: the weekly's draft 1 written from the cards alone, in the same three-part shape as the manual `drafts/<W>.draft1.md` — raw material, scrub delta, public candidate with the human blocks left as prompts — and a **delta against the manual draft** at the end. This is what "the DeepVista version" means to a reader of the weekly; the per-repo files are its inputs |
 
 So the command runs **twice**: once to fetch (it reports `no deepvista-summary.md
 yet`), then again after the summaries are written, to compare. The cards file
@@ -164,6 +169,15 @@ is reused on the second run — `--refetch` to pull again.
 
 The control's own findings go in the rollup under `## Control: DeepVista`, and
 the per-repo fixes go back to the repo that owns the entity.
+
+**Then write the weekly's draft 1 from the cards**, as `drafts/<W>.deepvista-draft1.md`
+in the private repo, following the fnr skill's draft-1 rules exactly — same
+template, human blocks left as prompts, never a finished learning in his voice —
+and close it with the delta against the manual draft: what the cards
+reconstructed, what they got wrong (a card is only as current as the last
+push), and what no card could carry (the personal lane, the calendar, the
+intake queue, him). The two drafts side by side are the control's real output;
+the compare buckets are how you got there.
 
 ## Write from the rollup, never from the session
 

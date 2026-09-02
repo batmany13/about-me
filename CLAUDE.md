@@ -143,7 +143,7 @@ start disagreeing.
 |---|---|---|---|
 | Per repo | `catchup` | that repo's git log + merged PRs | `<output.dir>/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo**, top level by default |
 | Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md`, with the sources snapshotted under `rollups/<W>/<repo>/` — **private** |
-| Control | `rollup --control deepvista` | each syncing repo's entities, read **back** from DeepVista as cards | `rollups/<W>/<repo>/deepvista-{cards.json,summary.md,compare.json}` — **private** |
+| Control | `rollup --control deepvista` | each syncing repo's entities, read **back** from DeepVista as cards | `rollups/<W>/<repo>/deepvista-{cards,compare}.json`, and the readable output in `drafts/<W>.deepvista.<repo>.md` + `drafts/<W>.deepvista-draft1.md` — **private** |
 | Public | `fnr` | the rollup, under the scrub policy | `fnr/<W>.md` — public |
 
 **The aggregator uses both: the skills here are the record, DeepVista is the
@@ -188,7 +188,7 @@ Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-writ
 1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
 2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
 3. Write the **unscrubbed** catchup into each source repo's `<output.dir>/<week>.md` (`catchup/` by default)
-3b. Roll up across repos **from the private repo** with the DeepVista control (`rollup.py <week> --snapshot rollups --control deepvista`), write each repo's card-only summary, run it again to compare, and read `## Control: DeepVista` before drafting
+3b. Roll up across repos **from the private repo** with the DeepVista control (`rollup.py <week> --snapshot rollups --control deepvista`), write each repo's card-only summary as `drafts/<week>.deepvista.<repo>.md`, run it again to compare, then write the sum-up — the weekly's draft 1 from the cards alone — as `drafts/<week>.deepvista-draft1.md`, with the delta against the manual draft at its end. Everything a person reads from DeepVista lives in `drafts/`
 4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
 5. Report the scrub delta — what was held back, by category
 

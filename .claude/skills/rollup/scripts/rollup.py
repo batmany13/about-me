@@ -538,13 +538,22 @@ def control_deepvista(d, out_dir, refetch=False):
         entry["orphans"] = [o.get("title") for o in cards.get("orphans") or []]
         entry["unpushed"] = cards.get("unpushed") or []
 
-        summary = os.path.join(rd, CONTROL_SUMMARY)
-        if not os.path.isfile(summary):
+        # The card-only summary is a draft a person writes, so it lives with the
+        # drafts -- `drafts/<W>.deepvista.<repo>.md` in the private repo, beside
+        # the manual draft 1 and the card-only weekly. The snapshot path is the
+        # fallback for a repo running the read on its own.
+        candidates = [
+            os.path.join(PRIVATE_DIR, "drafts", f"{d['week']}.deepvista.{r['name']}.md"),
+            os.path.join(rd, CONTROL_SUMMARY),
+        ]
+        summary = next((p for p in candidates if os.path.isfile(p)), None)
+        if not summary:
             entry["compare"] = None
-            entry["next"] = (f"write {CONTROL_SUMMARY} from {CONTROL_CARDS} alone, "
-                             "then re-run with --control deepvista")
+            entry["next"] = (f"write {os.path.relpath(candidates[0], PRIVATE_DIR)} from "
+                             f"{CONTROL_CARDS} alone, then re-run with --control deepvista")
             results.append(entry)
             continue
+        entry["summary"] = os.path.relpath(summary, PRIVATE_DIR)
         p = subprocess.run(_runner() + [script, "compare", d["week"], "--repo", r["path"],
                                         "--against", summary, "--json"],
                            capture_output=True, text=True, timeout=300)
@@ -608,7 +617,7 @@ def render_control(results):
             note = ""
         else:
             cols = f"{'':>5}{'':>6}{'':>4}{'':>5}"
-            note = f"no {CONTROL_SUMMARY} yet"
+            note = "no card-only summary yet"
         extra = []
         if c.get("unpushed"):
             extra.append(f"{c['unpushed']} unpushed")
