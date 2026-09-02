@@ -1385,6 +1385,114 @@ def cmd_render(args, repo, cfg, sdir):
             print(f"- **{e['title']}** — {here(e).get('note', '').strip()}")
         print()
 
+    # Derived, not written. See stat_line().
+    wpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
+    if os.path.isfile(wpath):
+        try:
+            with open(wpath) as fh:
+                line = stat_line(cfg, json.load(fh), ents, args.week)
+            if line:
+                print("---")
+                print(line)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+
+# What a stat line reports when a repo has not said. Mechanical facts only --
+# every repo has commits and PRs, and no repo's DOMAIN counts can be guessed.
+DEFAULT_STATS = [
+    {"label": "commits", "from": "stats.commits"},
+    {"label": "PRs merged", "from": "stats.prs_merged"},
+    {"label": "entities", "singular": "entity", "count": {}},
+    {"label": "bookkeeping commits excluded", "from": "stats.ignored"},
+]
+
+
+def _dig(blob, path):
+    """Resolve a dotted path like `stats.prs_merged` against the week record."""
+    cur = blob
+    for part in path.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
+def _count_entities(ents, week, spec):
+    """How many of this week's entities match a stat spec.
+
+    `new` means first seen THIS week, which is the difference between "how many
+    relationships exist" and "how many did this week add" -- two different
+    questions that a single count silently conflates.
+    """
+    n = 0
+    for e in ents:
+        if spec.get("type") and e.get("type") != spec["type"]:
+            continue
+        if spec.get("category") and e.get("category") != spec["category"]:
+            continue
+        if spec.get("tag") and spec["tag"] not in (e.get("tags") or []):
+            continue
+        if spec.get("status") and e.get("status") != spec["status"]:
+            continue
+        if spec.get("new") and min(e.get("weeks") or {week: 1}) != week:
+            continue
+        n += 1
+    return n
+
+
+def stat_line(cfg, record, ents, week):
+    """The stat line, DERIVED.
+
+    It used to be prose the writer composed, and two repos running the same
+    skill reported different things from identical week records -- not because
+    their data differed but because two sessions picked different fields. The
+    stat line is the one part of a summary meant to be mechanically checkable,
+    so composing it by hand is exactly backwards.
+
+    What a repo counts is genuinely its own, though: commits and PRs are
+    universal, and `events`, `deals`, `learnings` or `people met` are not. So
+    the FIELDS are declared per repo in `summary.stats` and the ARITHMETIC is
+    done here.
+    """
+    spec = ((cfg.get("summary") or {}).get("stats")) or DEFAULT_STATS
+    parts = []
+    for item in spec:
+        if not isinstance(item, dict) or item.get("label", "").startswith("$"):
+            continue
+        label = item.get("label") or "?"
+        if "from" in item:
+            val = _dig(record, item["from"])
+        elif "count" in item:
+            val = _count_entities(ents, week, item.get("count") or {})
+        else:
+            continue
+        if val is None:
+            continue
+        # "1 events" reads as a typo and undermines a line whose whole job is to
+        # look mechanically exact. `singular` is opt-in because no rule guesses
+        # right -- stripping an "s" would turn "bookkeeping commits excluded"
+        # into nonsense.
+        if val == 1 and item.get("singular"):
+            label = item["singular"]
+        val = f"{val:,}" if isinstance(val, int) else str(val)
+        parts.append(f"{val} {label}")
+    return "*Stats: " + " · ".join(parts) + ".*" if parts else ""
+
+
+def cmd_stat_line(args, repo, cfg, sdir):
+    """Print the derived stat line for one week."""
+    wpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
+    if not os.path.isfile(wpath):
+        die(f"no week record at {os.path.relpath(wpath, repo)} -- run `record-week` first")
+    with open(wpath) as fh:
+        record = json.load(fh)
+    ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
+    line = stat_line(cfg, record, ents, args.week)
+    if not line:
+        die("no stats resolved -- check `summary.stats` in config")
+    print(line)
+
 
 def cmd_check_summary(args, repo, cfg, sdir):
     """Every citation in the week's prose must be carried by some entity.
@@ -1553,6 +1661,11 @@ def main():
                        help="every citation in the week's prose is carried by an entity")
     p.add_argument("week")
     p.set_defaults(fn=cmd_check_summary)
+
+    p = sub.add_parser("stat-line", parents=[common],
+                       help="print the derived stat line for a week")
+    p.add_argument("week")
+    p.set_defaults(fn=cmd_stat_line)
 
     p = sub.add_parser("stats", parents=[common], help="store overview")
     p.set_defaults(fn=cmd_stats)

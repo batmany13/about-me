@@ -49,6 +49,13 @@
     "$comment": "Raise these for a repo that routinely runs hundreds of commits a week. Once the summary has sections doing different jobs, budget them separately — a single total gets hit by trimming whichever section is easiest rather than whichever is weakest.",
     "bullets": "6-12",
     "words": "150-250",
+    "$comment_stats": "What THIS repo counts. `from` reads the week record; `count` filters the week's entities by type/category/tag/status/new. Omit the block and the line reports commits, PRs, entities and bookkeeping — the facts true of every repo.",
+    "stats": [
+      { "label": "commits", "from": "stats.commits" },
+      { "label": "PRs merged", "from": "stats.prs_merged" },
+      { "label": "learnings", "singular": "learning", "count": { "type": "concept" } },
+      { "label": "people met this week", "count": { "type": "person", "new": true } }
+    ],
     "sections": {
       "$comment": "A word range, or {\"bullets\": \"N-M\"} where the section's unit is countable — one bullet per conversation is felt as a count, not a word budget.",
       "themes": "500-800",

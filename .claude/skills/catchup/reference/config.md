@@ -116,6 +116,51 @@ The default is sized for a normal week. A repo that routinely runs hundreds of
 commits should raise it rather than overflow it every week — an unmeetable
 budget is guidance nobody follows.
 
+### `summary.stats` — what this repo counts
+
+**The stat line is derived, not written.** It is the one part of a summary meant
+to be mechanically checkable, so composing it by hand is backwards — and it
+showed: two repos running this skill reported different figures from *identical*
+week records, because two sessions picked different fields.
+
+But what a repo counts is genuinely its own. Commits and PRs are universal;
+`events`, `deals`, `learnings` and `people met` are not, and no default can guess
+them. So the **fields are declared here** and the **arithmetic is done by the
+skill**.
+
+```json
+"summary": {
+  "stats": [
+    { "label": "commits",    "from": "stats.commits" },
+    { "label": "PRs merged", "from": "stats.prs_merged" },
+    { "label": "events",     "singular": "event", "count": { "type": "meeting" } },
+    { "label": "learnings",  "singular": "learning", "count": { "type": "concept" } },
+    { "label": "people met this week", "count": { "type": "person", "new": true } }
+  ]
+}
+```
+
+Each entry resolves one of two ways:
+
+| Key | Resolves to |
+|---|---|
+| `from` | A dotted path into the week record — `stats.commits`, `stats.prs_merged`, `stats.ignored`, `stats.prs_open_now`, `stats.pr_body_chars` |
+| `count` | How many of the week's entities match a filter |
+
+A `count` filter takes any of `type`, `category`, `tag`, `status`, and `new`.
+**`new: true` means first seen this week** — the difference between how many
+relationships exist and how many the week *added*, which one number silently
+conflates.
+
+`singular` is opt-in and used when the value is 1. No rule guesses it: stripping
+an "s" would turn "bookkeeping commits excluded" into nonsense.
+
+Omit `stats` entirely and the line reports mechanical facts only — commits, PRs,
+entities, bookkeeping — because those are the ones true of every repo.
+
+Regenerate with `entities.py stat-line <week>`; `render` appends it
+automatically.
+
 ## `ignore`
 
 Bookkeeping commits: flagged, excluded from the category counts, and **reported
