@@ -113,6 +113,29 @@ The table is the orientation pass; the JSON carries every entity body.
 cover N of M repos. A total presented as complete when a repo is missing is the
 one error this layer can make that nobody downstream can detect.
 
+## Write from the rollup, never from the session
+
+**The single most likely way to get this wrong: describing the work of the
+session you are in, rather than the week you were asked about.** An agent that
+has just spent hours building something will reach for that when asked what
+happened, and the result is fluent, confident, and about the wrong week. It
+happened on the first real run — the Building section described the tooling
+being built *that day* while the week's actual work, 68% of its commits, went
+unmentioned.
+
+Two guards, and use both:
+
+- **Open the themes and read their `weight` before writing a word.** Every theme
+  carries the share of the week it actually carried. The Building section should
+  be the top one or two by weight, and if what you are about to write is not in
+  that list, it is not this week's story.
+- **Check the dates.** A week is seven days that have closed. Work you did while
+  producing the summary belongs to the week you are in, not the one you are
+  describing, and those are rarely the same week.
+
+If a theme deserves the lead, its weight says so. If nothing in the rollup
+supports the sentence you are writing, delete the sentence.
+
 ## Step 3: Read across, not down
 
 The per-repo summaries already exist — restating them is not the job. What this
