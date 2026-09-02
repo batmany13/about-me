@@ -40,9 +40,25 @@ from collections import Counter, defaultdict
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "..", "..", "..", ".."))
-DEFAULT_REGISTRY = os.path.join(REPO_ROOT, "fnr", ".private", "repos.json")
-PRIVATE_DIR = os.path.join(REPO_ROOT, "fnr", ".private")
-DEFAULT_OUTPUT_DIR = os.path.join(".claude", "catchups")
+def find_registry():
+    """Where the registry is, which depends on which repo this is running in.
+
+    Deployed into the private repo the registry sits at its root; run from the
+    public repo it is in the gitignored clone. Both are normal, so the script
+    looks rather than assuming -- and the private location wins, because that is
+    the copy being edited when both exist.
+    """
+    here = os.path.join(REPO_ROOT, "repos.json")
+    if os.path.isfile(here):
+        return here
+    return os.path.join(REPO_ROOT, "fnr", ".private", "repos.json")
+
+
+DEFAULT_REGISTRY = find_registry()
+PRIVATE_DIR = os.path.dirname(DEFAULT_REGISTRY)
+# Only a fallback. Where a repo's output actually lives is that repo's own
+# decision, recorded in its catchup config -- see repo_output_dir().
+DEFAULT_OUTPUT_DIR = "catchup"
 
 CATEGORY_ORDER = ["meeting", "technical", "other"]
 WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
@@ -101,6 +117,35 @@ def load_registry(path):
         die(f"cannot read registry {path}: {e}")
 
 
+def repo_output_dir(repo_path, registry_entry):
+    """Where THIS repo keeps its catchup output.
+
+    Read from the repo's own catchup config, because that is the only authority:
+    the registry cannot know, and a default cannot either. Repos legitimately
+    differ -- one moves its output to the top level while another is held back
+    by work in flight -- and guessing produces the worst possible failure, which
+    is a rollup that reports a reporting repo as silent.
+    """
+    hint = registry_entry.get("catchup_dir") or registry_entry.get("catchup_output_dir")
+    cfg = os.path.join(repo_path, ".claude", "catchup.config.json")
+    declared = None
+    if os.path.isfile(cfg):
+        try:
+            with open(cfg) as fh:
+                declared = (json.load(fh).get("output") or {}).get("dir")
+        except (json.JSONDecodeError, OSError):
+            declared = None
+    # The repo's own config wins. The registry's hint is a convenience that goes
+    # stale the moment a repo moves its output -- which has happened -- and a
+    # stale hint makes a reporting repo look silent, the worst answer an
+    # aggregator can give.
+    if declared and hint and declared.strip("/") != hint.strip("/"):
+        print(f"rollup: {registry_entry.get('name')}: registry says catchup_dir "
+              f"{hint!r}, repo says {declared!r} -- using the repo's. "
+              f"Update repos.json.", file=sys.stderr)
+    return declared or hint or DEFAULT_OUTPUT_DIR
+
+
 def read_week_record(repo_path, week, out_dir):
     p = os.path.join(repo_path, out_dir, "weeks", f"{week}.json")
     if not os.path.isfile(p):
@@ -143,9 +188,9 @@ def collect(week, registry, args):
         # worktree, whose path differs from the registry's while being the same
         # repository. A path comparison silently fails in exactly the setup the
         # work actually happens in.
-        if same_repo(path, REPO_ROOT):
+        if r.get("role") == "aggregator" or same_repo(path, REPO_ROOT):
             continue
-        out_dir = r.get("catchup_output_dir", DEFAULT_OUTPUT_DIR)
+        out_dir = repo_output_dir(path, r)
         rec, rec_path = read_week_record(path, week, out_dir)
 
         entry = {

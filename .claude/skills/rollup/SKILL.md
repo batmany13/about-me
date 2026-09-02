@@ -39,6 +39,30 @@ layer, never into a tracked file here. If you are about to write a repo name
 into a committed file in this repo, stop — that is the leak this design exists
 to prevent.
 
+## Where this runs
+
+**In the private repo.** Everything it needs is there — the registry that names
+the repos, and the scrub policy that decides what may leave. Running it from the
+public repo means reaching into a gitignored clone for both; running it where
+they live means the working system never has to.
+
+The skill's **source of truth stays in the public repo**, and it is deployed
+here like any other:
+
+```bash
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo>
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --check      # drifted?
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --pull-back  # carry a fix home
+```
+
+It finds the registry by looking rather than assuming: `repos.json` at the repo
+root when running inside the private repo, `fnr/.private/repos.json` when
+running from the public one. Both are normal.
+
+**The public weekly is a copy, made last.** The draft, its sources and every
+unscrubbed note stay here; only the finished, scrubbed file is copied into the
+public repo. Nothing is published by running this.
+
 ## Step 0: The registry
 
 `fnr/.private/repos.json` — repo paths, each one's `disclosure` level
@@ -53,6 +77,16 @@ git clone https://github.com/batmany13/about-me-private.git fnr/.private
 
 **Never reconstruct the registry from memory or from a conversation.** A
 reconstructed registry is one nobody reviewed.
+
+An entry with `"role": "aggregator"` is skipped — it reads the others rather
+than producing a catchup of its own, and reporting it as a missing source would
+name a gap that is the design.
+
+**The repo's own `catchup.config.json` decides where its output lives**, not the
+registry's `catchup_dir`, which is a convenience that goes stale the moment a
+repo moves its output. When they disagree the rollup says so and uses the repo's;
+a stale hint makes a reporting repo look silent, which is the worst answer an
+aggregator can give.
 
 `disclosure` governs *naming*; `public_stats` governs whether a repo's volume
 feeds a published count. They are separate decisions and the script keeps the
