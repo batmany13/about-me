@@ -189,6 +189,27 @@ def collect(week, registry, args):
             by_id[e["id"]].append(r["name"])
     cross = {eid: sorted(set(names)) for eid, names in by_id.items() if len(set(names)) > 1}
 
+    # Matching on id alone misses the case most worth catching. Two repos
+    # writing about the same company name it differently -- one files it as the
+    # idea it produced, the other as the conversation it came from -- so the ids
+    # diverge and the id check reports nothing while the subject is plainly in
+    # both. Tags catch it, at the cost of also catching shared TOPICS, which are
+    # not the same thing. Reported separately and never merged into `cross`: one
+    # is a fact, the other is a list to look at.
+    # Token = the id AND every tag, because repos do not tag alike: one files a
+    # subject under its own name, another tags it by what it IS and carries the
+    # name only in the id. Matching tag-to-tag misses exactly that pair, which is
+    # the same subject in two repos wearing two vocabularies.
+    by_tag = defaultdict(set)
+    for r in live:
+        for e in r.get("entities") or []:
+            for t in {e["id"]} | set(e.get("tags") or []):
+                by_tag[t].add(r["name"])
+    generic = {"correction", "convention", "ci", "testing", "agents", "lifecycle",
+               "research", "architecture", "events", "in-flight"}
+    candidates = {t: sorted(v) for t, v in by_tag.items()
+                  if len(v) > 1 and t not in generic and not t.startswith(("repo:", "category:", "entity:", "contact:", "met:"))}
+
     tags = Counter()
     for r in live:
         for e in r.get("entities") or []:
@@ -220,6 +241,7 @@ def collect(week, registry, args):
             "prs_open_now": total_pub("prs_open_now"),
         },
         "cross_repo_entities": cross,
+        "cross_repo_candidates": dict(sorted(candidates.items())),
         "top_tags": dict(tags.most_common(20)),
     }
 
@@ -256,9 +278,13 @@ def render_table(d):
                ", ".join(f"{k} {v}" for k, v in t["entities_by_category"].items()))
     out.append(f"  carried over from earlier weeks: {t['carried_over']}")
     if d["cross_repo_entities"]:
-        out += ["", "  entities appearing in more than one repo:"]
+        out += ["", "  same entity id in more than one repo:"]
         for eid, names in sorted(d["cross_repo_entities"].items()):
             out.append(f"    {eid}: {', '.join(names)}")
+    if d.get("cross_repo_candidates"):
+        out += ["", "  same SUBJECT, different ids — check these by hand:"]
+        for t, names in d["cross_repo_candidates"].items():
+            out.append(f"    {t}: {', '.join(names)}")
     return "\n".join(out)
 
 
