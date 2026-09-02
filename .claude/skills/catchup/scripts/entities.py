@@ -785,6 +785,34 @@ def merged_pr_weeks(repo):
     return out
 
 
+def events_in_week(repo, cfg, weeks):
+    """Events the repo's own registry places inside these weeks, with their state.
+
+    Declared under `events.registry` in config; a repo that keeps no event
+    registry yields nothing and the check is silently skipped rather than
+    inventing one.
+    """
+    rel = ((cfg.get("events") or {}).get("registry"))
+    if not rel:
+        return
+    path = os.path.join(repo, rel)
+    if not os.path.isfile(path):
+        return
+    try:
+        with open(path) as fh:
+            blob = json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return
+    for ev in (blob.get("events") or []):
+        d = (ev.get("date") or "")[:10]
+        try:
+            y, w, _ = dt.date.fromisoformat(d).isocalendar()
+        except ValueError:
+            continue
+        if f"{y}-W{w:02d}" in weeks:
+            yield path, ev, (ev.get("state") or "").strip().lower()
+
+
 def cmd_validate(args, repo, cfg, sdir):
     ents = load_all(sdir)
     problems = []
@@ -843,6 +871,27 @@ def cmd_validate(args, repo, cfg, sdir):
         for link in e.get("links") or []:
             if link not in ids:
                 problems.append(f"{eid}: link to unknown entity {link!r}")
+
+    # An event marked attended with no meeting entity behind it, or the reverse.
+    # `state` records a DECISION and gets read as an OUTCOME, and nothing
+    # re-checks it once the date passes: a declined event and an attended one
+    # look identical the day before, and only one of them changes. That is how a
+    # reversed decision stayed the record of what happened.
+    for path, ev, state in events_in_week(
+            repo, cfg, {w for e in ents for w in (e.get("weeks") or {})}):
+        slug = (ev.get("slug") or "").strip()
+        if not slug:
+            continue
+        has = any(e.get("type") == "meeting" and (slug in e["id"] or e["id"] in slug)
+                  for e in ents)
+        where = os.path.relpath(path, repo)
+        if state == "attended" and not has:
+            problems.append(f"{slug}: registry says attended, but no meeting entity "
+                            f"records it ({where})")
+        elif state in ("declined", "candidate", "prep") and has:
+            problems.append(f"{slug}: a meeting entity says this happened, registry "
+                            f"still says {state!r} — a decision that was reversed and "
+                            f"never re-checked ({where})")
 
     for n in notes:
         print(f"note: {n}")
