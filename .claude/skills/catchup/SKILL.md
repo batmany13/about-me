@@ -47,7 +47,7 @@ everywhere.
 
 | Key | Default title | What belongs here |
 |---|---|---|
-| `meeting` | **Meeting / Partner Notes** | Conversations with people: 1x1s, partner and founder calls, events attended, intros, interviews. Anything whose subject is a *person or a room*. |
+| `meeting` | **Meeting / Partner Notes** | Conversations with people: 1x1s, customer and partner calls, design reviews, events attended, intros, interviews. Anything whose subject is a *person or a room*. |
 | `technical` | **Technical Notes** | How the thing works and how it changed: features, refactors, migrations, specs, tests, infrastructure, tooling. |
 | `other` | **Other** | Real work that is neither — writing, admin, planning, structure, process, finance. Not a junk drawer: if it lands here a lot, the repo probably wants a category rule, not a shrug. |
 
@@ -137,8 +137,8 @@ weeks most worth reading.** When a repo's convention is that a conversation land
 in a file, the PR carrying it has almost nothing to say — the substance is in the
 artifact, and the body is a sentence pointing at it. On one 20-PR week the two
 shortest bodies in the week (1,209 and 539 characters, ranked 17th and 20th of
-20) were two portfolio founder meetings, and both were dropped from the summary
-entirely. **Never rank a PR's importance by its body length alone. Cross-check
+20) were the week's two most consequential conversations, and both were dropped
+from the summary entirely. **Never rank a PR's importance by its body length alone. Cross-check
 against the subject artifacts it touched** — which is what the `NEW` rows in
 `propose` are for. `--pr-body-limit N` truncates, `0` disables the
 cap, `--no-prs` skips them entirely when you only need counts.
@@ -320,20 +320,20 @@ a conversation with no company — an event, an intro, a 1x1 — has nowhere to 
 and, worst, **a company whose week was *only* a conversation produces no entity
 at all**, because there was no company-state change to justify an `org`. A real
 week created eight conversation logs, wrote zero `meeting` entities, and lost the
-two portfolio founder meetings that had no other news attached. If someone sat
+two conversations that had no other news attached. If someone sat
 down with someone, there is a `meeting`.
 
 **Name every person, including the ones who were only researched.** A `person` is
 warranted by the repo doing work on them, not by their being the headline of a
-meeting — a founder who got a full research profile written this week is tracked;
-a founder named only in passing is not. The test is whether the repo now knows
+meeting — someone who got a full profile written about them this week is tracked;
+someone named only in passing is not. The test is whether the repo now knows
 something durable about that human.
 
 **But never render a researched person and a met person the same way.** They are
 different relationships, and flattening them turns a roster into a claim of
-contact nobody made: three founders of one company were once listed beside the
-people they had actually met, on a deal whose own profile said *"no founder
-contact yet"*. The states are: **met**, **contacted — meeting
+contact nobody made: three people from one organization were once listed beside
+the people actually met, on a record whose own notes said no contact had happened
+yet. The states are: **met**, **contacted — meeting
 upcoming**, **contacted — not met**, **meeting prepped but outcome unrecorded**,
 and **tracked — no contact**. None of those middle rungs is pedantic. A prep note
 is written before the room and is no evidence anyone was in it; an open intro
@@ -423,8 +423,8 @@ Record it as a learning, not as an absence.
 it is about. That single required field is what keeps general engineering maxims
 out. *"A test that accepts either outcome is not a test"* names no subject, was true
 before this week and will be true after it, and is not something the week taught
-anyone. What belongs here is what the work found out about the world: a vendor's
-number that did not survive your own measurement, a service granting more
+anyone. What belongs here is what the work found out about the world: someone's
+published number that did not survive your own measurement, a service granting more
 authority than it documents, a dependency that turns out to be someone else's.
 
 **Cite what landed under `prs`, and what did not under `open_prs`.** The
@@ -557,8 +557,8 @@ list, a checklist. It is the densest part of the artifact and a commit log canno
 reproduce it.
 
 Companies nobody sat down with get one entry, and their people become a **`Who:`**
-contact clause rather than bullets of their own — an unmet founder on an active
-deal is an action item, not a profile. **Every entity appears exactly once.**
+contact clause rather than bullets of their own — someone unmet on live work is
+an action item, not a profile. **Every entity appears exactly once.**
 
 **Voice:** direct, terse, past tense, active. The reader was not here and does
 not have the context; a bullet that only makes sense to someone who lived the
