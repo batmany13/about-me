@@ -30,9 +30,11 @@ Usage:
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 from collections import Counter, defaultdict
 
@@ -49,6 +51,22 @@ WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
 def die(msg, code=1):
     print(f"rollup: {msg}", file=sys.stderr)
     sys.exit(code)
+
+
+def _common_git_dir(path):
+    """The shared .git directory, which is identical across a repo's worktrees."""
+    try:
+        r = subprocess.run(["git", "-C", path, "rev-parse", "--path-format=absolute",
+                            "--git-common-dir"], capture_output=True, text=True, timeout=20)
+        return os.path.realpath(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def same_repo(a, b):
+    """Whether two paths are the same git repository, worktrees included."""
+    ga, gb = _common_git_dir(a), _common_git_dir(b)
+    return bool(ga) and ga == gb
 
 
 def resolve_path(p):
@@ -117,6 +135,16 @@ def collect(week, registry, args):
     repos, missing_records = [], []
     for r in registry.get("repos", []) or []:
         path = resolve_path(r.get("path"))
+        # This repo is the AGGREGATOR, not a source. It does not run a catchup on
+        # itself -- it reads the others and summarises them -- so listing it as a
+        # missing source would report a gap that is the design.
+        #
+        # Compared by git identity, not by path: this skill routinely runs from a
+        # worktree, whose path differs from the registry's while being the same
+        # repository. A path comparison silently fails in exactly the setup the
+        # work actually happens in.
+        if same_repo(path, REPO_ROOT):
+            continue
         out_dir = r.get("catchup_output_dir", DEFAULT_OUTPUT_DIR)
         rec, rec_path = read_week_record(path, week, out_dir)
 
@@ -288,6 +316,66 @@ def render_table(d):
     return "\n".join(out)
 
 
+def snapshot(d, out_dir):
+    """Copy everything the rollup read into one directory beside its output.
+
+    Provenance: a rollup is a claim about several repos on one date, and the
+    repos keep moving. Without the sources beside it, "where did this number
+    come from" is answerable only by re-running against a tree that has since
+    changed -- which is not an answer. Weeks accumulate here, so later rollups
+    can read further back than the current state of anyone's working tree.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    manifest = {"week": d["week"], "captured": d["generated"],
+                "repos_reporting": d["repos_reporting"],
+                "repos_registered": d["repos_registered"],
+                "totals": d["totals"], "public_totals": d["public_totals"],
+                "sources": []}
+    for r in d["repos"]:
+        if not r.get("has_record"):
+            manifest["sources"].append({"name": r["name"], "captured": False,
+                                        "reason": r.get("error")})
+            continue
+        rd = os.path.join(out_dir, r["name"])
+        os.makedirs(rd, exist_ok=True)
+        src_files = {}
+        try:
+            with open(r["record_path"]) as fh:
+                rec = fh.read()
+            with open(os.path.join(rd, "week.json"), "w") as fh:
+                fh.write(rec)
+            src_files["week.json"] = {"from": r["record_path"],
+                                      "sha256": hashlib.sha256(rec.encode()).hexdigest()[:16]}
+        except OSError:
+            pass
+        if r.get("summary_path"):
+            try:
+                with open(r["summary_path"]) as fh:
+                    body = fh.read()
+                with open(os.path.join(rd, "summary.md"), "w") as fh:
+                    fh.write(body)
+                src_files["summary.md"] = {"from": r["summary_path"],
+                                           "sha256": hashlib.sha256(body.encode()).hexdigest()[:16]}
+            except OSError:
+                pass
+        ents = r.get("entities") or []
+        if ents:
+            blob = json.dumps(ents, indent=2, sort_keys=True)
+            with open(os.path.join(rd, "entities.json"), "w") as fh:
+                fh.write(blob + "\n")
+            src_files["entities.json"] = {"count": len(ents),
+                                          "sha256": hashlib.sha256(blob.encode()).hexdigest()[:16]}
+        manifest["sources"].append({
+            "name": r["name"], "captured": True, "lane": r.get("lane"),
+            "disclosure": r.get("disclosure"), "public_stats": r.get("public_stats"),
+            "path": r["path"], "files": src_files,
+        })
+    with open(os.path.join(out_dir, "sources.json"), "w") as fh:
+        json.dump(manifest, fh, indent=2)
+        fh.write("\n")
+    return manifest
+
+
 def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -297,6 +385,8 @@ def main():
     ap.add_argument("--table", action="store_true", help="human stats table instead of JSON")
     ap.add_argument("--no-entities", action="store_true",
                     help="omit full entity bodies from JSON output (stats only)")
+    ap.add_argument("--snapshot", default=None,
+                    help="copy every source read into this directory, with hashes")
     ap.add_argument("--today", default=None, help="override today's date (testing)")
     args = ap.parse_args()
 
@@ -321,6 +411,13 @@ def main():
         for d in results:
             for r in d["repos"]:
                 r.pop("entities", None)
+
+    if args.snapshot:
+        for d in results:
+            m = snapshot(d, os.path.join(args.snapshot, d["week"]))
+            print(f"snapshot: {os.path.join(args.snapshot, d['week'])} "
+                  f"({sum(1 for s in m['sources'] if s['captured'])} sources captured)",
+                  file=sys.stderr)
 
     if args.table:
         print("\n\n".join(render_table(d) for d in results))
