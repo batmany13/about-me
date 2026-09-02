@@ -44,7 +44,9 @@ import sys
 from collections import Counter, defaultdict
 
 CONFIG_RELPATH = os.path.join(".claude", "catchup.config.json")
-DEFAULT_OUTPUT_DIR = os.path.join(".claude", "catchups")
+# See pull_week.py: output is content and belongs at the top level, not under
+# the agent-configuration directory. `output.dir` overrides.
+DEFAULT_OUTPUT_DIR = "catchup"
 
 CATEGORY_ORDER = ["meeting", "technical", "other"]
 DEFAULT_TITLES = {

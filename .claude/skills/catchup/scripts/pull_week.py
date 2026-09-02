@@ -50,7 +50,14 @@ import sys
 from collections import Counter, defaultdict
 
 CONFIG_RELPATH = os.path.join(".claude", "catchup.config.json")
-DEFAULT_OUTPUT_DIR = os.path.join(".claude", "catchups")
+# Output is CONTENT, not tooling. It lives at the top level, beside the rest of
+# what the repo is for, because a weekly summary is something people read -- and
+# `.claude/` is where a repo keeps its agent configuration. Burying readable
+# output under a dotted tooling directory hides it from everyone who is not
+# already looking for it, and couples the record to the tool that happened to
+# write it. `output.dir` overrides; a repo that already has a home for it should
+# say so.
+DEFAULT_OUTPUT_DIR = "catchup"
 
 # How late a squash may land and still be counted against the week it was authored in.
 DATE_PAD_DAYS = 30
@@ -81,7 +88,6 @@ CATEGORY_ORDER = ["meeting", "technical", "other"]
 DEFAULT_IGNORE = {
     "paths": [
         "**/.claude/transcripts/**",
-        "**/.claude/catchups/**",
         "**/*.lock",
         "**/package-lock.json",
     ],
@@ -257,6 +263,12 @@ def load_config(repo_path, explicit=None):
         cats[key] = merged
     cfg["categories"] = cats
 
+    # The catchup's own output is bookkeeping in the week it describes -- writing
+    # a summary is not work the summary should count. This rule FOLLOWS
+    # output.dir rather than naming a fixed path: hardcoding one means that the
+    # day a repo moves its output, the catchup silently starts counting itself.
+    out_dir = (cfg.get("output") or {}).get("dir", DEFAULT_OUTPUT_DIR).strip("/")
+
     ign = cfg.get("ignore") or {}
     merged_ign = {}
     for field in ("paths", "subjects"):
@@ -264,6 +276,8 @@ def load_config(repo_path, explicit=None):
             merged_ign[field] = list(ign[f"{field}_replace"])
         else:
             merged_ign[field] = list(DEFAULT_IGNORE[field]) + list(ign.get(field, []))
+    if out_dir:
+        merged_ign["paths"].append(f"{out_dir}/**")
     cfg["ignore"] = merged_ign
 
     cfg["_source"] = source

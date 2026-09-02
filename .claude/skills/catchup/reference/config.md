@@ -16,7 +16,17 @@ A starting point to copy: [`../assets/catchup.config.example.json`](../assets/ca
 
 | Key | Default | Meaning |
 |---|---|---|
-| `dir` | `.claude/catchups` | Summaries land here; entities in `<dir>/entities/` |
+| `dir` | `catchup` | Summaries land here; entities in `<dir>/entities/`, week records in `<dir>/weeks/` |
+
+**Output is content, so it lives at the top level** — beside the rest of what the
+repo is for, not under `.claude/`, which is where a repo keeps its agent
+configuration. A weekly summary is something people read; burying it in a dotted
+tooling directory hides it from everyone not already looking, and couples the
+record to the tool that happened to write it. Point `dir` somewhere else if the
+repo already has a home for this kind of thing.
+
+The bookkeeping ignore rule **follows this setting** — writing a summary is not
+work the summary should count — so moving `dir` moves the exclusion with it.
 
 ## `authors`
 
@@ -119,7 +129,7 @@ the week's commits is lying about the week.
 | `paths_replace[]` / `subjects_replace[]` | Same, but discard the built-ins |
 
 Built-in ignores cover tooling conventions rather than any one repo's habits:
-`.claude/transcripts/`, `.claude/catchups/`, lockfiles, and subjects matching
+`.claude/transcripts/`, the configured `output.dir`, lockfiles, and subjects matching
 `chore(transcripts):`, `Merge branch`, or dependency bumps.
 
 **A subject rule fires on its own; a path rule requires every touched file to

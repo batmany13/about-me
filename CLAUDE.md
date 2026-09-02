@@ -141,7 +141,7 @@ start disagreeing.
 
 | Layer | Skill | Reads | Writes |
 |---|---|---|---|
-| Per repo | `catchup` | that repo's git log + merged PRs | `.claude/catchups/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo** |
+| Per repo | `catchup` | that repo's git log + merged PRs | `<output.dir>/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo**, top level by default |
 | Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md` — **private** |
 | Public | `fnr` | the rollup, under the scrub policy | `fnr/<W>.md` — public |
 
@@ -177,7 +177,7 @@ Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-writ
    **Never reconstruct `repos.json` or `scrub_policy.md` from memory or from a conversation** — clone the reviewed copy.
 1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
 2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
-3. Write the **unscrubbed** catchup into each source repo's `.claude/catchups/<week>.md`
+3. Write the **unscrubbed** catchup into each source repo's `<output.dir>/<week>.md` (`catchup/` by default)
 4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
 5. Report the scrub delta — what was held back, by category
 

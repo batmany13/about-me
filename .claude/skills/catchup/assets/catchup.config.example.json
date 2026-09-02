@@ -4,7 +4,8 @@
     "label": "my-repo"
   },
   "output": {
-    "dir": ".claude/catchups"
+    "$comment": "Output is content, so it defaults to the top level rather than under .claude/. The bookkeeping ignore rule follows this setting.",
+    "dir": "catchup"
   },
   "authors": {
     "$comment": "Turn split on only for a repo with more than one real contributor. Every commit email must be listed, or it lands in unknown_authors.",
@@ -87,7 +88,7 @@
 
   "method_notes": {
     "$comment": "Where this repo keeps what it has learned about running its own catchups: which themes recur, which past summary went wrong and why. Lives beside the output rather than inside the skill, so the skill stays portable and the hard-won specifics stay with the repo.",
-    "path": ".claude/catchups/method-notes.md"
+    "path": "catchup/method-notes.md"
   },
 
   "git": {
