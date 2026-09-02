@@ -976,7 +976,7 @@ def cmd_propose(args, repo, cfg, sdir):
         # churn on one that already existed. Ranking purely by size buries it:
         # a first conversation with a company is one small new file, while a
         # re-scored profile is a big edit, and under one size ranking the small
-        # new file falls past the cut and is never opened. Two founder meetings
+        # new file falls past the cut and is never opened. Two conversations
         # were lost exactly that way -- their artifacts sorted 26th and 31st,
         # their PR bodies were the two shortest of the week (the substance had
         # gone into the file), and nothing in the output said they existed.
@@ -1206,7 +1206,7 @@ def cmd_render(args, repo, cfg, sdir):
         # different relationships, and rendering them identically turns a
         # roster into a claim of contact nobody made -- three founders of one
         # company were listed beside the people they had never met, on a deal
-        # whose own profile said "no founder contact yet". Deriving it from the
+        # whose own notes said no contact had happened yet. Deriving it from the
         # meeting's own attendee list means the two cannot drift: to mark
         # someone met, record the meeting.
         # A meeting tagged `prep` is a note written BEFORE the room, and it is
@@ -1308,7 +1308,7 @@ def cmd_render(args, repo, cfg, sdir):
             actions(m)
 
         # Companies nobody sat down with. Their people become a contact clause
-        # rather than bullets of their own -- an unmet founder on an active deal
+        # rather than bullets of their own -- someone unmet on live work
         # is an action item, not a profile.
         for o in sorted((x for x in meets if x.get("type") == "org" and x["id"] not in done),
                         key=lambda x: x["id"]):

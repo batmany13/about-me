@@ -85,7 +85,7 @@ The per-repo summaries already exist — restating them is not the job. What thi
 layer can see that no single repo can:
 
 - **`cross_repo_entities`** — the same entity id in more than one repo. A
-  subject that is a research thread in one repo and a portfolio position in
+  subject that is a research thread in one repo and a tracked relationship in
   another is one story told in two places, and this is the only view that shows
   it. Look here first; it is the highest-value output.
 - **The shape of the week across lanes** — where the volume actually went versus
