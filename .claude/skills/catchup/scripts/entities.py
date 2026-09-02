@@ -620,6 +620,20 @@ def cmd_week(args, repo, cfg, sdir):
         print("    extraction did not stop at who presented and what we did.\n")
 
 
+def _subjects_new(week_blob, cfg):
+    """Files ADDED this week that match `subjects.artifacts`, or None if undeclared.
+
+    None and 0 are different answers -- "this repo never said where its subjects
+    live" versus "none arrived" -- and a stat line must not report the first as
+    the second.
+    """
+    globs = ((cfg.get("subjects") or {}).get("artifacts")) or []
+    if not globs:
+        return None
+    added = ((week_blob.get("structure") or {}).get("added")) or []
+    return sum(1 for f in added if any(fnmatch.fnmatch(f, g) for g in globs))
+
+
 def cmd_record_week(args, repo, cfg, sdir):
     """Store the week's stats beside its entities, from a pull_week.py blob."""
     src = sys.stdin if args.pull in (None, "-") else open(args.pull)
@@ -682,6 +696,14 @@ def cmd_record_week(args, repo, cfg, sdir):
             "commit_categories": {k: (w.get("categories") or {}).get(k, {}).get("count")
                                   for k in CATEGORY_ORDER},
             "top_dirs": w.get("top_dirs"),
+            # How many SUBJECTS arrived this week -- a new subject artifact is a
+            # new subject. Mechanical, so it needs no tagging discipline to stay
+            # true: a repo that has declared where its subjects live already
+            # said everything required to count them. What that number means is
+            # the repo's own -- intake for one, new customers or new experiments
+            # for another -- which is why it is a field here and a label in
+            # `summary.stats` rather than a fixed word in the format.
+            "subjects_new": _subjects_new(w, cfg),
         },
         "entities": by_cat,
         "entity_count": len(ents),

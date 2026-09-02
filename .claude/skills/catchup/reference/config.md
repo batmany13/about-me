@@ -144,13 +144,25 @@ Each entry resolves one of two ways:
 
 | Key | Resolves to |
 |---|---|
-| `from` | A dotted path into the week record — `stats.commits`, `stats.prs_merged`, `stats.ignored`, `stats.prs_open_now`, `stats.pr_body_chars` |
+| `from` | A dotted path into the week record — `stats.commits`, `stats.prs_merged`, `stats.ignored`, `stats.prs_open_now`, `stats.pr_body_chars`, `stats.subjects_new` |
 | `count` | How many of the week's entities match a filter |
 
 A `count` filter takes any of `type`, `category`, `tag`, `status`, and `new`.
 **`new: true` means first seen this week** — the difference between how many
 relationships exist and how many the week *added*, which one number silently
 conflates.
+
+**`stats.subjects_new` counts how many subjects ARRIVED** — files added this
+week matching `subjects.artifacts`. A new subject artifact is a new subject, so
+the number needs no tagging discipline to stay true: a repo that declared where
+its subjects live has already said everything required to count them. What it
+*means* is the repo's own — intake for one, new customers or new experiments for
+another — which is why it is a field here and a label in `summary.stats` rather
+than a fixed word in the format.
+
+It is `null`, not `0`, for a repo that declares no `subjects.artifacts`, and the
+stat line omits it. "Never said where its subjects live" and "none arrived" are
+different answers and the line must not report the first as the second.
 
 `singular` is opt-in and used when the value is 1. No rule guesses it: stripping
 an "s" would turn "bookkeeping commits excluded" into nonsense.
