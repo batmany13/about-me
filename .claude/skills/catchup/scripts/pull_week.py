@@ -88,6 +88,10 @@ CATEGORY_ORDER = ["meeting", "technical", "other"]
 DEFAULT_IGNORE = {
     "paths": [
         "**/.claude/transcripts/**",
+        # Legacy: output used to default under `.claude/`. A repo that has since
+        # moved it still has history under the old path, and dropping this rule
+        # would make those weeks retroactively count their own summaries as work.
+        "**/.claude/catchups/**",
         "**/*.lock",
         "**/package-lock.json",
     ],
