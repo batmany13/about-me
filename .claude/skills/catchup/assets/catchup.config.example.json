@@ -49,8 +49,9 @@
     "bullets": "6-12",
     "words": "150-250",
     "sections": {
+      "$comment": "A word range, or {\"bullets\": \"N-M\"} where the section's unit is countable — one bullet per conversation is felt as a count, not a word budget.",
       "themes": "500-800",
-      "meetings": "400-700",
+      "meetings": { "bullets": "24-40" },
       "learnings": "500-800",
       "other": "50-150"
     }

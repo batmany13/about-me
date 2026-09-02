@@ -76,6 +76,23 @@ that survives is the one that was already too long.
 }
 ```
 
+A section's budget is **either a word range or a bullet count**, whichever the
+section is actually felt in:
+
+```json
+"sections": {
+  "themes":    "500-800",           
+  "meetings":  { "bullets": "24-40" },
+  "learnings": "500-800",
+  "other":     "50-150"
+}
+```
+
+Words govern prose. **Bullets govern a section whose unit is countable** — one
+bullet per conversation, say, where a reader feels the number of conversations
+and lengths vary too much for a word range to mean anything. A repo can mix the
+two across sections; the question is what the section's unit is.
+
 Declare every section a repo actually renders. `sections` is read per key, so a
 partial map leaves the undeclared ones governed only by the overall `words` —
 which is the single-number problem the split exists to avoid, reintroduced for
