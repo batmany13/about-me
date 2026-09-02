@@ -212,6 +212,37 @@ specifically its `/create_context_card` and `/update_context_card` calls. Prefer
 it over the rendered API reference, and reconcile against the live MCP tool list
 once connected.
 
+## Reading the week back, and comparing
+
+Once a week's cards are pushed, DeepVista holds the same entities the local
+store does — which makes it a second reader of the same evidence, and a way to
+find out what the local summary missed.
+
+1. Fetch the week's cards through the MCP search tool
+   (`tag:repo:<label>` plus the week), and have the model write a summary from
+   what comes back, in the format `SKILL.md` describes. Save it to a file.
+2. Diff the coverage:
+
+```bash
+uv run scripts/deepvista_cards.py compare 2026-W35 --repo . --against dv-summary.md
+```
+
+It reports four buckets, and only the last two are interesting:
+
+| Bucket | What it means |
+|---|---|
+| Covered by both | Agreement. Skip. |
+| Only the local summary | Either the push did not carry it, or the card reader dropped it. |
+| **Only the DeepVista summary** | The local summary left it out. Was that judgment, or an omission? |
+| **Covered by neither** | In the store, in no summary. Two writers independently passed over it — shared agreement it does not matter, or a shared blind spot. |
+
+**Neither side is assumed correct.** The comparison is on *coverage*, not style,
+because coverage is checkable and style is not. Pull the better version by
+entity: if the card-derived summary carries something real that the local one
+dropped, add the entity's material to the local summary rather than replacing
+prose wholesale — the local file is the one under version control and the one
+the scrub policy has been applied to.
+
 ## Test run — the procedure for the first live push
 
 Nothing below this line has been exercised. Run it in order and stop at the

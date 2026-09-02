@@ -627,6 +627,22 @@ uv run $SKILL/deepvista_cards.py record --repo . --id <entity-id> --card-id <ret
 The free tier is 100 credits a month, and re-pushing an unchanged card spends
 one to change nothing.
 
+## Step 5b (optional): Read the week back from DeepVista
+
+Only where the sync is on and the week has been pushed. The cards hold the same
+entities, so DeepVista is a second reader of the same evidence — fetch the
+week's cards, have a summary written from them, and diff the coverage:
+
+```bash
+uv run $SKILL/deepvista_cards.py compare <week> --repo . --against dv-summary.md
+```
+
+The two buckets worth reading are **only the DeepVista summary** (the local one
+left something out — judgment or omission?) and **covered by neither** (both
+writers passed over it independently, which is either agreement or a shared
+blind spot). Pull the better version *by entity*, into the local file — that is
+the one under version control and the one the scrub policy has been applied to.
+
 ## Step 6: Report
 
 Tell the user:

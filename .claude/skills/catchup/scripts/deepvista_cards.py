@@ -657,6 +657,94 @@ def cmd_plan(args, repo, cfg, sdir):
     }, indent=2))
 
 
+def _mentions(text, entity):
+    """Whether a summary actually refers to this entity.
+
+    Title first, then the distinctive half of the id -- a summary that says
+    "the Daytona event" has covered `daytona-ai-builders-sf` without quoting it.
+    Deliberately loose: the question is coverage, and a strict match would report
+    a summary as having missed what it plainly discusses.
+    """
+    low = text.lower()
+    if (entity.get("title") or "").lower() in low:
+        return True
+    parts = [p for p in entity["id"].split("-") if len(p) > 3]
+    return bool(parts) and all(p in low for p in parts[:2])
+
+
+def cmd_compare(args, repo, cfg, sdir):
+    """Compare our rendered summary against one built from the DeepVista cards.
+
+    The cards carry the same entities, so the interesting question is not which
+    prose reads better -- it is what each version COVERS and what each one
+    leaves out. That is checkable; style is not.
+
+    Neither side is assumed correct. A card-derived summary is written from what
+    survived the push, so anything it covers that ours does not is either a fact
+    the local summary dropped or evidence the push carried something the summary
+    was right to leave out. Both are worth knowing, and only a coverage diff
+    tells them apart.
+    """
+    ours_path = args.ours or os.path.join(
+        repo, (cfg.get("output") or {}).get("dir", "catchup"), f"{args.week}.md")
+    if not os.path.isfile(ours_path):
+        die(f"no local summary at {ours_path}")
+    if not os.path.isfile(args.against):
+        die(f"no DeepVista-derived summary at {args.against} -- "
+            "fetch the week's cards through the MCP tools and save it first")
+    ours = open(ours_path).read()
+    theirs = open(args.against).read()
+
+    ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
+    if not ents:
+        die(f"no entities recorded for {args.week}")
+
+    rows = []
+    for e in sorted(ents, key=lambda x: (x.get("type", ""), x["id"])):
+        rows.append((e, _mentions(ours, e), _mentions(theirs, e)))
+
+    both = [r for r in rows if r[1] and r[2]]
+    only_ours = [r for r in rows if r[1] and not r[2]]
+    only_theirs = [r for r in rows if r[2] and not r[1]]
+    neither = [r for r in rows if not r[1] and not r[2]]
+
+    if args.json:
+        print(json.dumps({
+            "week": args.week,
+            "ours": os.path.relpath(ours_path, repo), "theirs": args.against,
+            "words": {"ours": len(ours.split()), "theirs": len(theirs.split())},
+            "covered_by_both": [e["id"] for e, _, _ in both],
+            "only_ours": [e["id"] for e, _, _ in only_ours],
+            "only_deepvista": [e["id"] for e, _, _ in only_theirs],
+            "covered_by_neither": [e["id"] for e, _, _ in neither],
+        }, indent=2))
+        return
+
+    print(f"# {args.week} — local summary vs DeepVista cards\n")
+    print(f"  words: {len(ours.split()):,} local · {len(theirs.split()):,} DeepVista")
+    print(f"  entities this week: {len(ents)}\n")
+    print(f"  covered by both          {len(both):>3}")
+    print(f"  only the local summary   {len(only_ours):>3}")
+    print(f"  only the DeepVista one   {len(only_theirs):>3}")
+    print(f"  covered by NEITHER       {len(neither):>3}")
+
+    def show(label, sel, why):
+        if not sel:
+            return
+        print(f"\n## {label}\n  {why}\n")
+        for e, _, _ in sel:
+            print(f"  - {e['id']:<34} {e.get('type','')}  {e.get('title','')[:56]}")
+
+    show("Only the local summary", only_ours,
+         "Either the push did not carry these, or the card-derived summary dropped them.")
+    show("Only the DeepVista summary", only_theirs,
+         "The local summary left these out. Check whether that was judgment or an omission.")
+    show("Covered by neither", neither,
+         "In the store, in neither summary. The strongest signal here — both writers "
+         "independently passed over them, which is either agreement that they do not "
+         "matter or a shared blind spot.")
+
+
 def cmd_record(args, repo, cfg, sdir):
     p = entity_path(sdir, args.id)
     if not os.path.isfile(p):
@@ -708,6 +796,15 @@ def main():
     p = sub.add_parser("doctor", parents=[common],
                        help="check the runtime, the registered entry and the endpoint")
     p.set_defaults(fn=cmd_doctor)
+
+    p = sub.add_parser("compare", parents=[common],
+                       help="coverage diff: local summary vs one built from the cards")
+    p.add_argument("week")
+    p.add_argument("--against", required=True,
+                   help="a summary built from the DeepVista cards, saved to a file")
+    p.add_argument("--ours", default=None, help="local summary (default: the week's file)")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(fn=cmd_compare)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")
     p.add_argument("--id", required=True)
