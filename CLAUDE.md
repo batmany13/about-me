@@ -63,7 +63,7 @@ directly.
 | **fnr/** | |
 | `fnr/README.md` | What Field Notes & Reflections is, the F&R pun, and the two-layer public/private model |
 | `fnr/<YYYY-WNN>.md` | One public weekly per ISO week, published Mondays about the week that just closed |
-| `fnr/.private/` | **A separate private repo** — [about-me-private](https://github.com/batmany13/about-me-private) — cloned into this gitignored path. Holds `repos.json` (which repos the weekly reads), `scrub_policy.md` (what may be published), and the unscrubbed drafts. Never commit its contents here, never quote it in public files |
+| `fnr/.private/` | **A separate private repo** — [about-me-private](https://github.com/batmany13/about-me-private) — cloned into this gitignored path. Holds `repos.json` (which repos the weekly reads), `scrub_policy.md` (what may be published), the unscrubbed drafts, and `rollups/` — the cross-repo rollup per week with its snapshotted sources and the DeepVista control files. Never commit its contents here, never quote it in public files |
 | **.claude/skills/** | |
 | `.claude/skills/catchup/` | **Source of truth** for the repo-agnostic `catchup` skill, deployed into other repos with its `deploy.py`. Two passes: extract entities from a week, then summarize from them. Nothing repo-specific lives in it — that goes in each repo's `.claude/catchup.config.json` |
 | `.claude/skills/rollup/` | The summary-of-summaries: reads every registered repo's week records and entities and merges them into one cross-repo view. Private output only |
@@ -142,8 +142,18 @@ start disagreeing.
 | Layer | Skill | Reads | Writes |
 |---|---|---|---|
 | Per repo | `catchup` | that repo's git log + merged PRs | `<output.dir>/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo**, top level by default |
-| Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md` — **private** |
+| Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md`, with the sources snapshotted under `rollups/<W>/<repo>/` — **private** |
+| Control | `rollup --control deepvista` | each syncing repo's entities, read **back** from DeepVista as cards | `rollups/<W>/<repo>/deepvista-{cards.json,summary.md,compare.json}` — **private** |
 | Public | `fnr` | the rollup, under the scrub policy | `fnr/<W>.md` — public |
+
+**The aggregator uses both: the skills here are the record, DeepVista is the
+control.** Each syncing repo pushes its entities to DeepVista as context cards
+(catchup Step 5); the rollup reads them back headlessly, has a second summary
+written from the cards alone, and diffs coverage against the local one. What
+both leave out is a shared blind spot; what only the cards carry is an
+omission to pull back into the source repo. It is also the fidelity check on
+the push — unpushed entities, orphan cards, bodies that drifted — which is
+where the first run found most of its findings.
 
 `catchup` is **deployed** into other repos, not run from here:
 
@@ -178,6 +188,7 @@ Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-writ
 1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
 2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
 3. Write the **unscrubbed** catchup into each source repo's `<output.dir>/<week>.md` (`catchup/` by default)
+3b. Roll up across repos **from the private repo** with the DeepVista control (`rollup.py <week> --snapshot rollups --control deepvista`), write each repo's card-only summary, run it again to compare, and read `## Control: DeepVista` before drafting
 4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
 5. Report the scrub delta — what was held back, by category
 

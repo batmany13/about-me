@@ -19,6 +19,13 @@ and record the returned card id. The model makes the actual tool calls in betwee
 
     plan  ->  [model calls the deepvista MCP tools]  ->  record
 
+Reading back is the exception: once the mcp-remote proxy has cached a sign-in,
+`fetch` spawns it and reads the week's cards headlessly, into a file the
+aggregator's control (and `compare`) can run on. Reads are free and change
+nothing, which is why that half is scripted and the push half is not.
+
+    fetch --week W --out cards.json  ->  [a summary written from the cards]  ->  compare
+
 Skipping matters. The free tier is 100 credits a month, so an entity whose
 content has not changed since its last push must cost nothing: `plan` compares a
 content hash and emits `skip` for anything unchanged.
@@ -143,6 +150,227 @@ def node_runtime():
         return npx, None, (f"npx {nver} is older than the required {MCP_MIN_NPX}+ "
                            f"and cannot run this entry{alt}")
     return npx, major, f"Node v{major} at {node}, npx {nver}"
+
+
+def resolve_npx(explicit=None):
+    """An npx that can run the proxy, or None -- looking past PATH's first hit.
+
+    `node_runtime()` answers "will the entry in .mcp.json start", which is a
+    PATH question because the host app resolves the bare `npx` it names. This
+    answers a different one: "can THIS script start the proxy itself" -- and for
+    that the well-known install locations are fair game, because the path is
+    used here and never written into a repo file. A Homebrew npx 11 sitting
+    behind an npm-6 npx on PATH is exactly the machine this was written on.
+    """
+    cands = [explicit] if explicit else []
+    cands += [shutil.which("npx"), "/opt/homebrew/bin/npx", "/usr/local/bin/npx"]
+    seen = set()
+    for c in cands:
+        if not c or c in seen or not os.path.isfile(c):
+            continue
+        seen.add(c)
+        try:
+            v = subprocess.run([c, "--version"], capture_output=True, text=True,
+                               timeout=20).stdout.strip()
+            if int(v.split(".")[0]) >= MCP_MIN_NPX:
+                return c
+        except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+            continue
+    return None
+
+
+class McpClient:
+    """The smallest MCP client that can read cards: JSON-RPC over the proxy's stdio.
+
+    This exists because "MCP tools are called by the model, not by a script" was
+    true only until the proxy cached a token. Once `mcp-remote` has signed in
+    once, it will start headless for anyone who spawns it -- an agent session or
+    a shell script alike -- and a READ of the week's cards is then a deterministic
+    thing a script can own, the same way `plan` and `record` already are. Writes
+    stay with the model on purpose: they spend credits and change the product,
+    and a script that pushes on its own is a script that pushes twice.
+
+    If the proxy needs a sign-in it prints the authorization URL to stderr and
+    waits. That is surfaced rather than hidden, because the fix is a human in a
+    browser and no amount of retrying substitutes for one.
+    """
+
+    # A session opened right after another proxy shut down can come back
+    # `Session not found` on its first call, or the handshake can stall -- seen
+    # repeatedly on 2026-09-02 whenever two reads ran back to back, and never
+    # when they were minutes apart. The previous proxy's teardown is the likely
+    # racer. Whatever the cause, the recovery is the same: a fresh proxy after a
+    # short pause. So the handshake is attempted a few times, each on a new
+    # process, and the count is reported so a run that needed it stands out.
+    ATTEMPTS = 4
+    BACKOFF = 2.5
+    TOLERATED = ("Session not found",)
+
+    def __init__(self, npx, endpoint=MCP_ENDPOINT, timeout=90):
+        import time
+        self.npx, self.endpoint, self.timeout = npx, endpoint, timeout
+        self.reinits = 0
+        self.attempts = 0
+        self.proc = None
+        last = None
+        for i in range(self.ATTEMPTS):
+            self.attempts += 1
+            if i:
+                self.close()
+                time.sleep(self.BACKOFF * i)
+            self._spawn()
+            ok, last = self._handshake()
+            if ok:
+                return
+        url = self._auth_url()
+        if url:
+            die("DeepVista needs a browser sign-in before this can run headless.\n"
+                f"  Open once, then re-run:\n  {url}\n"
+                "  (mcp-remote caches the token under ~/.mcp-auth after that.)")
+        die(f"could not open a session after {self.ATTEMPTS} attempts; last: {last}")
+
+    def _spawn(self):
+        import threading
+        # Its own process group, so close() can take the proxy down WITH the
+        # node child npx spawns. Terminating npx alone left the proxy running
+        # after the first probes.
+        self.proc = subprocess.Popen(
+            [self.npx, "-y", "mcp-remote", self.endpoint],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, bufsize=1, start_new_session=True)
+        self._lines = []          # stdout, JSON-RPC
+        self._stderr = []         # proxy chatter, kept for diagnosis
+        self._lock = threading.Lock()
+        self._next = 1
+        threading.Thread(target=self._pump, args=(self.proc.stdout, self._lines),
+                         daemon=True).start()
+        threading.Thread(target=self._pump, args=(self.proc.stderr, self._stderr),
+                         daemon=True).start()
+
+    def _handshake(self):
+        """initialize + initialized on the current proxy. (ok, error-text)."""
+        r = self._rpc("initialize", {
+            "protocolVersion": "2025-03-26", "capabilities": {},
+            "clientInfo": {"name": "catchup-deepvista-cards", "version": "1"}},
+            tolerate=self.TOLERATED, fatal=False)
+        if r is None or r.get("error"):
+            return False, (json.dumps(r["error"])[:200] if r else "no reply")
+        self.server = (r.get("result") or {}).get("serverInfo") or {}
+        self._notify("notifications/initialized")
+        return True, None
+
+    def _pump(self, stream, sink):
+        for line in stream:
+            with self._lock:
+                sink.append(line)
+
+    def _auth_url(self):
+        for i, line in enumerate(self._stderr):
+            if "Please authorize this client" in line:
+                for nxt in self._stderr[i + 1:i + 4]:
+                    if nxt.strip().startswith("http"):
+                        return nxt.strip()
+        return None
+
+    def _send(self, msg):
+        try:
+            self.proc.stdin.write(json.dumps(msg) + "\n")
+            self.proc.stdin.flush()
+        except (OSError, ValueError) as e:
+            die(f"proxy went away while sending {msg.get('method')}: {e}")
+
+    def _notify(self, method, params=None):
+        self._send({"jsonrpc": "2.0", "method": method, "params": params or {}})
+
+    def _rpc(self, method, params, tolerate=(), fatal=True):
+        """One request, one reply. An error reply dies unless its text contains
+        one of `tolerate`, in which case the raw reply is returned for the
+        caller to recover from. With fatal=False a timeout returns None
+        instead of dying, so a handshake can be retried on a fresh proxy."""
+        import time
+        rid = self._next
+        self._next += 1
+        self._send({"jsonrpc": "2.0", "id": rid, "method": method, "params": params})
+        # A handshake that has not answered in 30s is not going to; the full
+        # timeout is for calls that do real work.
+        end = time.time() + (min(self.timeout, 30) if method == "initialize" else self.timeout)
+        seen = 0
+        while time.time() < end:
+            with self._lock:
+                chunk, seen = self._lines[seen:], len(self._lines)
+            for line in chunk:
+                try:
+                    m = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if m.get("id") == rid:
+                    if "error" in m:
+                        txt = json.dumps(m["error"])
+                        if any(t in txt for t in tolerate):
+                            return m
+                        die(f"{method}: {txt[:400]}")
+                    return m
+            if self.proc.poll() is not None:
+                break
+            time.sleep(0.05)
+        if not fatal:
+            return None
+        url = self._auth_url()
+        tail = "".join(self._stderr[-6:]).strip()
+        if url:
+            die("DeepVista needs a browser sign-in before this can run headless.\n"
+                f"  Open once, then re-run:\n  {url}\n"
+                "  (mcp-remote caches the token under ~/.mcp-auth after that.)")
+        die(f"no reply to {method} within {self.timeout}s"
+            + (f"; proxy said:\n{tail}" if tail else ""))
+
+    def _reinit(self):
+        """The session went away mid-run: a fresh proxy, same retry ladder."""
+        import time
+        self.reinits += 1
+        for i in range(self.ATTEMPTS):
+            self.close()
+            time.sleep(self.BACKOFF * (i + 1))
+            self._spawn()
+            ok, last = self._handshake()
+            if ok:
+                return
+        die(f"session lost mid-run and could not be reopened; last: {last}")
+
+    def call(self, tool, **args):
+        """Call a tool; return its structured result (or its text parsed as JSON)."""
+        r = self._rpc("tools/call", {"name": tool, "arguments": args},
+                      tolerate=self.TOLERATED)
+        if r.get("error"):
+            self._reinit()
+            r = self._rpc("tools/call", {"name": tool, "arguments": args})
+        res = r.get("result") or {}
+        if res.get("isError"):
+            txt = " ".join(c.get("text", "") for c in res.get("content") or [])
+            return {"_error": txt.strip()[:400] or "tool reported an error"}
+        if res.get("structuredContent") is not None:
+            return res["structuredContent"]
+        for c in res.get("content") or []:
+            if c.get("type") == "text":
+                try:
+                    return json.loads(c["text"])
+                except json.JSONDecodeError:
+                    return {"_text": c["text"]}
+        return res
+
+    def close(self):
+        import signal
+        if not self.proc:
+            return
+        try:
+            os.killpg(self.proc.pid, signal.SIGTERM)
+            self.proc.wait(timeout=10)
+        except (OSError, subprocess.SubprocessError):
+            try:
+                os.killpg(self.proc.pid, signal.SIGKILL)
+            except OSError:
+                pass
+        self.proc = None
 
 
 def choose_transport(pref):
@@ -688,6 +916,15 @@ def _mentions(text, entity):
     low = text.lower()
     if (entity.get("title") or "").lower() in low:
         return True
+    # A learning renders as its CLAIM, not its title -- the local summary leads
+    # every "What we learned" bullet with the claim sentence and carries the
+    # title nowhere. Title-only matching scored all four concept rows of the
+    # first control run as "only the DeepVista summary" when the local one had
+    # every one of them, one line each. Match the claim's opening too.
+    for wk in (entity.get("weeks") or {}).values():
+        claim = (wk.get("claim") or "").strip().rstrip(".").lower()
+        if len(claim) > 24 and claim[:60] in low:
+            return True
     parts = [p for p in entity["id"].split("-") if len(p) > 3]
     return bool(parts) and all(p in low for p in parts[:2])
 
@@ -765,6 +1002,185 @@ def cmd_compare(args, repo, cfg, sdir):
          "matter or a shared blind spot.")
 
 
+TRACER = "<!-- catchup-entity: {id} -->"
+
+
+def _tracer_state(body, eid):
+    """intact / escaped / missing -- whether the card still points at its entity.
+
+    `escaped` is a real state, not a parse failure: a links-only upsert on the
+    first live push re-saved bodies through an HTML-escaping pass, so the tracer
+    on those cards reads `&lt;!-- ... --&gt;` and their `&` became `&amp;`. The
+    card is still the right card; its body is no longer byte-for-byte what was
+    sent, and a control that did not distinguish the two would score the
+    escaping damage as a content difference.
+    """
+    if TRACER.format(id=eid) in body:
+        return "intact"
+    if TRACER.format(id=eid).replace("<", "&lt;").replace(">", "&gt;") in body:
+        return "escaped"
+    return "missing"
+
+
+def _unescape(body):
+    return (body.replace("&lt;", "<").replace("&gt;", ">")
+                .replace("&quot;", '"').replace("&#39;", "'").replace("&amp;", "&"))
+
+
+def _body_state(card_body, rendered, tracer):
+    """matches / cosmetic / differs -- how far the card body is from the render.
+
+    The product does not hand a body back byte-for-byte: on the first live push
+    it backslash-escaped `[grade]` markers, inserted blank lines, and (on the
+    links-only pass) HTML-escaped the whole thing. None of that is a content
+    difference, and a control that reported it as one would drown the signal it
+    exists to carry -- an entity whose text moved on after it was pushed. So
+    the comparison is made on a normalised form, and the raw inequality is
+    reported as `cosmetic` rather than hidden.
+    """
+    got = _unescape(card_body) if tracer == "escaped" else card_body
+    if got.strip() == rendered.strip():
+        return "matches"
+    norm = lambda s: re.sub(r"\s+", " ", re.sub(r"\\([\[\]*_`#>~|])", r"\1", s)).strip()
+    return "cosmetic" if norm(got) == norm(rendered) else "differs"
+
+
+def cmd_fetch(args, repo, cfg, sdir):
+    """Read a week's cards BACK from DeepVista, as a file a control can be run on.
+
+    The push is one direction; this is the other. It fetches every card the
+    store says it pushed for the week, browses the repo's tag for cards the store
+    does NOT know about, and writes one JSON file carrying the card bodies plus a
+    fidelity read per card -- whether the tracer survived, and whether the body
+    is what the entity would render today.
+
+    That file is what the aggregator's control is built on: a second summary of
+    the same week, written from the cards alone and diffed against the local one
+    with `compare`. A read costs no credits and changes nothing, which is why
+    this half is scripted and the push half is not.
+    """
+    ents = load_all(sdir)
+    all_ents = list(ents)
+    if args.week:
+        ents = [e for e in ents if args.week in (e.get("weeks") or {})]
+    elif not args.all:
+        die("pass --week YYYY-WNN or --all")
+    if not ents:
+        die(f"no entities recorded for {args.week or 'any week'}")
+
+    dv_cfg = cfg.get("deepvista") or {}
+    if not dv_cfg.get("enabled") and not args.force:
+        die("deepvista.enabled is not true in this repo's config; pass --force to read anyway")
+    titles = category_titles(cfg)
+    repo_label = (cfg.get("repo") or {}).get("label") or os.path.basename(repo)
+
+    npx = resolve_npx(args.npx)
+    if not npx:
+        die(f"no npx {MCP_MIN_NPX}+ found to run the mcp-remote proxy -- `brew install node`, "
+            "or pass --npx /path/to/npx")
+    client = McpClient(npx, timeout=args.timeout)
+    try:
+        # The complete listing under this repo's tag, which is the only way to
+        # see cards the store has forgotten -- a `record` that never ran leaves a
+        # live card behind with no entity pointing at it, and the next push
+        # creates its twin. Empty query = exact listing, per the tool's own docs.
+        listing = client.call("search_context_cards", query="",
+                              tag=f"repo:{repo_label}", limit=100)
+        hits = listing.get("hits") or [] if isinstance(listing, dict) else []
+        listed = {h.get("card_id"): h for h in hits if h.get("card_id")}
+        listing_complete = len(hits) < 100
+
+        known = {(x.get("deepvista") or {}).get("card_id"): x["id"]
+                 for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
+
+        cards, not_found, unpushed = [], [], []
+        for e in sorted(ents, key=lambda x: (x.get("category", ""), x["id"])):
+            dv = e.get("deepvista") or {}
+            cid = dv.get("card_id")
+            if not cid:
+                unpushed.append(e["id"])
+                continue
+            card = client.call("read_context_card", card_id=cid)
+            if not isinstance(card, dict) or card.get("_error") or not card.get("id"):
+                not_found.append({"entity_id": e["id"], "card_id": cid,
+                                  "error": (card or {}).get("_error", "no card returned")})
+                continue
+            body = card.get("description") or ""
+            tracer = _tracer_state(body, e["id"])
+            state = _body_state(body, render_body(e, titles, repo_label), tracer)
+            cards.append({
+                "entity_id": e["id"],
+                "entity_type": e.get("type"),
+                "category": e.get("category"),
+                "card_id": cid,
+                "card_type": card.get("type"),
+                "title": card.get("title"),
+                "status": card.get("status"),
+                "tags": card.get("tags") or [],
+                "created_at": card.get("created_at"),
+                "updated_at": card.get("updated_at"),
+                "synced_at": dv.get("synced_at"),
+                "tracer": tracer,
+                # Two separate questions. `store_current`: has the entity changed
+                # since it was pushed (plan would say `update`)? `body`: is the
+                # card what the entity renders to NOW -- matches, cosmetic, or
+                # differs? `differs` with store_current false is the ordinary
+                # "entity moved on" case; `differs` with store_current TRUE means
+                # the product changed the content, which is the one to look at.
+                "store_current": dv.get("content_hash") == content_hash(e),
+                "body": state,
+                "description": body,
+            })
+
+        orphans = [{"card_id": cid, "card_type": h.get("card_type"), "title": h.get("title")}
+                   for cid, h in listed.items() if cid not in known]
+    finally:
+        client.close()
+
+    out = {
+        "week": args.week,
+        "repo": repo_label,
+        "endpoint": MCP_ENDPOINT,
+        "server": client.server,
+        "session": {"handshake_attempts": client.attempts, "reinits": client.reinits},
+        "fetched_at": utc_now(),
+        "listing": {"tag": f"repo:{repo_label}", "cards": len(listed),
+                    "complete": listing_complete},
+        "counts": {
+            "entities": len(ents),
+            "fetched": len(cards),
+            "unpushed": len(unpushed),
+            "not_found": len(not_found),
+            "orphans": len(orphans),
+            "tracer": dict(sorted(
+                {t: sum(1 for c in cards if c["tracer"] == t) for t in
+                 ("intact", "escaped", "missing")}.items())),
+            "body": dict(sorted(
+                {s: sum(1 for c in cards if c["body"] == s) for s in
+                 ("matches", "cosmetic", "differs")}.items())),
+            "store_current": sum(1 for c in cards if c["store_current"]),
+        },
+        "cards": cards,
+        "unpushed": unpushed,
+        "not_found": not_found,
+        "orphans": orphans,
+    }
+    blob = json.dumps(out, indent=2, ensure_ascii=False) + "\n"
+    if args.out:
+        os.makedirs(os.path.dirname(os.path.abspath(args.out)) or ".", exist_ok=True)
+        with open(args.out, "w") as fh:
+            fh.write(blob)
+        c = out["counts"]
+        print(f"fetched {c['fetched']}/{c['entities']} cards for {repo_label} {args.week or ''} "
+              f"-> {args.out}\n  tracer {c['tracer']} · body vs render "
+              f"{c['body']} · unpushed {c['unpushed']} · not found "
+              f"{c['not_found']} · orphans under tag {c['orphans']}"
+              + ("" if listing_complete else "  (listing hit the 100-card cap; orphans may be undercounted)"),
+              file=sys.stderr)
+    else:
+        sys.stdout.write(blob)
+
+
 def cmd_record(args, repo, cfg, sdir):
     p = entity_path(sdir, args.id)
     if not os.path.isfile(p):
@@ -825,6 +1241,16 @@ def main():
     p.add_argument("--ours", default=None, help="local summary (default: the week's file)")
     p.add_argument("--json", action="store_true")
     p.set_defaults(fn=cmd_compare)
+
+    p = sub.add_parser("fetch", parents=[common],
+                       help="read a week's cards back from DeepVista into a JSON file (headless)")
+    p.add_argument("--week")
+    p.add_argument("--all", action="store_true")
+    p.add_argument("--out", default=None, help="write here instead of stdout")
+    p.add_argument("--npx", default=None, help="npx to run the mcp-remote proxy with")
+    p.add_argument("--timeout", type=int, default=90, help="seconds to wait per call")
+    p.add_argument("--force", action="store_true", help="read even if deepvista.enabled is false")
+    p.set_defaults(fn=cmd_fetch)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")
     p.add_argument("--id", required=True)

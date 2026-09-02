@@ -63,7 +63,7 @@ reads. Edit canon, never a copy.
 | Skill | What it does |
 |---|---|
 | `catchup` | Per-repo weekly: extract entities from a week, then summarize from them. **Source of truth** — deployed into other repos with its `deploy.py`, so edit it here and redeploy |
-| `rollup` | Cross-repo summary-of-summaries. Output is private by construction |
+| `rollup` | Cross-repo summary-of-summaries, with DeepVista as the control: reads each syncing repo's cards back and diffs coverage against the local summaries. Output is private by construction |
 | `fnr` | The public weekly, written under the scrub policy |
 
 When the human names a skill, **invoke it through its front door** rather than

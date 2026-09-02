@@ -627,14 +627,28 @@ uv run $SKILL/deepvista_cards.py record --repo . --id <entity-id> --card-id <ret
 The free tier is 100 credits a month, and re-pushing an unchanged card spends
 one to change nothing.
 
-## Step 5b (optional): Read the week back from DeepVista
+## Step 5b (optional): Read the week back from DeepVista — the control
 
 Only where the sync is on and the week has been pushed. The cards hold the same
-entities, so DeepVista is a second reader of the same evidence — fetch the
-week's cards, have a summary written from them, and diff the coverage:
+entities, so DeepVista is a second reader of the same evidence. Reading them
+back is scripted and **headless**: once the `mcp-remote` proxy has cached a
+sign-in, `fetch` spawns it and pulls the week's cards into one file, with a
+fidelity read per card.
 
 ```bash
-uv run $SKILL/deepvista_cards.py compare <week> --repo . --against dv-summary.md
+uv run $SKILL/deepvista_cards.py fetch --repo . --week 2026-W35 --out deepvista-cards.json
+```
+
+It reports, per card, whether the `<!-- catchup-entity -->` tracer survived
+(`intact` / `escaped` / `missing`) and whether the body is what the entity
+renders to now (`matches` / `cosmetic` / `differs`) — and, for the repo as a
+whole, entities never pushed, cards the store has forgotten (**orphans** under
+the `repo:` tag, which is what a rename after a push leaves behind), and cards
+that no longer exist. Then have a summary written **from that file alone**, in
+this skill's own shape, and diff the coverage:
+
+```bash
+uv run $SKILL/deepvista_cards.py compare <week> --repo . --against deepvista-summary.md
 ```
 
 The two buckets worth reading are **only the DeepVista summary** (the local one
@@ -642,6 +656,14 @@ left something out — judgment or omission?) and **covered by neither** (both
 writers passed over it independently, which is either agreement or a shared
 blind spot). Pull the better version *by entity*, into the local file — that is
 the one under version control and the one the scrub policy has been applied to.
+
+**Where this normally runs is the aggregator, not here.** A repo can run its own
+read, but the cross-repo `rollup` runs `fetch` and `compare` for every repo that
+syncs, in one pass, and files the results beside the sources it snapshotted —
+so the control lands where the week is read across repos, and one summary of
+the summaries can say what each reader missed. This skill keeps the two
+commands because the repo that owns the entities owns the read of them; the
+rollup calls this script *in that repo* rather than re-implementing it.
 
 ## Step 6: Report
 

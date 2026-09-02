@@ -3,9 +3,11 @@
 Pushes catchup **entities** into [DeepVista](https://deepvista.ai) as context
 cards. Off unless a repo's config sets `deepvista.enabled: true`.
 
-Status: **prototype.** The card shape and the create/update/skip cycle are
-built and tested locally; what has not been exercised is a live account. The
-open questions are listed at the bottom.
+Status: **live, both directions.** The push was exercised against a live
+account on 2026-09-02 (see *First live push*), and the read-back — `fetch`,
+headless through the proxy — the same day, on 74 cards across two repos (see
+*Reading the week back*). The push half is still model-driven; the read half
+is a script.
 
 ## Why one card per entity
 
@@ -218,14 +220,65 @@ Once a week's cards are pushed, DeepVista holds the same entities the local
 store does — which makes it a second reader of the same evidence, and a way to
 find out what the local summary missed.
 
-1. Fetch the week's cards through the MCP search tool
-   (`tag:repo:<label>` plus the week), and have the model write a summary from
-   what comes back, in the format `SKILL.md` describes. Save it to a file.
-2. Diff the coverage:
+1. Fetch the week's cards — scripted, and headless once the proxy has a token:
 
 ```bash
-uv run scripts/deepvista_cards.py compare 2026-W35 --repo . --against dv-summary.md
+uv run scripts/deepvista_cards.py fetch --repo . --week 2026-W35 --out deepvista-cards.json
 ```
+
+2. Have a summary written from that file **alone**, in the format `SKILL.md`
+   describes, without the local summary or the store open. Save it beside it.
+3. Diff the coverage:
+
+```bash
+uv run scripts/deepvista_cards.py compare 2026-W35 --repo . --against deepvista-summary.md
+```
+
+### How `fetch` reads headlessly
+
+`fetch` spawns `npx -y mcp-remote <endpoint>` itself and speaks JSON-RPC to it
+over stdio — the same proxy the `.mcp.json` entry names, started by the script
+rather than by the host app. That works without a human because the proxy
+caches its OAuth token under `~/.mcp-auth` after one browser sign-in; from then
+on any process that starts it gets a session. Three things learned making it
+run:
+
+- **The cache can be half-finished.** `~/.mcp-auth/mcp-remote-v1/` held a
+  `_client_info.json` and a `_code_verifier` but no `_tokens.json` — a sign-in
+  that was started and never completed. That looks cached and is not. The
+  tokens file is the thing to look for; when it is absent, the proxy prints the
+  authorization URL and waits, and `fetch` surfaces that URL rather than timing
+  out silently.
+- **PATH's `npx` is not necessarily the one that can run it.** The machine this
+  was built on had npm 6's `npx` first on PATH and npm 11's under Homebrew.
+  `fetch` resolves an `npx` of version 7+ across PATH and the well-known install
+  locations for its *own* subprocess — that path is never written into a repo
+  file, so it can be machine-specific in a way `.mcp.json` cannot.
+- **A session can go missing between `initialize` and the first call.** The
+  client re-initializes once on the same proxy before giving up, and the output
+  records `session_reinits` so a run that needed it is distinguishable from one
+  that did not.
+
+### What the read reports, and what each state means
+
+The read is a fidelity check on the push as much as a second summary. Per card:
+
+| Field | States | Meaning |
+|---|---|---|
+| `tracer` | `intact` / `escaped` / `missing` | Whether the `<!-- catchup-entity -->` comment still points at its entity. `escaped` is the links-only pass's HTML-escaping (see the gotchas) — still the right card, no longer byte-identical |
+| `body` | `matches` / `cosmetic` / `differs` | Against what the entity renders to now. `cosmetic` is markdown escaping and blank lines the bridge did not send (`*[grade]*` back as `*\[grade\]*`) — content-identical, normalised away. `differs` with `store_current: true` is the one to look at; with the store moved on it is the ordinary post-push edit and `plan` will say `update` |
+
+And per repo: **unpushed** entities of the week, **orphans** — cards under the
+`repo:` tag that no entity points at — and cards that no longer exist.
+
+The orphan case is the instructive one: an entity renamed locally after a push
+leaves the store with an entity that has no card and DeepVista with a card that
+has no entity, and the next push creates the twin. **A rename after a push needs
+the card id carried across** (`record` on the new id) or the old card deleted;
+`fetch` lists both halves so the pair is visible.
+
+Findings from actual runs — counts, which entities, what the product did on a
+given day — belong in the private layer, not here.
 
 It reports four buckets, and only the last two are interesting:
 
