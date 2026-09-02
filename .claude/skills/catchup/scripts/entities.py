@@ -1440,6 +1440,25 @@ def _dig(blob, path):
     return cur
 
 
+def _in_meeting_ids(ents, week):
+    """Entity ids that a meeting this week names -- as attendee or as subject.
+
+    "How many organizations did we encounter" is a different question from "how
+    many meetings happened", and for a repo whose meetings are events it is the
+    more useful one: one event, four companies. Derived from the meeting rather
+    than tagged on the company, for the same reason attendance is -- a tag is a
+    discipline, a link is a fact.
+    """
+    out = set()
+    for e in ents:
+        if e.get("type") != "meeting":
+            continue
+        entry = (e.get("weeks") or {}).get(week) or {}
+        out.update(entry.get("attendees") or [])
+        out.update(e.get("links") or [])
+    return out
+
+
 def _count_entities(ents, week, spec):
     """How many of this week's entities match a stat spec.
 
@@ -1458,6 +1477,8 @@ def _count_entities(ents, week, spec):
         if spec.get("status") and e.get("status") != spec["status"]:
             continue
         if spec.get("new") and min(e.get("weeks") or {week: 1}) != week:
+            continue
+        if spec.get("in_meeting") and e["id"] not in _in_meeting_ids(ents, week):
             continue
         n += 1
     return n
