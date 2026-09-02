@@ -296,13 +296,63 @@ def render_body(e, titles, repo_label):
     return "\n".join(lines).strip() + "\n"
 
 
-def build_tags(e, cfg, repo_label):
+# Free-text contact words a person entity may carry. They are stripped and
+# replaced by the DERIVED `contact:` tag below, because a hand-typed one goes
+# stale the moment a meeting is recorded and nothing reconciles it: one person
+# shipped tagged `contacted`, `meeting-upcoming` AND `not-met` at the same time.
+_CONTACT_WORDS = {"met", "not-met", "notmet", "contacted", "meeting-upcoming", "prep"}
+
+
+def contact_state(e, all_entities):
+    """met / contacted / prepped / none -- DERIVED from the meeting entities.
+
+    The summary already derives this and the card must not be allowed to
+    disagree with it: "have I met this person" is the single most useful field
+    on a person card, and a card that answers it from a hand-typed tag answers
+    it wrong. Same rule as the renderer -- to mark someone met, record the
+    meeting.
+    """
+    if e.get("type") != "person":
+        return None, None
+    met = prep = None
+    for m in all_entities:
+        if m.get("type") != "meeting":
+            continue
+        is_prep = "prep" in (m.get("tags") or [])
+        for wk in (m.get("weeks") or {}).values():
+            if e["id"] not in (wk.get("attendees") or []):
+                continue
+            d = wk.get("date") or ""
+            if is_prep:
+                prep = max(prep or "", d)
+            else:
+                met = max(met or "", d)
+    if met is not None:
+        return "met", met or None
+    if prep is not None:
+        return "prepped", prep or None
+    tags = set(e.get("tags") or [])
+    if "meeting-upcoming" in tags:
+        return "meeting-upcoming", None
+    if "contacted" in tags:
+        return "contacted", None
+    return "not-met", None
+
+
+def build_tags(e, cfg, repo_label, all_entities=()):
     dv = (cfg.get("deepvista") or {})
     tags = set(dv.get("tags") or ["catchup"])
     tags.add(f"repo:{repo_label}")
     tags.add(f"category:{e.get('category')}")
     tags.add(f"entity:{e['id']}")
-    tags.update(e.get("tags") or [])
+    own = set(e.get("tags") or [])
+    state, when = contact_state(e, all_entities)
+    if state:
+        own -= _CONTACT_WORDS
+        tags.add(f"contact:{state}")
+        if when:
+            tags.add(f"met:{when}")
+    tags.update(own)
     return sorted(t for t in tags if t)
 
 
@@ -504,6 +554,10 @@ def cmd_doctor(args, repo, cfg, sdir):
 
 def cmd_plan(args, repo, cfg, sdir):
     ents = load_all(sdir)
+    # Contact state is derived from the meeting entities, so derivation must see
+    # ALL of them -- a --week or --category filter would otherwise hide the very
+    # meeting that proves someone was met, and the card would ship "not-met".
+    all_ents = list(ents)
     if args.week:
         ents = [e for e in ents if args.week in (e.get("weeks") or {})]
     elif not args.all:
@@ -564,7 +618,7 @@ def cmd_plan(args, repo, cfg, sdir):
                 "type": type_map.get(e.get("type"), "note"),
                 "title": e["title"],
                 "description": render_body(e, titles, repo_label),
-                "tags": build_tags(e, cfg, repo_label),
+                "tags": build_tags(e, cfg, repo_label, all_ents),
                 "status": card_status(dv_cfg),
             },
         }

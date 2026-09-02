@@ -345,6 +345,12 @@ def normalize(raw, week, grades=None):
         "open_prs": sorted({int(p) for p in (raw.get("open_prs") or []) if str(p).isdigit()}),
         "paths": sorted({str(p) for p in (raw.get("paths") or []) if str(p).strip()}),
         "people": sorted({str(p).strip() for p in (raw.get("people") or []) if str(p).strip()}),
+        # WHO WAS IN THE ROOM, as entity ids. Distinct from `links`, which is
+        # relatedness -- a meeting links its company, the people discussed in
+        # it, and any commitment it created. Deriving attendance from `links`
+        # marks everyone mentioned as met: it once reported an absent
+        # mentor and an explicitly-unmet CTO as both having been in the room.
+        "attendees": sorted({str(a).strip() for a in (raw.get("attendees") or []) if str(a).strip()}),
         # What the conversation PRODUCED, kept apart from what it said. A
         # meeting note that only narrates is a transcript; the reason anyone
         # re-reads one before the next call is to find what they promised and
@@ -1220,7 +1226,7 @@ def cmd_render(args, repo, cfg, sdir):
             is_prep = "prep" in (m.get("tags") or [])
             for wk in (m.get("weeks") or {}).values():
                 d = wk.get("date") or ""
-                for pid in (m.get("links") or []):
+                for pid in (wk.get("attendees") or []):
                     tgt = prepped if is_prep else met_on
                     tgt[pid] = max(tgt.get(pid, ""), d)
         def contact(e):
