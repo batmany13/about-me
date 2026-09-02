@@ -25,7 +25,7 @@ The Monday-morning weekly.  Bruce left Netflix in August 2026 and is on a "no-br
 
 | Layer | Where | Audience | Contains |
 |---|---|---|---|
-| **Ground truth** | `.claude/catchups/<week>.md` inside each source repo | Bruce only | Everything. Names, decisions, hashes, dispositions. |
+| **Ground truth** | `<catchup output dir>/<week>.md` inside each source repo (`catchup/` by default) | Bruce only | Everything. Names, decisions, hashes, dispositions. |
 | **Public weekly** | `fnr/<week>.md` in about-me | The internet | What survives the scrub policy. |
 
 The source-repo catchups are the record.  The public file is a *derivative* of them — never write the public file from the raw pull directly, because the intermediate step is where the thinking happens.
@@ -132,7 +132,7 @@ More than 4 weeks resolved?  Confirm before running — each week is a real amou
 ## Step 2 — Pull the raw material
 
 ```bash
-python3 .claude/skills/fnr/scripts/pull_week.py 2026-W34 > /tmp/fnr_week.json
+uv run .claude/skills/fnr/scripts/pull_week.py 2026-W34 > /tmp/fnr_week.json
 ```
 
 Emits per-repo commits (author-filtered), PR numbers, the directories that moved, attended calendar events, and lane totals.  It collects; it does not judge.  `--this-week` for the in-progress week, `--today YYYY-MM-DD` to test against a fixed date.
@@ -142,7 +142,7 @@ Emits per-repo commits (author-filtered), PR numbers, the directories that moved
 - `git show --stat <sha>` in the source repo for any commit whose subject is ambiguous
 - **Event registry fields describe the PLAN, not what happened.**  `format`, `venue`, and the entity list are written *before* the event and are often wrong afterward — one entry said "one-table sit-down dinner" for what turned out to be a room of founders mingling.  Never describe the shape or feel of a room from the registry.  State the facts the registry is reliable for (name, host, date, public link) and ask him what it was actually like.
 - Read the event **prep files** (`prep_file` in the events output).  These carry the actual conversations, questions, and follow-ups — the richest source for the founders section, and also the most sensitive material in the whole corpus
-- Read existing `.claude/catchups/` in the source repos if the week is already summarized there — the fund repo has run this convention since March 2026; don't redo work
+- Read the existing catchup output in the source repos if the week is already summarized there (`catchup/`, or that repo's `output.dir`; older weeks may still sit under `.claude/catchups/`) — the fund repo has run this convention since March 2026; don't redo work
 - Check `git log` in about-me itself for writing done that week
 - **Read `fnr/.private/drafts/<this-week>.wip.md` if it exists** — the forward draft he started last Monday.  Its stated outcomes and running notes are the highest-value input you have, because they contain what he was *trying* to do and what happened outside version control.  Open draft 1 by comparing intent against result.
 - **Pull the vetting queue** for `On the Bench` from **two** sources — read both, the second one especially:
@@ -211,7 +211,7 @@ Twenty-odd corrections across both repos, and almost all shared one grammar: *X 
 
 For every repo with commits that week, invoke its `.claude/skills/catchup/SKILL.md` (or `/catchup`) with the week.  Each one knows its own conventions, and they differ in ways that matter: the fund repo splits highlights by author and renders every contributor's header even when one has zero commits; the single-author repos have no split section at all.  Reimplementing the format here produces a file that looks right and violates the repo's own convention.
 
-The result lands at `<repo>/.claude/catchups/<YYYY-WNN>.md`, **unscrubbed** — Bruce's own record, in his own private repo.  That skill also commits it and opens a PR on that repo (its final step); let it.
+The result lands at `<repo>/catchup/<YYYY-WNN>.md` (or wherever that repo's `output.dir` points), **unscrubbed** — Bruce's own record, in his own private repo.  That skill also commits it and opens a PR on that repo (its final step); let it.
 
 **If a repo has no `catchup` skill, port one** rather than hand-writing the file.  Copy the structure from the fund repo's `.claude/skills/catchup/SKILL.md` and adapt two things: the highlight categories in Step 3, and whether an author split applies.  The other two repos were ported this way on 2026-08-22.
 
@@ -374,7 +374,7 @@ _Part of a [no-break career break](../roles.md). How these are made: [fnr/README
   - **PRs:** `prs_merged_publishable`, gh-backed.  **Not** the subject-parsed `prs` list — that scrapes `#NN` from commit subjects and catches cross-repo references and mentions (W34: it read 37 where GitHub said 24).  Keep that list for *naming* PRs in a catchup.
   - **Open:** `prs_open_now_publishable`.  In-progress work is real work; without it a week spent deep inside something large reads as a light week.
   - **Per-day:** mainline commits ÷ 7.
-  - **Lines changed: usually don't.**  Checked for W34 and it was +700k in the tech repo, of which 411k was `corpus/labs` — generated research output, plus the repo split moving files between repos. It measures generation and migration, not authorship. Only include it on a week where the number would mean something, and never as a headline.
+  - **Lines changed: usually don't.**  Checked for W34 and it was +700k in the tech repo, of which 411k was generated research output, plus the repo split moving files between repos. It measures generation and migration, not authorship. Only include it on a week where the number would mean something, and never as a headline.
   - **Work repos only** (`lane` of `build` or `fund`).  The line sits under **Building**; the writing lane isn't building.
   - If the commit split and the PR split disagree materially, that belongs in the prose above, not in the line.  W34 was 72/28 by commits and 24/24 by PRs — the tech PRs were simply much larger.
 - **`disclosure` and `public_stats` are different questions.**  `disclosure` governs whether a repo may be NAMED; `public_stats` governs whether its volume feeds the stat line.  The personal repo is `described` and `public_stats: false` — nameable in moderation, never counted.  Don't infer one from the other.

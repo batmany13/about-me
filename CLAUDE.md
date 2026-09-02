@@ -10,6 +10,49 @@ This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seve
 
 **Purpose**: A living document that Bruce updates over time — not a static site. Think of it as a public "operating manual" for how Bruce leads and thinks.
 
+## Working in this repo
+
+**Worktrees are the only edit surface for agent sessions.** Leave the main
+checkout on `main`, untouched. Create a dedicated feature branch in a worktree
+under `.claude/worktrees/<name>` and make every change there.
+
+```bash
+git -C <repo> pull origin main
+git -C <repo> worktree add -b <branch> .claude/worktrees/<name>
+```
+
+- **Never commit or push directly to `main`.** Commit incrementally on the
+  feature branch, then push that branch.
+- **Open or update a PR for every change**, and keep its title and body matching
+  the branch's actual scope.
+- **Agents never merge pull requests.** Stop at the open PR and hand it over;
+  merging is a human action.
+- Clean the worktree up after the PR lands: `git worktree remove <path>`.
+
+### Python runs through `uv`
+
+**`uv run <script>`, never `python3 <script>`** — matching the source repos.
+
+```bash
+uv run .claude/skills/catchup/scripts/pull_week.py --repo . --list-weeks
+```
+
+Every script here carries a [PEP 723](https://peps.python.org/pep-0723/) header
+declaring `requires-python` and its dependencies, so `uv run` resolves an
+interpreter and an environment on its own. There is no virtualenv to activate,
+no project to install, and nothing to keep in sync — which is what makes these
+scripts safe to copy into another repo and run there unchanged.
+
+They are deliberately **stdlib-only**. A skill that has to be copied between
+repos should not carry a dependency list that has to be copied with it, so
+`dependencies = []` is a constraint on the code, not a description of it. If a
+script ever needs a third-party package, declare it in that script's own header
+rather than adding a project file to this repo.
+
+This mirrors the rule already codified in the source repos the weekly reads, and
+it is the same rule here — a public repo is the last place to be editing `main`
+directly.
+
 ## Content Map
 
 | File | What it contains |
@@ -21,6 +64,10 @@ This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seve
 | `fnr/README.md` | What Field Notes & Reflections is, the F&R pun, and the two-layer public/private model |
 | `fnr/<YYYY-WNN>.md` | One public weekly per ISO week, published Mondays about the week that just closed |
 | `fnr/.private/` | **A separate private repo** — [about-me-private](https://github.com/batmany13/about-me-private) — cloned into this gitignored path. Holds `repos.json` (which repos the weekly reads), `scrub_policy.md` (what may be published), and the unscrubbed drafts. Never commit its contents here, never quote it in public files |
+| **.claude/skills/** | |
+| `.claude/skills/catchup/` | **Source of truth** for the repo-agnostic `catchup` skill, deployed into other repos with its `deploy.py`. Two passes: extract entities from a week, then summarize from them. Nothing repo-specific lives in it — that goes in each repo's `.claude/catchup.config.json` |
+| `.claude/skills/rollup/` | The summary-of-summaries: reads every registered repo's week records and entities and merges them into one cross-repo view. Private output only |
+| `.claude/skills/fnr/` | The public weekly — see **Writing the weekly** below |
 | **leadership/** | |
 | `leadership/managing.md` | People leadership guide: culture, growing/retaining/hiring/parting with people |
 | `leadership/1x1s.md` | Detailed 1x1 methodology with 5 types of 1x1s and sample agendas |
@@ -86,6 +133,42 @@ This is Bruce Wang's personal leadership knowledge base. Bruce spent nearly seve
 - Keep the three sections: Passions, Unique Advantages, Growth Areas
 - Be honest and reflective — this is meant to be transparent
 
+### Catching up on a repo, and rolling up across repos
+
+Three layers, each with one producer. Don't let a later layer re-derive what an
+earlier one already established — two producers of the same number is how they
+start disagreeing.
+
+| Layer | Skill | Reads | Writes |
+|---|---|---|---|
+| Per repo | `catchup` | that repo's git log + merged PRs | `<output.dir>/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo**, top level by default |
+| Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md` — **private** |
+| Public | `fnr` | the rollup, under the scrub policy | `fnr/<W>.md` — public |
+
+`catchup` is **deployed** into other repos, not run from here:
+
+```bash
+.claude/skills/catchup/scripts/deploy.py /path/to/repo --config
+```
+
+Edit it here and redeploy — but **the copies go both ways**, because defects
+turn up where the skill *runs*, not where it is edited:
+
+```bash
+.claude/skills/catchup/scripts/deploy.py <repo> --check      # has it drifted?
+.claude/skills/catchup/scripts/deploy.py <repo> --pull-back  # carry a fix home
+```
+
+`--pull-back` overwrites canon with the copy, so review the resulting `git diff`
+before committing — pulling back from a target that is *behind* would regress
+the source. Never let another runtime hold a second copy either: `.agents/skills`
+must be a symlink, not a directory, and `deploy.py` reports which state a repo
+is in after every deploy.
+
+`rollup` output carries repo names and unscrubbed notes, so it is **private by
+construction**. Repo names live in `fnr/.private/repos.json` and nowhere else in
+this repo.
+
 ### Writing the weekly (fnr/)
 Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-write these — the skill exists so the scrub policy is applied consistently.
 
@@ -94,7 +177,7 @@ Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-writ
    **Never reconstruct `repos.json` or `scrub_policy.md` from memory or from a conversation** — clone the reviewed copy.
 1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
 2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
-3. Write the **unscrubbed** catchup into each source repo's `.claude/catchups/<week>.md`
+3. Write the **unscrubbed** catchup into each source repo's `<output.dir>/<week>.md` (`catchup/` by default)
 4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
 5. Report the scrub delta — what was held back, by category
 
