@@ -50,10 +50,13 @@ The skill's **source of truth stays in the public repo**, and it is deployed
 here like any other:
 
 ```bash
-uv run .claude/skills/rollup/scripts/deploy.py <private-repo>
-uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --check      # drifted?
-uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --pull-back  # carry a fix home
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --branch <name>   # into a worktree, on a branch
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --check           # drifted?
+uv run .claude/skills/rollup/scripts/deploy.py <private-repo> --pull-back       # carry a fix home
 ```
+
+The same rule as the catchup deploy: it lands on a branch, never in the
+private repo's main checkout, and the script refuses the latter.
 
 It finds the registry by looking rather than assuming: `repos.json` at the repo
 root when running inside the private repo, `fnr/.private/repos.json` when
@@ -293,3 +296,8 @@ then the coverage buckets — and name what goes back to which repo.
 - **Reading the coverage diff before the fidelity row.** An entity that was
   never pushed is absent from the DeepVista summary by construction, not by
   judgment.
+- **Reading a compare whose store has moved on.** The fetch and compare run
+  against the *live* repo; the snapshot is kept as captured. When the two have
+  parted, the control row says `store moved on since capture` — either
+  `--recapture` so both sides are current, or read the buckets as
+  live-store-vs-captured-summary and say so in the rollup.

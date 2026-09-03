@@ -85,12 +85,37 @@ from entities import (  # noqa: E402
 # app owns the token, so re-auth happens on the app's terms, not `~/.mcp-auth`'s.
 MCP_SERVER_NAME = "deepvista"
 MCP_ENDPOINT = "https://api.deepvista.ai/mcp"
-MCP_ENTRY_PROXY = {"command": "npx", "args": ["-y", "mcp-remote", MCP_ENDPOINT]}
+# The proxy is PINNED. `npx -y mcp-remote` resolves to whatever npm published
+# last, and this script hands that code a cached OAuth token and reads private
+# card bodies through it -- an unpinned package there is a supply-chain hole
+# with a login attached. Bump deliberately, in one place, after reading the
+# release; `install-mcp --force` re-pins an entry that predates the pin.
+MCP_REMOTE_PKG = "mcp-remote@0.8.3"
+MCP_ENTRY_PROXY = {"command": "npx", "args": ["-y", MCP_REMOTE_PKG, MCP_ENDPOINT]}
 # npm 6's npx cannot run the proxy entry: it does not understand `-y`.
 MCP_MIN_NPX = 7
 MCP_ENTRY_HTTP = {"type": "http", "url": MCP_ENDPOINT}
 MCP_ENTRIES = {"mcp-remote": MCP_ENTRY_PROXY, "http": MCP_ENTRY_HTTP}
 MCP_RELPATH = ".mcp.json"
+
+
+def entry_form(entry):
+    """Which transport an .mcp.json entry is, ignoring the proxy's pin.
+
+    An exact match against MCP_ENTRIES is too strict once the proxy package is
+    pinned: a repo carrying the pre-pin `mcp-remote` entry is the SAME form at a
+    different version, not a different transport, and should be told to re-pin
+    rather than that it conflicts.
+    """
+    if not isinstance(entry, dict):
+        return None
+    if entry.get("type") == "http" and entry.get("url") == MCP_ENDPOINT:
+        return "http"
+    args = entry.get("args") or []
+    if (entry.get("command") == "npx" and MCP_ENDPOINT in args
+            and any(str(a).split("@")[0] == "mcp-remote" for a in args)):
+        return "mcp-remote"
+    return None
 MCP_MIN_NODE = 18
 
 
@@ -235,7 +260,7 @@ class McpClient:
         # node child npx spawns. Terminating npx alone left the proxy running
         # after the first probes.
         self.proc = subprocess.Popen(
-            [self.npx, "-y", "mcp-remote", self.endpoint],
+            [self.npx, "-y", MCP_REMOTE_PKG, self.endpoint],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True, bufsize=1, start_new_session=True)
         self._lines = []          # stdout, JSON-RPC
@@ -605,7 +630,7 @@ def cmd_install_mcp(args, repo, cfg, sdir):
     key, entry, why = choose_transport(args.transport)
 
     if args.scope == "user":
-        cmd = (f"claude mcp add {MCP_SERVER_NAME} -- npx -y mcp-remote {MCP_ENDPOINT}"
+        cmd = (f"claude mcp add {MCP_SERVER_NAME} -- npx -y {MCP_REMOTE_PKG} {MCP_ENDPOINT}"
                if key == "mcp-remote" else
                f"claude mcp add --transport http {MCP_SERVER_NAME} {MCP_ENDPOINT}")
         print(f"Transport: {key} ({why})\n")
@@ -638,11 +663,15 @@ def cmd_install_mcp(args, repo, cfg, sdir):
         # common case for this branch is a repo carrying the entry for a
         # transport this machine cannot run -- which is a one-flag fix, not a
         # mystery worth reading the source over.
-        other = next((k for k, v in MCP_ENTRIES.items() if v == existing), None)
-        hint = (f"\nThat is the {other} form and this machine resolved to {key}."
-                f"\nRe-run with --force to switch it, or --transport {other} to keep it."
-                if other and other != key else
-                "\nLeaving it alone -- pass --force to replace it.")
+        other = entry_form(existing)
+        if other == key == "mcp-remote":
+            hint = (f"\nSame proxy form, different package pin -- this skill pins "
+                    f"{MCP_REMOTE_PKG}.\nRe-run with --force to re-pin it.")
+        elif other and other != key:
+            hint = (f"\nThat is the {other} form and this machine resolved to {key}."
+                    f"\nRe-run with --force to switch it, or --transport {other} to keep it.")
+        else:
+            hint = "\nLeaving it alone -- pass --force to replace it."
         die(f"{MCP_SERVER_NAME} is already in {MCP_RELPATH} with different settings:\n"
             f"  {json.dumps(existing)}\n"
             f"expected:\n  {json.dumps(entry)}" + hint)
@@ -718,8 +747,12 @@ def cmd_doctor(args, repo, cfg, sdir):
             print(f"        -> run: install-mcp --repo {repo}")
             ok = False
         else:
-            key = next((k for k, v in MCP_ENTRIES.items() if v == entry), None)
+            key = entry_form(entry)
             print(f"  OK    {MCP_SERVER_NAME} -> {json.dumps(entry)}")
+            if key == "mcp-remote" and entry != MCP_ENTRY_PROXY:
+                print(f"  note  the proxy is not pinned to {MCP_REMOTE_PKG}; the host app will")
+                print("        run whatever npm publishes next, with the cached sign-in.")
+                print(f"        -> install-mcp --repo {repo} --force   (re-pins it)")
             if key is None:
                 print("  note  that is neither known form; it may still be valid, but this")
                 print("        script cannot vouch for it.")
@@ -905,7 +938,7 @@ def cmd_plan(args, repo, cfg, sdir):
     }, indent=2))
 
 
-def _mentions(text, entity):
+def _mentions(text, entity, week=None):
     """Whether a summary actually refers to this entity.
 
     Title first, then the distinctive half of the id -- a summary that says
@@ -920,8 +953,14 @@ def _mentions(text, entity):
     # every "What we learned" bullet with the claim sentence and carries the
     # title nowhere. Title-only matching scored all four concept rows of the
     # first control run as "only the DeepVista summary" when the local one had
-    # every one of them, one line each. Match the claim's opening too.
-    for wk in (entity.get("weeks") or {}).values():
+    # every one of them, one line each. Match the claim's opening too -- but only
+    # THIS week's claim when a week is given. A concept that carries claims from
+    # earlier weeks would otherwise count as covered because last month's
+    # sentence is in this week's summary, which is false coverage of exactly the
+    # kind the compare exists to catch.
+    weeks = entity.get("weeks") or {}
+    scope = [weeks[week]] if week and week in weeks else list(weeks.values())
+    for wk in scope:
         claim = (wk.get("claim") or "").strip().rstrip(".").lower()
         if len(claim) > 24 and claim[:60] in low:
             return True
@@ -958,7 +997,7 @@ def cmd_compare(args, repo, cfg, sdir):
 
     rows = []
     for e in sorted(ents, key=lambda x: (x.get("type", ""), x["id"])):
-        rows.append((e, _mentions(ours, e), _mentions(theirs, e)))
+        rows.append((e, _mentions(ours, e, args.week), _mentions(theirs, e, args.week)))
 
     both = [r for r in rows if r[1] and r[2]]
     only_ours = [r for r in rows if r[1] and not r[2]]

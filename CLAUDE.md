@@ -155,11 +155,19 @@ omission to pull back into the source repo. It is also the fidelity check on
 the push — unpushed entities, orphan cards, bodies that drifted — which is
 where the first run found most of its findings.
 
-`catchup` is **deployed** into other repos, not run from here:
+`catchup` is **deployed** into other repos, not run from here — and always
+into a **branch** of the target, never its main checkout:
 
 ```bash
-.claude/skills/catchup/scripts/deploy.py /path/to/repo --config
+.claude/skills/catchup/scripts/deploy.py /path/to/repo --branch catchup-sync --config
 ```
+
+`--branch` puts the copy in a worktree of the target (`.claude/worktrees/<name>`)
+on a fresh branch; the script refuses a target that is sitting on its default
+branch, in either direction, because a deploy commits nothing and what it
+leaves in a main checkout is cruft until someone rescues it. Commit what the
+deploy leaves behind — the skill, the command file, and the `.deployed.json`
+manifest — and open a PR in that repo; the deploy is not done before that.
 
 Edit it here and redeploy — but **the copies go both ways**, because defects
 turn up where the skill *runs*, not where it is edited:
@@ -173,7 +181,8 @@ turn up where the skill *runs*, not where it is edited:
 before committing — pulling back from a target that is *behind* would regress
 the source. Never let another runtime hold a second copy either: `.agents/skills`
 must be a symlink, not a directory, and `deploy.py` reports which state a repo
-is in after every deploy.
+is in after every deploy. `rollup` has the same script at
+`.claude/skills/rollup/scripts/deploy.py`; the two files are kept identical.
 
 `rollup` output carries repo names and unscrubbed notes, so it is **private by
 construction**. Repo names live in `fnr/.private/repos.json` and nowhere else in

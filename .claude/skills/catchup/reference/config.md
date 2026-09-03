@@ -91,7 +91,7 @@ section is actually felt in:
 
 ```json
 "sections": {
-  "themes":    "500-800",           
+  "themes":    "500-800",
   "meetings":  { "bullets": "24-40" },
   "learnings": "500-800",
   "other":     "50-150"

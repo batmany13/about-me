@@ -34,12 +34,43 @@ and says which of the three cases the repo is in:
 |---|---|
 | symlink | Fine. The pointer picks up whatever was just deployed. |
 | **copied directory** | **Broken.** The other runtime reads the stale copy, not canon. |
-| absent, but `AGENTS.md` present | The other runtime cannot see the skill at all yet. |
+| absent, `AGENTS.md` routes to `.claude/skills/` | Works — by prose, so it holds only while that sentence stays true. `deploy.py` says so |
+| absent, `AGENTS.md` silent | The other runtime cannot see the skill at all yet. |
 
 `deploy.py` also writes a `.deployed.json` manifest into the target recording
 what it put there. On the next run it compares against that, so it can tell a
 target that is merely *different* from one that is *ahead* — and refuses rather
 than overwriting work the target gained after the copy.
+
+**Commit the manifest.** It names the source by commit, never by path, so it
+carries nothing machine-specific — and ignored, it exists only on the machine
+that deployed, which puts every other clone back to "unknown" and lets the next
+deploy there overwrite whatever it finds. `deploy.py` warns when a target
+ignores it.
+
+## A deploy lands on a branch, never in a main checkout
+
+`deploy.py` writes files and nothing else. It does not commit, so whatever it
+leaves in the target is the caller's to commit and put on a pull request — and
+when the target checkout was on its default branch, nobody did: three repos
+were found weeks later with an uncommitted skill sitting in their main checkout,
+and the rescue was three pull requests of files nobody could date.
+
+So the script **refuses to write into a checkout that is on its default branch**,
+in either direction (a `--pull-back` writes into the source, and the source is a
+checkout too). There is no override; the branch is the fix, and `--branch <name>`
+makes it the easy one — a worktree under `.claude/worktrees/<name>` on a fresh
+branch from origin's default, created if needed and reused if not:
+
+```bash
+uv run .claude/skills/catchup/scripts/deploy.py <repo> --branch catchup-sync
+```
+
+After a deploy the script lists what is now uncommitted and the commands to
+land it. Two more things it checks in the target, because both are how a repo
+quietly accumulates untracked files: `__pycache__/` must be ignored (running
+the scripts writes one), and `.claude/worktrees/` must be ignored (or the
+worktree itself shows up as an untracked directory in the main checkout).
 
 The fix for a copied directory is always the same:
 
