@@ -113,6 +113,72 @@ The table is the orientation pass; the JSON carries every entity body.
 cover N of M repos. A total presented as complete when a repo is missing is the
 one error this layer can make that nobody downstream can detect.
 
+**Snapshot the sources**, every run — `--snapshot rollups` files every week
+record, summary and entity set the numbers came from under `rollups/<W>/<repo>/`,
+with hashes. A snapshot that already exists is **kept**: a source that has
+moved on since capture is reported as `drift` and left as captured, because
+the rollup was built from the captured copy and a silent replacement rewrites
+its provenance. `--recapture` is the deliberate act of taking a new one.
+
+## Step 2b: The control — DeepVista
+
+The skills here produce the record. DeepVista is the **control**: each syncing
+repo has pushed its entities there as cards, and reading those cards back
+gives a second reader of the same evidence. The aggregator runs that read for
+every repo in one pass, because the question it answers — *what did each
+summary leave out, and did both leave out the same thing* — is a cross-repo
+question.
+
+```bash
+uv run .claude/skills/rollup/scripts/rollup.py 2026-W35 --snapshot rollups --control deepvista --table
+```
+
+Nothing is re-derived: for each repo whose config has `deepvista.enabled`, this
+runs *that repo's* deployed `deepvista_cards.py fetch` and, once a summary
+exists, its `compare`, and files the results beside the sources they are the
+control for:
+
+Machine files stay with the snapshot; everything a person reads goes in
+`drafts/`, beside the manual draft, so the whole DeepVista version of a week
+is in one place:
+
+| File | Produced by | What it is |
+|---|---|---|
+| `rollups/<W>/<repo>/deepvista-cards.json` | `fetch` (headless) | What DeepVista holds for the week: card bodies plus a fidelity read per card — tracer intact/escaped/missing, body matches/cosmetic/differs — and the repo's unpushed entities and orphan cards |
+| `drafts/<W>.deepvista.<repo>.md` | **you**, by hand | That repo's week written from the cards **alone**, in the catchup's shape. Write it before opening the local summary or the store, or it is not a control. (The rollup also accepts it at `rollups/<W>/<repo>/deepvista-summary.md`, for a repo running the read on its own) |
+| `rollups/<W>/<repo>/deepvista-compare.json` | `compare` | Coverage diff: covered by both, only local, only DeepVista, neither |
+| `drafts/<W>.deepvista-draft1.md` | **you**, by hand | The sum-up: the weekly's draft 1 written from the cards alone, in the same three-part shape as the manual `drafts/<W>.draft1.md` — raw material, scrub delta, public candidate with the human blocks left as prompts — and a **delta against the manual draft** at the end. This is what "the DeepVista version" means to a reader of the weekly; the per-repo files are its inputs |
+
+So the command runs **twice**: once to fetch (it reports `no deepvista-summary.md
+yet`), then again after the summaries are written, to compare. The cards file
+is reused on the second run — `--refetch` to pull again.
+
+**Read the control in this order:**
+
+1. **The fidelity row first.** Unpushed entities, orphan cards and `differs`
+   bodies are defects in the *sync*, and they bound what the summary comparison
+   can mean — a card that was never pushed cannot be covered by the DeepVista
+   summary, and scoring that as the local writer's win is wrong.
+2. **`covered_by_neither`** — in the store, in no summary. Two writers passed
+   over it independently: agreement that it does not matter, or a shared blind
+   spot. Say which.
+3. **`only_deepvista`** — the local summary left it out. Judgment or omission?
+   Pull the better version *by entity* into the local summary in the source
+   repo; never edit the summary here.
+4. `only_ours` is usually the push not carrying something. Rarely interesting.
+
+The control's own findings go in the rollup under `## Control: DeepVista`, and
+the per-repo fixes go back to the repo that owns the entity.
+
+**Then write the weekly's draft 1 from the cards**, as `drafts/<W>.deepvista-draft1.md`
+in the private repo, following the fnr skill's draft-1 rules exactly — same
+template, human blocks left as prompts, never a finished learning in his voice —
+and close it with the delta against the manual draft: what the cards
+reconstructed, what they got wrong (a card is only as current as the last
+push), and what no card could carry (the personal lane, the calendar, the
+intake queue, him). The two drafts side by side are the control's real output;
+the compare buckets are how you got there.
+
 ## Write from the rollup, never from the session
 
 **The single most likely way to get this wrong: describing the work of the
@@ -184,6 +250,13 @@ directory if absent.
 ## Carried over
 - <what is continuing, with its span>
 
+## Control: DeepVista
+| Repo | Cards | Tracer | Body | Both | Only local | Only DV | Neither |
+(from the control table; then what the buckets mean, read across repos)
+- <sync defects found: unpushed, orphans, differs — and the fix, per repo>
+- <what both summaries left out, and whether that is agreement or a blind spot>
+- <what the card-only summary carried that the local one dropped>
+
 ## For the weekly
 - <what a reader outside would find interesting — the candidates, not the copy>
 ```
@@ -197,6 +270,8 @@ public/private boundary is the whole point of keeping the layers apart.
 State the week, repos reporting out of registered, combined stats (making clear
 which are publishable), the cross-repo threads, and anything that looked
 under- or over-extracted. If any repo is missing a week record, lead with that.
+If the control ran, give its one-line verdict per repo — sync defects first,
+then the coverage buckets — and name what goes back to which repo.
 
 ---
 
@@ -212,3 +287,9 @@ under- or over-extracted. If any repo is missing a week record, lead with that.
   catchup and re-run — don't compute a second version here.
 - **Restating the per-repo summaries.** If a paragraph would be equally true in
   a single repo's catchup, it does not belong in the rollup.
+- **Writing the control summary with the local one open.** A card-only summary
+  that has seen the local file is a copy with the names changed, and the
+  coverage diff then measures nothing.
+- **Reading the coverage diff before the fidelity row.** An entity that was
+  never pushed is absent from the DeepVista summary by construction, not by
+  judgment.

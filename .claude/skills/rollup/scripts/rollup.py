@@ -361,7 +361,7 @@ def render_table(d):
     return "\n".join(out)
 
 
-def snapshot(d, out_dir):
+def snapshot(d, out_dir, recapture=False):
     """Copy everything the rollup read into one directory beside its output.
 
     Provenance: a rollup is a claim about several repos on one date, and the
@@ -369,9 +369,46 @@ def snapshot(d, out_dir):
     come from" is answerable only by re-running against a tree that has since
     changed -- which is not an answer. Weeks accumulate here, so later rollups
     can read further back than the current state of anyone's working tree.
+
+    A snapshot that already exists is KEPT, not overwritten. The first re-run
+    after the entity store had moved on -- a sync had stamped card ids onto
+    every entity and one entity had been renamed -- silently replaced the
+    entities the rollup was actually built from with a later set, one short.
+    So a file whose source has changed since capture is left as it was and
+    reported as `drift` with both hashes, and `--recapture` is the deliberate
+    act of taking a new one. The manifest keeps its original `captured` stamp
+    for the same reason.
     """
     os.makedirs(out_dir, exist_ok=True)
-    manifest = {"week": d["week"], "captured": d["generated"],
+    mpath = os.path.join(out_dir, "sources.json")
+    prior = None
+    if os.path.isfile(mpath) and not recapture:
+        try:
+            with open(mpath) as fh:
+                prior = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            prior = None
+    prior_files = {s["name"]: s.get("files") or {} for s in (prior or {}).get("sources", [])
+                   if isinstance(s, dict) and s.get("name")}
+
+    def keep_or_write(rd, fname, body, meta, name):
+        """Write a source file unless a captured one exists and the source moved."""
+        p = os.path.join(rd, fname)
+        h = hashlib.sha256(body.encode()).hexdigest()[:16]
+        was = (prior_files.get(name) or {}).get(fname)
+        if was and os.path.isfile(p) and was.get("sha256") != h:
+            print(f"rollup: {name}/{fname}: source changed since capture "
+                  f"({was['sha256']} -> {h}); keeping the captured copy. "
+                  f"--recapture to replace it.", file=sys.stderr)
+            return dict(was, drift={"now": h})
+        if not (was and os.path.isfile(p) and was.get("sha256") == h):
+            with open(p, "w") as fh:
+                fh.write(body)
+        return dict(meta, sha256=h)
+
+    manifest = {"week": d["week"],
+                "captured": (prior or {}).get("captured") or d["generated"],
+                "checked": d["generated"],
                 "repos_reporting": d["repos_reporting"],
                 "repos_registered": d["repos_registered"],
                 "totals": d["totals"], "public_totals": d["public_totals"],
@@ -387,38 +424,211 @@ def snapshot(d, out_dir):
         try:
             with open(r["record_path"]) as fh:
                 rec = fh.read()
-            with open(os.path.join(rd, "week.json"), "w") as fh:
-                fh.write(rec)
-            src_files["week.json"] = {"from": r["record_path"],
-                                      "sha256": hashlib.sha256(rec.encode()).hexdigest()[:16]}
+            src_files["week.json"] = keep_or_write(rd, "week.json", rec,
+                                                   {"from": r["record_path"]}, r["name"])
         except OSError:
             pass
         if r.get("summary_path"):
             try:
                 with open(r["summary_path"]) as fh:
                     body = fh.read()
-                with open(os.path.join(rd, "summary.md"), "w") as fh:
-                    fh.write(body)
-                src_files["summary.md"] = {"from": r["summary_path"],
-                                           "sha256": hashlib.sha256(body.encode()).hexdigest()[:16]}
+                src_files["summary.md"] = keep_or_write(rd, "summary.md", body,
+                                                        {"from": r["summary_path"]}, r["name"])
             except OSError:
                 pass
         ents = r.get("entities") or []
         if ents:
-            blob = json.dumps(ents, indent=2, sort_keys=True)
-            with open(os.path.join(rd, "entities.json"), "w") as fh:
-                fh.write(blob + "\n")
-            src_files["entities.json"] = {"count": len(ents),
-                                          "sha256": hashlib.sha256(blob.encode()).hexdigest()[:16]}
+            blob = json.dumps(ents, indent=2, sort_keys=True) + "\n"
+            src_files["entities.json"] = keep_or_write(rd, "entities.json", blob,
+                                                       {"count": len(ents)}, r["name"])
+        if r.get("missing_entity_files"):
+            src_files["missing_entity_files"] = list(r["missing_entity_files"])
         manifest["sources"].append({
             "name": r["name"], "captured": True, "lane": r.get("lane"),
             "disclosure": r.get("disclosure"), "public_stats": r.get("public_stats"),
             "path": r["path"], "files": src_files,
         })
-    with open(os.path.join(out_dir, "sources.json"), "w") as fh:
+    if prior and prior.get("control"):
+        manifest["control"] = prior["control"]
+    with open(mpath, "w") as fh:
         json.dump(manifest, fh, indent=2)
         fh.write("\n")
     return manifest
+
+
+CONTROL_CARDS = "deepvista-cards.json"
+CONTROL_SUMMARY = "deepvista-summary.md"
+CONTROL_COMPARE = "deepvista-compare.json"
+
+
+def _runner():
+    """`uv run` where it exists -- the convention every script here follows --
+    else the interpreter running this one. Both resolve a stdlib-only script."""
+    import shutil
+    uv = shutil.which("uv")
+    return [uv, "run"] if uv else [sys.executable]
+
+
+def control_deepvista(d, out_dir, refetch=False):
+    """Run the DeepVista control for every reporting repo that pushes to it.
+
+    The catchup skill pushes each repo's entities to DeepVista as cards; this
+    reads them BACK, per repo, and diffs a summary written from the cards
+    against the summary written from the store. Two readers of the same
+    evidence, and the interesting output is where they disagree.
+
+    Nothing here is re-derived. The fetch and the compare are the source repo's
+    own catchup script, run in that repo -- the aggregator reads products, it
+    does not produce them -- and the files land in the snapshot beside the
+    local sources they are the control for:
+
+        <snapshot>/<W>/<repo>/deepvista-cards.json     what DeepVista holds (fetched)
+        <snapshot>/<W>/<repo>/deepvista-summary.md     written from the cards ALONE (by hand)
+        <snapshot>/<W>/<repo>/deepvista-compare.json   coverage diff (once the summary exists)
+
+    So this runs twice by design: once to fetch, once more after the summary
+    has been written, to compare. The cards file is reused on the second run
+    unless --refetch says otherwise -- a read is free, but a control whose
+    evidence silently changed between the two runs is not a control.
+    """
+    results = []
+    for r in d["repos"]:
+        if not r.get("has_record"):
+            continue
+        entry = {"name": r["name"], "enabled": False}
+        cfg_path = os.path.join(r["path"], ".claude", "catchup.config.json")
+        try:
+            with open(cfg_path) as fh:
+                dv = (json.load(fh).get("deepvista") or {})
+        except (OSError, json.JSONDecodeError):
+            dv = {}
+        entry["enabled"] = bool(dv.get("enabled"))
+        if not entry["enabled"]:
+            results.append(entry)
+            continue
+
+        script = os.path.join(r["path"], ".claude", "skills", "catchup", "scripts",
+                              "deepvista_cards.py")
+        if not os.path.isfile(script):
+            entry["error"] = "no catchup skill deployed in this repo -- deploy it, then re-run"
+            results.append(entry)
+            continue
+        rd = os.path.join(out_dir, r["name"])
+        os.makedirs(rd, exist_ok=True)
+        cards_path = os.path.join(rd, CONTROL_CARDS)
+
+        if refetch or not os.path.isfile(cards_path):
+            p = subprocess.run(_runner() + [script, "fetch", "--repo", r["path"],
+                                            "--week", d["week"], "--out", cards_path],
+                               capture_output=True, text=True, timeout=900)
+            if p.returncode != 0:
+                entry["error"] = (p.stderr or p.stdout).strip()[-600:]
+                results.append(entry)
+                continue
+            entry["fetched"] = True
+        try:
+            with open(cards_path) as fh:
+                cards = json.load(fh)
+        except (OSError, json.JSONDecodeError) as e:
+            entry["error"] = f"unreadable {CONTROL_CARDS}: {e}"
+            results.append(entry)
+            continue
+        entry["cards"] = cards.get("counts") or {}
+        entry["fetched_at"] = cards.get("fetched_at")
+        entry["orphans"] = [o.get("title") for o in cards.get("orphans") or []]
+        entry["unpushed"] = cards.get("unpushed") or []
+
+        # The card-only summary is a draft a person writes, so it lives with the
+        # drafts -- `drafts/<W>.deepvista.<repo>.md` in the private repo, beside
+        # the manual draft 1 and the card-only weekly. The snapshot path is the
+        # fallback for a repo running the read on its own.
+        candidates = [
+            os.path.join(PRIVATE_DIR, "drafts", f"{d['week']}.deepvista.{r['name']}.md"),
+            os.path.join(rd, CONTROL_SUMMARY),
+        ]
+        summary = next((p for p in candidates if os.path.isfile(p)), None)
+        if not summary:
+            entry["compare"] = None
+            entry["next"] = (f"write {os.path.relpath(candidates[0], PRIVATE_DIR)} from "
+                             f"{CONTROL_CARDS} alone, then re-run with --control deepvista")
+            results.append(entry)
+            continue
+        entry["summary"] = os.path.relpath(summary, PRIVATE_DIR)
+        p = subprocess.run(_runner() + [script, "compare", d["week"], "--repo", r["path"],
+                                        "--against", summary, "--json"],
+                           capture_output=True, text=True, timeout=300)
+        if p.returncode != 0:
+            entry["error"] = f"compare failed: {(p.stderr or p.stdout).strip()[-600:]}"
+            results.append(entry)
+            continue
+        try:
+            cmp_ = json.loads(p.stdout)
+        except json.JSONDecodeError:
+            entry["error"] = "compare returned no JSON"
+            results.append(entry)
+            continue
+        with open(os.path.join(rd, CONTROL_COMPARE), "w") as fh:
+            json.dump(cmp_, fh, indent=2)
+            fh.write("\n")
+        entry["compare"] = {k: len(v) for k, v in cmp_.items() if isinstance(v, list)}
+        entry["compare"]["words"] = cmp_.get("words")
+        entry["only_deepvista"] = cmp_.get("only_deepvista") or []
+        entry["covered_by_neither"] = cmp_.get("covered_by_neither") or []
+        results.append(entry)
+
+    # Into the manifest, beside the sources it is the control FOR.
+    mpath = os.path.join(out_dir, "sources.json")
+    try:
+        with open(mpath) as fh:
+            manifest = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        manifest = {"week": d["week"]}
+    manifest["control"] = {"deepvista": {
+        "run": dt.datetime.now().isoformat(timespec="seconds"),
+        "files": [CONTROL_CARDS, CONTROL_SUMMARY, CONTROL_COMPARE],
+        "repos": results,
+    }}
+    with open(mpath, "w") as fh:
+        json.dump(manifest, fh, indent=2)
+        fh.write("\n")
+    return results
+
+
+def render_control(results):
+    out = ["  == control: DeepVista ==",
+           f"  {'repo':<16}{'cards':>6}  {'tracer i/e/m':<14}{'body m/c/d':>12}  "
+           f"{'both':>5}{'local':>6}{'dv':>4}{'none':>5}  note"]
+    for e in results:
+        if not e.get("enabled"):
+            out.append(f"  {str(e['name']):<16}{'':>6}  {'':<14}{'':>12}  {'':>5}{'':>6}{'':>4}{'':>5}  sync off")
+            continue
+        if e.get("error"):
+            out.append(f"  {str(e['name']):<16}  ERROR {e['error'].splitlines()[-1][:80]}")
+            continue
+        c = e.get("cards") or {}
+        tr = c.get("tracer") or {}
+        trs = f"{tr.get('intact', 0)}/{tr.get('escaped', 0)}/{tr.get('missing', 0)}"
+        bd = c.get("body") or {}
+        bds = f"{bd.get('matches', 0)}/{bd.get('cosmetic', 0)}/{bd.get('differs', 0)}"
+        cmp_ = e.get("compare")
+        if cmp_:
+            cols = (f"{cmp_.get('covered_by_both', 0):>5}{cmp_.get('only_ours', 0):>6}"
+                    f"{cmp_.get('only_deepvista', 0):>4}{cmp_.get('covered_by_neither', 0):>5}")
+            note = ""
+        else:
+            cols = f"{'':>5}{'':>6}{'':>4}{'':>5}"
+            note = "no card-only summary yet"
+        extra = []
+        if c.get("unpushed"):
+            extra.append(f"{c['unpushed']} unpushed")
+        if c.get("orphans"):
+            extra.append(f"{c['orphans']} orphan cards under tag")
+        if c.get("not_found"):
+            extra.append(f"{c['not_found']} not found")
+        out.append(f"  {str(e['name']):<16}{c.get('fetched', 0):>6}  {trs:<14}"
+                   f"{bds:>12}  {cols}  "
+                   + "; ".join([x for x in [note] if x] + extra))
+    return "\n".join(out)
 
 
 def main():
@@ -433,7 +643,17 @@ def main():
     ap.add_argument("--snapshot", default=None,
                     help="copy every source read into this directory, with hashes")
     ap.add_argument("--today", default=None, help="override today's date (testing)")
+    ap.add_argument("--control", choices=["deepvista"], default=None,
+                    help="run a control against the snapshot: fetch each repo's cards back "
+                         "from DeepVista, and compare once its deepvista-summary.md exists")
+    ap.add_argument("--refetch", action="store_true",
+                    help="with --control: fetch again even if the cards file exists")
+    ap.add_argument("--recapture", action="store_true",
+                    help="with --snapshot: replace captured sources whose repo has moved on "
+                         "(default keeps them and reports drift)")
     args = ap.parse_args()
+    if args.control and not args.snapshot:
+        die("--control needs --snapshot: the control's files live beside the sources")
 
     today = dt.date.today()
     if args.today:
@@ -459,13 +679,19 @@ def main():
 
     if args.snapshot:
         for d in results:
-            m = snapshot(d, os.path.join(args.snapshot, d["week"]))
+            m = snapshot(d, os.path.join(args.snapshot, d["week"]), recapture=args.recapture)
             print(f"snapshot: {os.path.join(args.snapshot, d['week'])} "
                   f"({sum(1 for s in m['sources'] if s['captured'])} sources captured)",
                   file=sys.stderr)
+            if args.control == "deepvista":
+                d["control"] = {"deepvista": control_deepvista(
+                    d, os.path.join(args.snapshot, d["week"]), refetch=args.refetch)}
 
     if args.table:
         print("\n\n".join(render_table(d) for d in results))
+        for d in results:
+            if d.get("control"):
+                print("\n" + render_control(d["control"]["deepvista"]))
     else:
         print(json.dumps(results[0] if len(results) == 1 else results, indent=2))
 

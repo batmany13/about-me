@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "deepvista": {
+      "type": "http",
+      "url": "https://api.deepvista.ai/mcp"
+    }
+  }
+}
