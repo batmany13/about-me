@@ -160,11 +160,18 @@ def ensure_worktree(repo, name):
               f"(branch {current_branch(path) or 'DETACHED'})")
         return path
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    subprocess.run(["git", "-C", repo, "fetch", "-q", "origin"], capture_output=True)
     if git(repo, "rev-parse", "--verify", "-q", f"refs/heads/{name}", ok_fail=True):
         git(repo, "worktree", "add", path, name)
         print(f"worktree: checked out existing branch {name} at {os.path.relpath(path, repo)}")
+    elif git(repo, "rev-parse", "--verify", "-q", f"refs/remotes/origin/{name}", ok_fail=True):
+        # A branch that exists only on the remote -- an open PR pushed from
+        # another checkout -- is that branch, not a new one with its name. The
+        # first real run of this flag would otherwise have branched three PR
+        # names off main and deployed beside the PRs instead of into them.
+        git(repo, "worktree", "add", "--track", "-b", name, path, f"origin/{name}")
+        print(f"worktree: checked out origin/{name} at {os.path.relpath(path, repo)} (tracking)")
     else:
-        subprocess.run(["git", "-C", repo, "fetch", "-q", "origin"], capture_output=True)
         default = default_branch(repo)
         base = f"origin/{default}" if default and git(
             repo, "rev-parse", "--verify", "-q", f"refs/remotes/origin/{default}",
