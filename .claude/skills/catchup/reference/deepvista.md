@@ -1,4 +1,4 @@
-# DeepVista sync — prototype
+# DeepVista sync
 
 Pushes catchup **entities** into [DeepVista](https://deepvista.ai) as context
 cards. Off unless a repo's config sets `deepvista.enabled: true`.
@@ -158,7 +158,7 @@ memory of having been pushed.
 | `title` | entity title |
 | `description` | markdown: summary, metadata line, per-week timeline, related entities |
 | `tags` | `catchup`, `repo:<label>`, `category:<key>`, `entity:<id>`, plus the entity's own |
-| `status` | `confirmed` — see the gotcha |
+| `status` | `active` (`deepvista.card_status`) — see the gotcha |
 
 Entity type → DeepVista `card_type`. The right-hand column is DeepVista's fixed
 vocabulary, so the mapping is lossy on purpose:
@@ -185,9 +185,11 @@ can be traced back to its entity even if its title is edited in the product.
 
 **Agent-created cards default to `unconfirmed`, and search filters those out** —
 so a card pushed without an explicit status exists but is not findable. Every
-card this bridge sends therefore sets `status: "confirmed"`. Leave
-`deepvista.card_status` alone unless you specifically want cards staged for
-review.
+card this bridge sends therefore sets an explicit status — `active` by default,
+which is the served enum's "live" value and is searchable. (`confirmed`, which
+the first draft of this bridge sent, is *not* in the enum; a config still
+saying it is mapped to `active`.) Leave `deepvista.card_status` alone unless
+you specifically want cards staged for review.
 
 ## First live push — 2026-09-02, verified
 
@@ -432,4 +434,3 @@ those entities are the ones whose value compounds.
 delta for one card, and whether search found it.
 
 ---
-

@@ -567,7 +567,7 @@ week is a bullet that failed.
 ## Step 5 (optional): Sync entities to DeepVista
 
 Only when config sets `deepvista.enabled: true`. See
-[`reference/deepvista.md`](reference/deepvista.md) for the full prototype —
+[`reference/deepvista.md`](reference/deepvista.md) for the full runbook —
 endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
 
 **Register the server from the skill, not by hand.** The requirement travels
@@ -692,15 +692,27 @@ the scrubbing happens downstream, never in this file.
 
 ## Keeping the copies honest
 
-This skill is edited in one repo and pointed at from the others. When a copy
-does exist, a fix found in the copy has to travel back to canon — never
-hand-transcribed between them, because the two then differ in ways nobody
-diffed.
+This skill is edited in one repo — the source of truth — and **copied** into
+each repo that runs it by `scripts/deploy.py`, which ships only in the source
+and is never part of a copy. A fix found in a copy travels back with
+`--pull-back`, never by hand, because two hand-transcribed files differ in ways
+nobody diffed.
 
-> **Note:** earlier versions of this document described a `scripts/deploy.py`
-> with `--check` / `--pull-back` / `--check-all`. **That script is not part of
-> this skill.** If a repo has one, it is that repo's own tooling; if you need the
-> behaviour, write it there rather than assuming it ships here.
+```bash
+uv run scripts/deploy.py <repo> --branch <name>   # source -> a worktree of <repo>, on a branch
+uv run scripts/deploy.py <repo> --check           # drifted? exit 1 if so
+uv run scripts/deploy.py <repo> --pull-back       # copy -> source, then review the diff
+```
+
+**A deploy lands on a branch, never in a main checkout.** The script writes
+files and nothing else — no commit — so whatever it leaves behind is the
+caller's to commit and put on a pull request. Written into a checkout on its
+default branch, that becomes uncommitted cruft that a later session has to
+rescue, which is exactly what happened across three repos before the script
+started refusing. `--branch` creates the worktree for you; without it, point
+the script at a worktree you made. It also leaves a `.deployed.json` manifest
+in the copy — commit it, because it is how the next deploy tells a copy that is
+merely *different* from one that is *ahead*.
 
 ## Running under another agent runtime
 

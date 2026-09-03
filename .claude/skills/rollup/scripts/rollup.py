@@ -491,11 +491,35 @@ def control_deepvista(d, out_dir, refetch=False):
     unless --refetch says otherwise -- a read is free, but a control whose
     evidence silently changed between the two runs is not a control.
     """
+    # The snapshot may be holding captured copies that the live repo has moved
+    # past (see snapshot()). The fetch and compare below run against the LIVE
+    # repo -- the catchup script owns the read of its own store -- so when a
+    # captured source has drifted, the control is being paired with newer
+    # evidence than the rollup was built from. That cannot be silently fine:
+    # it is recorded per repo and printed in the table.
+    mpath = os.path.join(out_dir, "sources.json")
+    try:
+        with open(mpath) as fh:
+            manifest = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        manifest = {"week": d["week"]}
+    drifted = {}
+    for src in manifest.get("sources") or []:
+        if not isinstance(src, dict):
+            continue
+        files = src.get("files") or {}
+        moved = sorted(f for f, meta in files.items()
+                       if isinstance(meta, dict) and meta.get("drift"))
+        if moved:
+            drifted[src.get("name")] = moved
+
     results = []
     for r in d["repos"]:
         if not r.get("has_record"):
             continue
         entry = {"name": r["name"], "enabled": False}
+        if drifted.get(r["name"]):
+            entry["snapshot_drift"] = drifted[r["name"]]
         cfg_path = os.path.join(r["path"], ".claude", "catchup.config.json")
         try:
             with open(cfg_path) as fh:
@@ -518,9 +542,21 @@ def control_deepvista(d, out_dir, refetch=False):
         cards_path = os.path.join(rd, CONTROL_CARDS)
 
         if refetch or not os.path.isfile(cards_path):
-            p = subprocess.run(_runner() + [script, "fetch", "--repo", r["path"],
-                                            "--week", d["week"], "--out", cards_path],
-                               capture_output=True, text=True, timeout=900)
+            # One repo's proxy hanging must cost that repo its row, not the
+            # rollup its run: a TimeoutExpired here used to unwind the whole
+            # control with the other repos' fetches already done and unrecorded.
+            try:
+                p = subprocess.run(_runner() + [script, "fetch", "--repo", r["path"],
+                                                "--week", d["week"], "--out", cards_path],
+                                   capture_output=True, text=True, timeout=900)
+            except subprocess.TimeoutExpired:
+                entry["error"] = "fetch timed out after 900s (proxy hung or sign-in pending)"
+                results.append(entry)
+                continue
+            except OSError as e:
+                entry["error"] = f"fetch could not start: {e}"
+                results.append(entry)
+                continue
             if p.returncode != 0:
                 entry["error"] = (p.stderr or p.stdout).strip()[-600:]
                 results.append(entry)
@@ -554,9 +590,25 @@ def control_deepvista(d, out_dir, refetch=False):
             results.append(entry)
             continue
         entry["summary"] = os.path.relpath(summary, PRIVATE_DIR)
-        p = subprocess.run(_runner() + [script, "compare", d["week"], "--repo", r["path"],
-                                        "--against", summary, "--json"],
-                           capture_output=True, text=True, timeout=300)
+        # The local side of the compare is the CAPTURED summary when the
+        # snapshot holds one, so the coverage diff is against what the rollup
+        # was built from. The entity store is still read live by the catchup
+        # script; `snapshot_drift` above says when that store has moved on.
+        cmd = _runner() + [script, "compare", d["week"], "--repo", r["path"],
+                           "--against", summary, "--json"]
+        captured = os.path.join(rd, "summary.md")
+        if os.path.isfile(captured):
+            cmd += ["--ours", captured]
+        try:
+            p = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            entry["error"] = "compare timed out after 300s"
+            results.append(entry)
+            continue
+        except OSError as e:
+            entry["error"] = f"compare could not start: {e}"
+            results.append(entry)
+            continue
         if p.returncode != 0:
             entry["error"] = f"compare failed: {(p.stderr or p.stdout).strip()[-600:]}"
             results.append(entry)
@@ -577,12 +629,6 @@ def control_deepvista(d, out_dir, refetch=False):
         results.append(entry)
 
     # Into the manifest, beside the sources it is the control FOR.
-    mpath = os.path.join(out_dir, "sources.json")
-    try:
-        with open(mpath) as fh:
-            manifest = json.load(fh)
-    except (OSError, json.JSONDecodeError):
-        manifest = {"week": d["week"]}
     manifest["control"] = {"deepvista": {
         "run": dt.datetime.now().isoformat(timespec="seconds"),
         "files": [CONTROL_CARDS, CONTROL_SUMMARY, CONTROL_COMPARE],
@@ -625,6 +671,9 @@ def render_control(results):
             extra.append(f"{c['orphans']} orphan cards under tag")
         if c.get("not_found"):
             extra.append(f"{c['not_found']} not found")
+        if e.get("snapshot_drift"):
+            extra.append("store moved on since capture: " + ", ".join(e["snapshot_drift"])
+                         + " (--recapture, or read the compare as live-vs-captured)")
         out.append(f"  {str(e['name']):<16}{c.get('fetched', 0):>6}  {trs:<14}"
                    f"{bds:>12}  {cols}  "
                    + "; ".join([x for x in [note] if x] + extra))
