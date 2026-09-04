@@ -6,8 +6,8 @@ cards. Off unless a repo's config sets `deepvista.enabled: true`.
 Status: **live, both directions.** The push was exercised against a live
 account on 2026-09-02 (see *First live push*), and the read-back — `fetch`,
 headless through the proxy — the same day, on 74 cards across two repos (see
-*Reading the week back*). The push half is still model-driven; the read half
-is a script.
+*Reading the week back*). Both directions now use an explicit, command-owned
+proxy; no host-level MCP registration is needed.
 
 ## Why one card per entity
 
@@ -42,28 +42,21 @@ project**. It exposes context-card read, search, create, update and delete.
 **No API key is needed.** The server implements the MCP OAuth flow with dynamic
 client registration, so the client registers itself and the browser does the rest.
 
-**Register it once at user scope, not per repo:**
+**Do not register it at project or user scope.** MCP hosts start registered
+servers when a session is created, so either scope makes an optional catchup
+integration contact DeepVista during unrelated analysis. The bridge instead
+starts the pinned proxy only inside `push --apply` and `fetch`, then tears it
+down.
 
 ```bash
-claude mcp add --transport http deepvista-server https://api.deepvista.ai/mcp
+uv run scripts/deepvista_cards.py doctor --repo .
+uv run scripts/deepvista_cards.py push --repo . --week 2026-W35       # local preview
+uv run scripts/deepvista_cards.py push --repo . --week 2026-W35 --apply
 ```
 
-Then, **in an interactive session**, run `/mcp`, pick `deepvista`, and complete
-the browser sign-in. A non-interactive session cannot do this — there is no
-prompt to answer.
-
-User scope makes the server available in every repo without a `.mcp.json`
-committed anywhere. Since auth is OAuth rather than a key, there is no secret to
-place and nothing repo-specific to keep in sync — which is the whole reason to
-prefer it over N copies of the same five-line config.
-
-A project-scoped `.mcp.json` works too and is right when a repo's collaborators
-should all get the server. For a personal integration, user scope is less to
-maintain and leaves no trace in the repo:
-
-```json
-{ "mcpServers": { "deepvista": { "type": "http", "url": "https://api.deepvista.ai/mcp" } } }
-```
+The first applied command may print an authorization URL and wait for the human
+browser flow. The proxy caches the resulting OAuth token under `~/.mcp-auth`;
+later explicit commands are headless. A dry push never starts the proxy.
 
 ### Which repo does the pushing
 
@@ -105,31 +98,16 @@ a bearer credential. It is not the thing to reach for here.
 
 `rm -rf ~/.mcp-auth` clears a stuck auth cache.
 
-### If a bearer key is used instead
-
-Follow the local-secrets convention rather than putting it in a repo file: keep
-it in `~/.config/secrets.env` as `DEEPVISTA_API_KEY`, never printed (transcripts
-get committed), and export it before starting the session so `.mcp.json` can
-interpolate `${DEEPVISTA_API_KEY}` inside a `headers` block:
-
-```bash
-set -a; . ~/.config/secrets.env; set +a
-```
-
-`.mcp.json` interpolates from the environment of the process that *starts* the
-server, so a key present in the file but never exported surfaces as an
-authentication failure rather than as a missing variable.
-
 ## The cycle
 
-`plan` and `record` are deterministic and live in a script. The MCP calls in
-between are made by the model, because MCP tools are model-called — a shell
-script cannot make them.
+`plan` and dry `push` are deterministic previews. Only the `--apply` form opens
+the MCP connection and writes cards; it records each returned id immediately so
+a partial run can resume without duplicating completed creates.
 
 ```bash
 uv run scripts/deepvista_cards.py plan --repo . --week 2026-W35
-#   → [model calls the DeepVista MCP card tool per item]
-uv run scripts/deepvista_cards.py record --repo . --id <entity> --card-id <returned>
+uv run scripts/deepvista_cards.py push --repo . --week 2026-W35
+uv run scripts/deepvista_cards.py push --repo . --week 2026-W35 --apply
 ```
 
 Each plan item carries `action`:
@@ -145,10 +123,9 @@ optimization. Re-pushing an unchanged card spends a credit to change nothing.
 `--force` overrides it; use it when a card was edited or deleted on the
 DeepVista side and needs re-establishing.
 
-`record` writes `card_id`, `synced_at`, and the content hash back onto the
-entity file, which is what makes the next run's `skip` decision possible. **If
-record is skipped, the next run creates a duplicate card** — the entity has no
-memory of having been pushed.
+The applied push writes `card_id`, `synced_at`, and the content hash back onto
+the entity file after each successful call. `record` remains a manual recovery
+command for a card created before local write-back completed.
 
 ## Card shape
 
@@ -239,8 +216,7 @@ uv run scripts/deepvista_cards.py compare 2026-W35 --repo . --against deepvista-
 ### How `fetch` reads headlessly
 
 `fetch` spawns `npx -y mcp-remote <endpoint>` itself and speaks JSON-RPC to it
-over stdio — the same proxy the `.mcp.json` entry names, started by the script
-rather than by the host app. That works without a human because the proxy
+over stdio. That works without a human because the proxy
 caches its OAuth token under `~/.mcp-auth` after one browser sign-in; from then
 on any process that starts it gets a session. Three things learned making it
 run:
@@ -255,7 +231,7 @@ run:
   was built on had npm 6's `npx` first on PATH and npm 11's under Homebrew.
   `fetch` resolves an `npx` of version 7+ across PATH and the well-known install
   locations for its *own* subprocess — that path is never written into a repo
-  file, so it can be machine-specific in a way `.mcp.json` cannot.
+  file, so it can be machine-specific without creating ambient configuration.
 - **A session can go missing between `initialize` and the first call.** The
   client re-initializes once on the same proxy before giving up, and the output
   records `session_reinits` so a run that needed it is distinguishable from one
@@ -298,139 +274,21 @@ dropped, add the entity's material to the local summary rather than replacing
 prose wholesale — the local file is the one under version control and the one
 the scrub policy has been applied to.
 
-## Test run — the procedure for the first live push
+## First applied run
 
-Nothing below this line has been exercised. Run it in order and stop at the
-first surprise; the point is to find out where the inferred contract is wrong,
-not to get cards in.
+Run the sequence in order and stop at the first surprise:
 
-**1. Register the server** — from the skill, so the requirement travels with the
-code that has it rather than being re-derived per repo:
+1. `doctor` checks the local runtime and performs an explicit endpoint probe.
+2. `plan --limit 1 --show-body` renders one complete card locally.
+3. `push --limit 1` previews the exact write locally and says that no call ran.
+4. `push --limit 1 --apply` starts the proxy, completes OAuth if needed, writes
+   one card, and records its id.
+5. Re-run `plan --include-skipped`; the entity must now say `skip`.
+6. Only then apply the rest, optionally one category at a time.
 
-```bash
-uv run <skill>/scripts/deepvista_cards.py install-mcp --repo .
-```
-
-Idempotent, refuses to overwrite a conflicting entry, and writes **no
-credentials** — the server does OAuth 2.1 with dynamic client registration, so
-the entry is a name, a transport and a URL. `--scope user` instead prints the
-vendor's own one-liner, which registers once for every repo on the machine:
-
-```bash
-claude mcp add --transport http deepvista-server https://api.deepvista.ai/mcp
-```
-
-**2. Authenticate — and this is the step to plan around, not discover.**
-
-**There is no headless path today.** Every client the vendor documents ends in a
-browser OAuth flow: Cursor restarts and runs *MCP: Connect to server*, Claude
-Desktop quits and reopens, Claude Code runs `/mcp`. The docs also list API-key
-auth — `Authorization: Bearer <key>` from *Settings → Security & Access* — which
-would be headless, but **that setting is not exposed in the product yet**
-(checked 2026-09-01). Until it is, OAuth is the only route.
-
-**Which config you choose decides who runs the OAuth, and that is the whole
-question.** `type: http` hands it to the host app's MCP client — needs nothing
-installed, but the app must expose a connect flow you can reach. The
-`mcp-remote` form runs a local stdio proxy that does the OAuth **itself** and
-caches the token under `~/.mcp-auth`, so one browser sign-in makes every later
-session headless, agent runs included — at the cost of a **Node 18+**
-dependency, since `npx` runs the proxy.
-
-`install-mcp` **chooses between them against the runtime that is actually
-present** (`--transport auto`, the default), and `--transport mcp-remote|http`
-overrides it. Prefer the proxy where Node can run it; the http form is a genuine
-fallback rather than a downgrade, because DeepVista serves the discovery
-metadata a native MCP client needs — verified live 2026-09-01:
-
-| Probe | Result |
-|---|---|
-| `POST /mcp` unauthenticated | `401` + `WWW-Authenticate: Bearer resource_metadata=…` (RFC 9728) |
-| Protected-resource metadata | `resource: https://api.deepvista.ai/mcp`, auth server `…supabase.co/auth/v1` |
-| Authorization-server metadata | authorize + token + **`registration_endpoint`** (dynamic client registration), PKCE `S256` |
-
-So the sequence is:
-
-1. **Node 18+ only if you take the proxy form** — `npx` runs it, and nothing
-   works without it. This is a *conditional* prerequisite, not an absolute one;
-2. a **fresh** session, because MCP servers connect at start-up and one added to
-   `.mcp.json` mid-session is invisible to that session;
-3. the first launch opens a browser once. After that the cached token carries.
-
-**Check it before the session start-up does**, which is the step whose absence
-caused the 2026-09-01 break — `install-mcp` wrote an `npx` entry onto a machine
-with no Node, reported success, and the failure appeared a session later as
-`deepvista (ENOENT): Executable not found in $PATH: npx`, naming neither the
-file nor the command responsible:
-
-```bash
-uv run <skill>/scripts/deepvista_cards.py doctor --repo .
-```
-
-It reports the runtime, the registered entry and the endpoint separately, exits
-non-zero when the registration cannot work as written, and — for the exact
-ENOENT case — prints the start-up error it is predicting, so the two are
-recognisable as one problem.
-
-An agent run can do everything up to the handoff — `install-mcp`, then `plan`,
-which renders every card — and nothing past it. Plan for a human at step 2 rather
-than discovering it there.
-
-Do not reach for `deepvista auth login` to shortcut this; see the gotcha below.
-
-**3. Dump the tool list before pushing anything.**
-
-This step is not optional and the vendor docs are why. As of 2026-09-01 they
-publish the setup command and the auth model and **nothing else** — no tool
-names, no parameters, no `card_type` enum, no `status` field. The linked
-OpenAPI specification is still Mintlify's stock plant-store example. So every
-field this bridge sends is inferred from the CLI's REST calls and none of it is
-confirmed against a served contract.
-
-Ask for the DeepVista MCP tool list verbatim and reconcile it against what this
-bridge emits. The card fields here — `card_type`, `title`, `description`,
-`tags`, `status` — were read off the CLI's REST calls, **not off a connected
-server**, so this is the step most likely to find a mismatch. Two things to check
-specifically:
-
-- Is there a `status` parameter at all? If the MCP tool does not expose it,
-  cards will land `unconfirmed` and search will not surface them — which changes
-  the plan from "push everything" to "push, then confirm in the UI".
-- Does `card_type` accept the value being sent (`note`, `topic`, `keypoint`,
-  `person`, `organization`)?
-
-**4. Plan exactly one card.**
-
-```bash
-uv run .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --limit 1 --show-body
-```
-
-Read the markdown body before it goes anywhere.
-
-**5. Push that one**, by calling the MCP create tool with the `card` object.
-
-**6. Check three things in the product**, in this order:
-
-| Check | Why it matters |
-|---|---|
-| The card renders — timeline and all | The body is markdown; if it lands as a wall of text the format is wrong |
-| **It is findable by search** | This is the `confirmed` test. If it does not appear, step 3's status question was the answer |
-| Credit balance moved by how much | The free tier is 100/month; 25 entities at an unknown per-card cost is the actual budget question |
-
-**7. Record the id and prove the skip works.**
-
-```bash
-uv run .claude/skills/catchup/scripts/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned-id>
-uv run .claude/skills/catchup/scripts/deepvista_cards.py plan --repo . --week 2026-W35 --include-skipped
-```
-
-That entity must now say `skip`. If it says `create`, the write-back did not
-take and a full run would duplicate every card.
-
-**8. Only then** push the rest — and consider `--category meeting` first, since
-those entities are the ones whose value compounds.
-
-**What to report back:** the tool list, which step surprised you, the credit
-delta for one card, and whether search found it.
+The first applied run is where to verify rendering, search visibility, and
+credit cost. The served tool contract was reconciled on 2026-09-01; a future
+schema mismatch should fail loudly before local write-back rather than be
+papered over with a host-level MCP registration.
 
 ---

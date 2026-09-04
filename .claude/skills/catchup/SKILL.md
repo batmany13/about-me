@@ -570,58 +570,37 @@ Only when config sets `deepvista.enabled: true`. See
 [`reference/deepvista.md`](reference/deepvista.md) for the full runbook —
 endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
 
-**Register the server from the skill, not by hand.** The requirement travels
-with the code that has it:
+**Do not register DeepVista in `.mcp.json` or at user scope.** MCP hosts start
+registered servers at session creation, before the model chooses a tool, so a
+registration turns this optional catchup step into an OAuth/network side effect
+of every unrelated session. The bridge owns a pinned, short-lived proxy instead.
+
+Check the local runtime and endpoint explicitly:
 
 ```bash
-uv run $SKILL/deepvista_cards.py install-mcp --repo .            # writes .mcp.json
-uv run $SKILL/deepvista_cards.py install-mcp --repo . --scope user   # prints the once-per-machine command
+uv run $SKILL/deepvista_cards.py doctor --repo .
 ```
 
-Idempotent, writes **no credentials** — the server does OAuth 2.1 with dynamic
-client registration, so a repo file holds a name, a transport and a URL and
-nothing else. It refuses to overwrite a conflicting entry.
-
-It prefers the **`mcp-remote` proxy form**: that proxy runs the OAuth itself and
-caches the token under `~/.mcp-auth`, so one browser sign-in makes every later
-session headless — agent runs included. Handing the flow to the host app's own
-MCP client instead (`type: http`) means it can only be done wherever that app
-exposes a connect UI. The proxy costs a **Node 18+** dependency, since `npx`
-runs it.
-
-That preference is now **conditional on the runtime being there**. It used to be
-unconditional, which meant `install-mcp` would write an `npx` entry onto a
-machine with no Node, report success, and leave the failure to surface a session
-later as `deepvista (ENOENT): Executable not found in $PATH: npx`. `--transport
-auto` (the default) picks the form this machine can actually start;
-`--transport mcp-remote|http` forces one. Verify before trusting it:
-
-```bash
-uv run $SKILL/deepvista_cards.py doctor --repo .    # runtime + entry + endpoint; exits 1 on a break
-```
-
-The first sign-in is still a human step, and a *fresh* session is required
-because MCP servers connect at start-up. Sequence the work accordingly: an agent
-does `install-mcp` and `plan`, a human does the one browser flow, then an agent
-pushes — every time after that, an agent can do all of it.
-
-**No API key is required** — the server does MCP OAuth with dynamic client
-registration. Add the `.mcp.json` entry with no `headers`, then run `/mcp` in an
-**interactive** session and sign in through the browser; a non-interactive
-session has no prompt to answer. If a key path ever appears, it belongs in
-`~/.config/secrets.env`, exported before the session — never in a repo file and
-never read into the transcript.
+`doctor` is a deliberate network preflight. `plan` and a dry `push` are local;
+only `push --apply` and `fetch` start the proxy and contact DeepVista:
 
 ```bash
 uv run $SKILL/deepvista_cards.py plan --repo . --week 2026-W35
+uv run $SKILL/deepvista_cards.py push --repo . --week 2026-W35        # local preview
+uv run $SKILL/deepvista_cards.py push --repo . --week 2026-W35 --apply
 ```
 
-Emits one item per entity with `action: create | update | skip`. Call the
-DeepVista MCP card tool for each, then record what came back:
+The first applied command may need a human browser sign-in. `mcp-remote` caches
+that OAuth token under `~/.mcp-auth`; later explicit commands are headless. No
+DeepVista process remains attached to the host session.
 
-```bash
-uv run $SKILL/deepvista_cards.py record --repo . --id <entity-id> --card-id <returned>
-```
+**No API key is required** — the server does MCP OAuth with dynamic client
+registration. If a key path ever appears, it belongs in
+`~/.config/secrets.env`, exported before the session — never in a repo file and
+never read into the transcript.
+
+The push records each returned card id immediately. `record` remains only as a
+manual recovery command for a card created before local write-back completed.
 
 `skip` means the entity has not changed since its last push — **let it skip.**
 The free tier is 100 credits a month, and re-pushing an unchanged card spends
@@ -724,8 +703,8 @@ one-line fix: [`reference/portability.md`](reference/portability.md).
 
 The scripts are plain Python over `git` and `gh` with no runtime-specific calls,
 and `/catchup` is a convenience rather than the interface — the skill can be
-followed directly. The only model-called dependency is the optional DeepVista
-sync, which is off by default.
+followed directly. The only optional external dependency is the command-scoped
+DeepVista sync, which is off by default.
 
 ---
 

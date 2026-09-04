@@ -87,9 +87,10 @@ So that it runs the same under either runtime:
 - **The slash command is a convenience, not the interface.** `/catchup` is a
   Claude Code affordance; a runtime without slash commands invokes the skill by
   name or follows `SKILL.md` directly. Nothing in the workflow requires it.
-- **One optional runtime dependency, declared:** the DeepVista sync calls MCP
-  tools, which the *model* calls, not the scripts. `plan` and `record` stay
-  deterministic and shell-runnable either way, and the sync is off by default.
+- **One optional runtime dependency, command-scoped:** the DeepVista bridge
+  starts its pinned MCP proxy only for explicit `push --apply` and `fetch`
+  commands. `plan`, dry `push`, `record`, and `compare` stay local, and the sync
+  is off by default. No host-level MCP registration is required or supported.
 - **Config, not code, carries repo specifics** — so a repo needs no per-runtime
   variant of the skill itself.
 
