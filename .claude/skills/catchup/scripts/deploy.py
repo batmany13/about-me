@@ -52,7 +52,7 @@ SELF_NAME = os.path.basename(SCRIPT)
 # whole class of bug this script exists for gets reintroduced. The two copies of
 # THIS file are kept identical by hand; `diff` them when either changes.
 SKILL_NAME = os.path.basename(SRC_SKILL)
-PARTS = ["SKILL.md", "assets", "reference", "scripts"]
+PARTS = ["SKILL.md", "assets", "reference", "scripts", "tests"]
 # The slash-command file travels with the skill when the source has one. It
 # lives outside the skill directory, so it is compared on its own.
 COMMAND_REL = os.path.join(".claude", "commands", f"{SKILL_NAME}.md")
