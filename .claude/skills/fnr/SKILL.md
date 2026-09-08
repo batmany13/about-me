@@ -314,8 +314,12 @@ learning, grouped by cohort, never a conclusion>
 
 Direct, first person, past tense, active. Two spaces after a period. Keep his
 insider vocabulary — his word beats your clearer word. No LinkedIn cadence.
-The update is short; the learning is the point. Length is a rule of thumb
-(700–1100 words), never a reason to cut good content.
+**The update is short; the learning is the point.** Each machine section has a
+`budget` in the config — typically 150–250 words, three short paragraphs at
+most — and a corrections pattern is one sentence inside a paragraph, never a
+block of its own. Personal detail is one or two sentences. A whole weekly
+lands around 600–900 words; length is never a reason to cut his blocks, and
+always a reason to cut the machine's.
 
 ### Read it back before the questions
 
