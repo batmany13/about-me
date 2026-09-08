@@ -208,7 +208,8 @@ uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.pub
 ## Step 6 — Publish check, then publish — and publish is a word he says
 
 When `state.py next` says `publish`, show the delta's `## Flagged for review`
-list — machine calls only, never his text — and ask once: publish, or hold?
+list and its `## Reads confusing` list — machine calls and machine paragraphs
+only, never his text — and ask once: publish, or hold?
 
 **Publish is the literal word, from him, in answer to that question.** A
 decision on the flagged items ("1 is fine, cut 2") is not a publish decision.
@@ -321,7 +322,17 @@ block of its own. Personal detail is one or two sentences. A whole weekly
 lands around 600–900 words; length is never a reason to cut his blocks, and
 always a reason to cut the machine's.
 
-### Read it back before the questions
+### Read it back before the questions — and list what fails
+
+Read every machine paragraph as a stranger. **Any paragraph that needs the
+reader to know the system — its vocabulary, its components, its ledgers and
+judges — goes on a `## Reads confusing` list in the delta**, with the plain
+sentence it should become: the learning without the details. That list is
+shown with the flagged items at the publish check, so he decides the rewrite
+rather than discovering the paragraph on the page. A research change is
+written as what it can now do that it couldn't ("re-check what it already
+knows instead of starting over"), never as the mechanism that does it.
+
 
 Balance tracks the stat line — a section a third the size of another that did
 comparable work is under-reported. Each learning grows out of the paragraphs

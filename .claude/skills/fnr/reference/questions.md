@@ -52,8 +52,9 @@ the conversation is; the next session starts at the next pending question. If
 the owner stops before a required block, the draft is saved and nothing
 publishes.
 
-**After the last block**, one more question — the delta's flagged list, which
-is borderline scrub calls on *machine* text only — with two options: publish,
+**After the last block**, one more question — the delta's flagged list
+(borderline scrub calls) and its reads-confusing list (machine paragraphs that
+need the reader to know the system, each with the plain sentence proposed), both on *machine* text only — with two options: publish,
 or hold. **Only an answer containing the word "publish" is publish.** His
 decisions on the flagged items are applied to the candidate and the question
 is asked again; anything else is hold. `state.py publish --decision publish`
