@@ -91,6 +91,9 @@ ENTITY_TYPES = [
 # Themes are ranked by WEIGHT, learnings by GRADE. Keeping those apart is the
 # point: a test-harness fix can be perfectly `measured` and weigh nothing, and
 # under one combined ranking it outranked a redesign spanning nine PRs.
+THEME_CONSEQUENCES = ["major", "supporting", "minor"]
+PR_CONSEQUENCES = ["major", "supporting", "bookkeeping"]
+PR_REACHES = ["internal", "partners", "public"]
 THEME_DISPOSITIONS = ["confirmed", "merged", "dropped"]
 
 STATUSES = ["active", "done", "parked", "dropped"]
@@ -284,6 +287,40 @@ def normalize(raw, week, grades=None):
                 f"{eid}: a concept needs a `subject` -- the technology, company or "
                 f"architecture it is about. If you cannot name one, it is a general "
                 f"engineering maxim rather than something this week taught.")
+        # The cap that keeps a learning readable by a human who was not here:
+        # the event in one sentence, what it means in one more. A claim that
+        # runs past this is a paragraph of mechanism with the news buried in it.
+        # A warning rather than a failure, so older stores still validate.
+        if len(claim.split()) > 25:
+            print(f"warning: {eid}: claim is {len(claim.split())} words; the cap is 25 -- "
+                  f"say what happened, and put the rest in so_what or the note",
+                  file=sys.stderr)
+        rank = raw.get("rank")
+        if rank is not None and (not isinstance(rank, int) or rank < 1):
+            raise ValueError(f"{eid}: `rank` must be a positive integer (1 renders first)")
+    # `anchor`: the entity that carries this one's details this week. Wherever
+    # this entity would render, it becomes one line and a pointer to the
+    # anchor -- the anchor says it once, everything else points. Checked for
+    # shape here; whether the anchor exists is a render-time question.
+    anchor = raw.get("anchor")
+    if anchor is not None and (not isinstance(anchor, str) or not anchor.strip()):
+        raise ValueError(f"{eid}: `anchor` must be an entity id")
+    # `urls`: where this entity is PUBLISHED -- a report page, a deployed site, a
+    # shared doc. A PR body carries the path and never the host, so a shipped
+    # page went unrecorded for a week; the host lives in the site's config and
+    # the extraction resolves the two into one address here.
+    urls = raw.get("urls")
+    if urls is not None:
+        if not isinstance(urls, list):
+            raise ValueError(f"{eid}: `urls` must be a list of {{label, url}} or url strings")
+        norm = []
+        for u in urls:
+            if isinstance(u, str):
+                u = {"label": u, "url": u}
+            if not isinstance(u, dict) or not str(u.get("url") or "").startswith("http"):
+                raise ValueError(f"{eid}: each url needs an http(s) `url`")
+            norm.append({"label": str(u.get("label") or u["url"]), "url": u["url"]})
+        raw["urls"] = norm
     if grade and grade not in grades:
         raise ValueError(f"bad grade {grade!r} -- one of {', '.join(grades)}")
 
@@ -308,6 +345,16 @@ def normalize(raw, week, grades=None):
                              f"one of {', '.join(THEME_DISPOSITIONS)}")
         if not moved:
             raise ValueError(f"{eid}: a theme needs `moved` -- what advanced this week")
+        # CONSEQUENCE decides; share is measured. Commit share once merged a
+        # week's report pages into another theme because 14% was THIN, while a
+        # 31% theme of repo plumbing led. A confirmed theme says which it is.
+        consequence = (raw.get("consequence") or "").strip().lower()
+        if consequence and consequence not in THEME_CONSEQUENCES:
+            raise ValueError(f"{eid}: bad consequence {consequence!r} -- one of {', '.join(THEME_CONSEQUENCES)}")
+        if disposition == "confirmed" and not consequence:
+            print(f"warning: {eid}: a confirmed theme should carry `consequence` "
+                  f"({' | '.join(THEME_CONSEQUENCES)}) -- share is a measurement, not a verdict",
+                  file=sys.stderr)
         if disposition == "confirmed":
             if not why:
                 raise ValueError(f"{eid}: a confirmed theme needs `why_it_matters` -- "
@@ -323,6 +370,7 @@ def normalize(raw, week, grades=None):
         "moved": moved or None,
         "why_it_matters": why or None,
         "weight": weight or None,
+        "consequence": (raw.get("consequence") or "").strip().lower() or None,
         "evidence": [str(x).strip() for x in (raw.get("evidence") or []) if str(x).strip()] or None,
         "disposition": disposition if etype == "theme" else None,
         # The learning, in the four parts a learning actually has. Prose in a
@@ -704,6 +752,12 @@ def cmd_record_week(args, repo, cfg, sdir):
             # for another -- which is why it is a field here and a label in
             # `summary.stats` rather than a fixed word in the format.
             "subjects_new": _subjects_new(w, cfg),
+            # PRs that put something in front of an audience, with the
+            # addresses the scan could resolve. check-summary holds the prose
+            # to these: a shipped PR the summary never mentions is a failure,
+            # whatever its commit share.
+            "prs_shipped": [{"number": sp["number"], "urls": sp["resolved"] or sp["urls"]}
+                            for sp in ship_scan(w, cfg)],
         },
         "entities": by_cat,
         "entity_count": len(ents),
@@ -720,6 +774,16 @@ def cmd_record_week(args, repo, cfg, sdir):
     wdir = weeks_dir(repo, cfg)
     os.makedirs(wdir, exist_ok=True)
     path = os.path.join(wdir, f"{args.week}.json")
+    # The PR ledger is a judgment, not a measurement; re-recording the
+    # measurements must not throw it away.
+    if os.path.isfile(path):
+        try:
+            with open(path) as fh:
+                prior = json.load(fh)
+            if prior.get("pr_ledger"):
+                rec["pr_ledger"] = prior["pr_ledger"]
+        except (OSError, json.JSONDecodeError):
+            pass
     with open(path, "w") as fh:
         json.dump(rec, fh, indent=2)
         fh.write("\n")
@@ -980,6 +1044,69 @@ def _weigh(commits, paths, prs):
     }, hit
 
 
+SHIP_WORDS = ("deployed", "to production", "in production", "went live", "published to")
+_URL_RE = re.compile(r"https?://[^\s)\]>`]+")
+_PATH_RE = re.compile(r"`(/[a-z0-9][a-z0-9-]*(?:/[a-z0-9-]+)*/?)`")
+
+
+def ship_scan(w, cfg):
+    """Which merged PRs put something in front of people outside the repo.
+
+    A PR body says `/reports/8a1f2c/` and never the host, and a summary once
+    carried a week's report pages -- deployed to production so people outside
+    the repo could read them -- with no address, as a supporting line under another theme,
+    because 19 commits was 14% of the week and 14% is THIN. Commit share
+    measures effort; it does not measure who can now see the result. This
+    scan is the second axis: deploy vocabulary in the PR text, URLs in it,
+    or a touched path the repo declares under `ship.paths`. `ship.hosts` maps
+    a repo directory to the production origin, so a quoted path becomes a
+    full address the record can carry.
+    """
+    ship = (cfg or {}).get("ship") or {}
+    globs = [g for g in (ship.get("paths") or []) if str(g).strip()]
+    hosts = ship.get("hosts") or {}
+    commits = w.get("commits") or []
+    by_pr = defaultdict(list)
+    for c in commits:
+        for n in _commit_prs(c):
+            by_pr[n].append(c)
+    found = []
+    for p in (w.get("pr_details") or []):
+        n = p.get("number")
+        body = p.get("body") or ""
+        text = (p.get("title") or "") + "\n" + body
+        low = text.lower()
+        words = [k for k in SHIP_WORDS if k in low]
+        # The PR's own file list first; the commit-subject mapping only where
+        # the pull predates `files`.
+        touched = sorted(set(p.get("files") or [])
+                         or {x for c in by_pr.get(n, []) for x in c.get("paths", [])})
+        ship_paths = sorted({x for x in touched if any(fnmatch.fnmatch(x, g) for g in globs)})
+        # Only the repo's OWN origins count as a shipped address. A PR body is
+        # full of links -- the PR it follows, a source it cites, a tool's
+        # footer -- and none of those is something this repo put in front of
+        # anyone. Without `ship.hosts` there is no way to tell, so no URL counts.
+        own = [h.rstrip("/") for h in hosts.values()]
+        urls = sorted({u.rstrip(".,;") for u in _URL_RE.findall(text)
+                       if any(u.startswith(h) for h in own)})
+        quoted = sorted(set(_PATH_RE.findall(text)))
+        # Shipped means: touched a declared ship path, or names an address on
+        # an own origin, or says it deployed AND names a path. Vocabulary alone
+        # is not enough -- "now live" describes a tier call as easily as a page.
+        if not (ship_paths or urls or (words and quoted)):
+            continue
+        origin = ""
+        for prefix, host in hosts.items():
+            if any(x.startswith(prefix.rstrip("/") + "/") for x in touched):
+                origin = host.rstrip("/")
+                break
+        resolved = sorted(set(urls) | ({origin + q for q in quoted} if origin else set()))
+        found.append({"number": n, "title": p.get("title"), "signals": words,
+                      "urls": urls, "paths_quoted": quoted, "origin": origin,
+                      "resolved": resolved, "ship_paths": ship_paths[:6]})
+    return found
+
+
 def cmd_propose(args, repo, cfg, sdir):
     """Cluster the week mechanically, so the theme hypothesis starts from data.
 
@@ -1028,6 +1155,23 @@ def cmd_propose(args, repo, cfg, sdir):
                       for c in hits for x in c.get("paths", []))
         where = ", ".join(d for d, _ in top.most_common(3)) or "—"
         print(f"  #{p['number']:<3} {p.get('body_chars', 0):>6}ch  {p['title'][:62]:<64} {where}")
+
+    # Shipped work is a second axis, orthogonal to commit share. See ship_scan.
+    shipped = ship_scan(w, cfg)
+    print("\n## Shipped to an audience — each of these gets its OWN entity, with `urls`\n")
+    if shipped:
+        for sp in shipped:
+            sig = ", ".join(sp["signals"] + (["url in body"] if sp["urls"] else [])
+                            + ([f"touches {sp['ship_paths'][0]}"] if sp["ship_paths"] else []))
+            print(f"  #{sp['number']:<4} {(sp['title'] or '')[:70]:<72} [{sig}]")
+            for u in sp["resolved"] or sp["urls"]:
+                print(f"        → {u}")
+            if sp["paths_quoted"] and not sp["origin"]:
+                print(f"        quoted paths {', '.join(sp['paths_quoted'][:4])} — no host: set `ship.hosts` in config")
+        print("\n  Never merge one of these into another theme. Commit share measures effort;")
+        print("  it does not measure who can now see the result. Record the address.")
+    else:
+        print("  none detected (no deploy vocabulary, no URLs, nothing under `ship.paths`).")
 
     # The subject artifacts this repo declares, and which of them the week moved.
     # Without this the altitude rule is a reminder: a commit log says what changed
@@ -1121,12 +1265,13 @@ def cmd_weigh(args, repo, cfg, sdir):
     print(f"  PRs          {', '.join('#' + str(n) for n in weight['prs']) or '—'}")
     print(f"  active on    {len(weight['days'])} of 7 days")
     sh = theme_shares(cfg)
-    verdict = ("CONFIRMED — big enough to lead" if weight["share"] >= sh["confirm"]
-               else "THIN — real work, but supporting detail rather than a theme"
-               if weight["share"] >= sh["thin"] else
-               "DROPPED — too small to be a theme; record it as `dropped` so the "
-               "hypothesis is not silently forgotten")
-    print(f"  verdict      {verdict}")
+    band = ("large" if weight["share"] >= sh["confirm"] else
+            "modest" if weight["share"] >= sh["thin"] else "small")
+    print(f"  share        {band} for this week (bands: ≥{sh['confirm']:.0%} large, ≥{sh['thin']:.0%} modest)")
+    print(f"  verdict      none — share is a measurement, not a verdict. Read the PRs")
+    print(f"               that carry it and set `consequence` (major | supporting | minor)")
+    print(f"               on the theme. A small share can be the week's most consequential")
+    print(f"               work; a large one can be plumbing.")
     print(f"\n  the commits that carry it (largest first):")
     for c in sorted(hit, key=lambda c: -(c.get("insertions", 0) + c.get("deletions", 0)))[:12]:
         churn = c.get("insertions", 0) + c.get("deletions", 0)
@@ -1216,11 +1361,12 @@ def cmd_learned(args, repo, cfg, sdir):
 
 
 def cmd_render(args, repo, cfg, sdir):
-    """The whole summary, derived: Themes, Meetings & Notes, What we learned.
+    """The whole summary, derived: Themes, Meetings & Notes, What we learned --
+    or whatever sections `summary.layout` declares, in that order.
 
-    Three sections because a reader asks three different questions -- what moved,
+    Three sections by default because a reader asks three different questions -- what moved,
     who did we meet, what do we now know -- and they rank on different axes.
-    Themes rank by WEIGHT, learnings by evidence GRADE. Running them on one scale
+    Themes rank by WEIGHT, learnings by RANK then evidence grade. Running them on one scale
     is what let a 4-commit test fix outrank a redesign carrying 80% of the week's
     churn: forensic findings grade `measured` trivially, and grade was standing in
     for importance.
@@ -1239,196 +1385,422 @@ def cmd_render(args, repo, cfg, sdir):
     themes = [e for e in ents if e.get("type") == "theme"]
     live = [t for t in themes if (here(t) or {}).get("disposition", "confirmed") == "confirmed"]
     dropped = [t for t in themes if (here(t) or {}).get("disposition") in ("dropped", "merged")]
-    live.sort(key=lambda t: -((here(t).get("weight") or {}).get("share") or 0))
+    crank = {c: i for i, c in enumerate(THEME_CONSEQUENCES)}
+    live.sort(key=lambda t: (crank.get((here(t).get("consequence") or ""), len(crank)),
+                             -((here(t).get("weight") or {}).get("share") or 0)))
 
-    print("## Themes\n")
-    for t in live:
-        w = here(t)
-        wt = w.get("weight") or {}
-        share = f"{wt.get('share', 0):.0%} of the week's commits"
-        churn = f" · {wt['line_share']:.0%} of its churn" if wt.get("line_share") else ""
-        print(f"### {t['title']}  ·  {share}{churn}\n")
-        print(w["moved"].strip() + "\n")
-        print(f"**Why it matters:** {w['why_it_matters'].strip()}\n")
-        kids = [e for e in ents if e.get("theme") == t["id"] and e is not t]
-        for k in sorted(kids, key=lambda e: e["id"]):
-            mark = " *(correction)*" if k.get("type") == "correction" else ""
-            note = " ".join(here(k).get("note", "").split())
-            # A theme child says what changed, in a line. When it runs long it is
-            # usually because a finding crept in, and the finding belongs in
-            # Learnings -- so the overflow is flagged rather than printed.
-            if len(note) > CHILD_NOTE_CHARS:
-                cut = note[:CHILD_NOTE_CHARS].rsplit(" ", 1)[0]
-                note = cut + f" …[{len(note) - len(cut)} chars trimmed — if this is a finding, it belongs in Learnings]"
-            print(f"- **{k['title']}**{mark} — {note}")
-        if kids:
-            print()
+    def section_themes(title="Themes"):
+        print(f"## {title}\n")
+        for t in live:
+            w = here(t)
+            wt = w.get("weight") or {}
+            share = f"{wt.get('share', 0):.0%} of the week's commits"
+            churn = f" · {wt['line_share']:.0%} of its churn" if wt.get("line_share") else ""
+            cons = f"{w['consequence']} · " if w.get("consequence") else ""
+            print(f"### {t['title']}  ·  {cons}{share}{churn}\n")
+            print(w["moved"].strip() + "\n")
+            print(f"**Why it matters:** {w['why_it_matters'].strip()}\n")
+            kids = [e for e in ents if e.get("theme") == t["id"] and e is not t]
+            for k in sorted(kids, key=lambda e: e["id"]):
+                if k.get("anchor") and pointer(k):
+                    continue
+                mark = " *(correction)*" if k.get("type") == "correction" else ""
+                note = " ".join(here(k).get("note", "").split())
+                # A theme child says what changed, in a line. When it runs long it is
+                # usually because a finding crept in, and the finding belongs in
+                # Learnings -- so the overflow is flagged rather than printed.
+                if len(note) > CHILD_NOTE_CHARS:
+                    # Cut at a sentence, never mid-clause: a note that ended
+                    # "restored and." once dropped the clause that said the
+                    # pages were in production. The lead sentence carries the
+                    # consequence; the trim removes detail, never the outcome.
+                    head = note[:CHILD_NOTE_CHARS]
+                    m = list(re.finditer(r"[.!?](?=\s)", head))
+                    cut = head[:m[-1].end()] if m else head.rsplit(" ", 1)[0]
+                    note = cut + f" …[{len(note) - len(cut)} chars trimmed — if this is a finding, it belongs in Learnings]"
+                print(f"- **{k['title']}**{mark} — {note}{urls_tail(k)}")
+            if kids:
+                print()
 
     meets = [e for e in ents if e.get("type") in ("meeting", "org", "person")]
-    if meets:
-        print("## Meetings & Notes\n")
-        # Meetings lead and run in DATE order -- the section's whole contract is
-        # "who did we meet, in what order", and an id sort renders a week of
-        # conversations alphabetically by company, which is not a chronology of
-        # anything. Undated meetings sort last rather than to the top, so a
-        # missing date is visible instead of silently leading the section.
-        def meet_key(e):
-            if e.get("type") == "meeting":
-                return (0, here(e).get("date") or "9999-99-99", e["id"])
-            return (1, e.get("type"), e["id"])
 
-        # WHO WAS ACTUALLY MET is derived from the meeting entities, never
-        # asserted on the person. A person tracked because the repo researched
-        # them and a person tracked because someone sat down with them are
-        # different relationships, and rendering them identically turns a
-        # roster into a claim of contact nobody made -- three founders of one
-        # company were listed beside the people they had never met, on a deal
-        # whose own notes said no contact had happened yet. Deriving it from the
-        # meeting's own attendee list means the two cannot drift: to mark
-        # someone met, record the meeting.
-        # A meeting tagged `prep` is a note written BEFORE the room, and it is
-        # not evidence anyone was in it. Counting it as contact is the same
-        # error one level down: the artifact exists, so the meeting is assumed
-        # to have happened and gone the way the prep imagined. It stays a
-        # separate state until the note is updated with what actually occurred.
-        all_meetings = [x for x in ents if x.get("type") == "meeting"]
-        met_on, prepped = {}, {}
-        for m in all_meetings:
-            is_prep = "prep" in (m.get("tags") or [])
-            for wk in (m.get("weeks") or {}).values():
-                d = wk.get("date") or ""
-                for pid in (wk.get("attendees") or []):
-                    tgt = prepped if is_prep else met_on
-                    tgt[pid] = max(tgt.get(pid, ""), d)
-        def contact(e):
-            if e.get("type") != "person":
-                return ""
-            if e["id"] in met_on:
-                d = met_on[e["id"]]
-                return f" *(met{' ' + d if d else ''})*"
-            if e["id"] in prepped:
-                d = prepped[e["id"]]
-                return f" *(meeting prepped{' for ' + d if d else ''} — outcome unrecorded)*"
-            # Before a meeting exists there is nothing to derive from, so the
-            # pre-contact states come from the person's own tags. That is not
-            # the assertion this guards against: the danger is claiming someone
-            # was MET without a meeting to show for it. Saying an email went out
-            # cannot overstate contact in that direction, and the distinction
-            # between a live thread and a cold name is the one a relationship
-            # repo most needs -- an open intro is exactly the thing that
-            # quietly expires.
-            tags = set(e.get("tags") or [])
-            if "meeting-upcoming" in tags:
-                return " *(contacted — meeting upcoming)*"
-            if "contacted" in tags:
-                return " *(contacted — not met)*"
-            return " *(tracked — no contact)*"
+    # Meetings lead and run in DATE order -- the section's whole contract is
+    # "who did we meet, in what order", and an id sort renders a week of
+    # conversations alphabetically by company, which is not a chronology of
+    # anything. Undated meetings sort last rather than to the top, so a
+    # missing date is visible instead of silently leading the section.
+    def meet_key(e):
+        if e.get("type") == "meeting":
+            return (0, here(e).get("date") or "9999-99-99", e["id"])
+        return (1, e.get("type"), e["id"])
 
-        # ONE ENTRY PER CONVERSATION, synthesised -- not one bullet per entity.
-        #
-        # The store keeps meeting, org and person apart because each accumulates
-        # across weeks and they are genuinely different records. The SUMMARY is
-        # a view, and printing all three verbatim tells the same conversation
-        # three times: the meeting narrates it, the company restates it as
-        # company state, and the person restates it again as what they are like.
-        # Grouping them under a shared parent fixed the layout and not the
-        # redundancy -- a company still appeared twice inside its own group,
-        # once as the meeting and once as the company, saying nearly the same
-        # thing. The fix is not more nesting: it is that the meeting's `note`
-        # must be the synthesis, and what the company and the people
-        # contributed belongs inside it.
-        #
-        # What a reader actually needs from a conversation is three things --
-        # who was in it, the one thing that came out, and what is now owed or
-        # still to ask. The last of those is the part that expires, and it was
-        # the part being dropped while three overlapping narrations were kept.
-        def body(e):
-            # `summary` defaults to `note` at write time when none is given, so
-            # printing both renders the same paragraph twice. The standing
-            # description leads when there IS one; otherwise the week's note is
-            # the whole entry.
-            s = " ".join((e.get("summary") or "").split())
+    # WHO WAS ACTUALLY MET is derived from the meeting entities, never
+    # asserted on the person. A person tracked because the repo researched
+    # them and a person tracked because someone sat down with them are
+    # different relationships, and rendering them identically turns a
+    # roster into a claim of contact nobody made -- three founders of one
+    # company were listed beside the people they had never met, on a deal
+    # whose own notes said no contact had happened yet. Deriving it from the
+    # meeting's own attendee list means the two cannot drift: to mark
+    # someone met, record the meeting.
+    # A meeting tagged `prep` is a note written BEFORE the room, and it is
+    # not evidence anyone was in it. Counting it as contact is the same
+    # error one level down: the artifact exists, so the meeting is assumed
+    # to have happened and gone the way the prep imagined. It stays a
+    # separate state until the note is updated with what actually occurred.
+    # Across the WHOLE store, not the week: a founder met in an earlier week
+    # and written about again this week is still met, and filtering to the
+    # week's entities rendered exactly such a person as "tracked -- no
+    # contact" beside the company he founded.
+    all_meetings = [x for x in load_all(sdir) if x.get("type") == "meeting"]
+    met_on, prepped = {}, {}
+    for m in all_meetings:
+        is_prep = "prep" in (m.get("tags") or [])
+        for wk in (m.get("weeks") or {}).values():
+            d = wk.get("date") or ""
+            for pid in (wk.get("attendees") or []):
+                tgt = prepped if is_prep else met_on
+                tgt[pid] = max(tgt.get(pid, ""), d)
+
+    def contact(e):
+        if e.get("type") != "person":
+            return ""
+        if e["id"] in met_on:
+            d = met_on[e["id"]]
+            return f" *(met{' ' + d if d else ''})*"
+        if e["id"] in prepped:
+            d = prepped[e["id"]]
+            return f" *(meeting prepped{' for ' + d if d else ''} — outcome unrecorded)*"
+        # Before a meeting exists there is nothing to derive from, so the
+        # pre-contact states come from the person's own tags. That is not
+        # the assertion this guards against: the danger is claiming someone
+        # was MET without a meeting to show for it. Saying an email went out
+        # cannot overstate contact in that direction, and the distinction
+        # between a live thread and a cold name is the one a relationship
+        # repo most needs -- an open intro is exactly the thing that
+        # quietly expires.
+        tags = set(e.get("tags") or [])
+        if "meeting-upcoming" in tags:
+            return " *(contacted — meeting upcoming)*"
+        if "contacted" in tags:
+            return " *(contacted — not met)*"
+        return " *(tracked — no contact)*"
+
+    # ONE ENTRY PER CONVERSATION, synthesised -- not one bullet per entity.
+    #
+    # The store keeps meeting, org and person apart because each accumulates
+    # across weeks and they are genuinely different records. The SUMMARY is
+    # a view, and printing all three verbatim tells the same conversation
+    # three times: the meeting narrates it, the company restates it as
+    # company state, and the person restates it again as what they are like.
+    # Grouping them under a shared parent fixed the layout and not the
+    # redundancy -- a company still appeared twice inside its own group,
+    # once as the meeting and once as the company, saying nearly the same
+    # thing. The fix is not more nesting: it is that the meeting's `note`
+    # must be the synthesis, and what the company and the people
+    # contributed belongs inside it.
+    #
+    # What a reader actually needs from a conversation is three things --
+    # who was in it, the one thing that came out, and what is now owed or
+    # still to ask. The last of those is the part that expires, and it was
+    # the part being dropped while three overlapping narrations were kept.
+    def body(e):
+        # `summary` defaults to `note` at write time when none is given, so
+        # printing both renders the same paragraph twice. The standing
+        # description leads when there IS one; otherwise the week's note is
+        # the whole entry.
+        s = " ".join((e.get("summary") or "").split())
+        n = " ".join(here(e).get("note", "").split())
+        if s and (s == n or n.startswith(s)):
+            s = ""
+        return " ".join(x for x in (s, n) if x)
+
+    def actions(e, indent=""):
+        w = here(e)
+        for label, key in (("Owed", "owed"), ("Ask", "asks")):
+            items = [" ".join(str(i).split()) for i in (w.get(key) or [])]
+            if items:
+                print(f"{indent}  - **{label}:** " + " · ".join(items))
+
+    def emit_groups(groups, pred):
+        # A batch is one thing to the reader -- one banner, the companies as
+        # sub-bullets -- not N companies that happen to share a source. The
+        # banner is an entity (usually the batch decision) named by `lead`;
+        # its members are the companies its record links to, narrowed by
+        # `tags_any` so a company that arrived in the batch but runs on its
+        # own thread stays a top-level entry.
+        by_id = {x["id"]: x for x in ents}
+        expanded = []
+        for g in groups or []:
+            if g.get("lead"):
+                expanded.append((by_id.get(g["lead"]), g))
+                continue
+            # A standing rule rather than one week's entity: every decision
+            # (or other/theme) this week carrying ALL of `lead_tags_all` is a
+            # group of its own, so next month's batch groups without a
+            # config edit.
+            need = set(g.get("lead_tags_all") or [])
+            if not need:
+                continue
+            for x in sorted(ents, key=lambda x: x["id"]):
+                if x.get("type") in ("decision", "other", "theme") and need <= set(x.get("tags") or []):
+                    expanded.append((x, g))
+        for lead, g in expanded:
+            if not lead:
+                continue
+            want = set(g.get("tags_any") or [])
+            members = sorted((x for x in meets if x.get("type") == "org"
+                              and x["id"] not in done and pred(x)
+                              and x["id"] in (lead.get("links") or [])
+                              and (not want or set(x.get("tags") or []) & want)),
+                             key=lambda x: x["id"])
+            if not members:
+                continue
+            done.add(lead["id"])
+            print(f"- **{g.get('title') or lead['title']}** — {body(lead)}")
+            actions(lead)
+            for o in members:
+                emit_org(o, indent="  ", pointer_ok=True)
+
+    done = set()
+
+    def linked(seed, kind):
+        return sorted((x for x in meets
+                       if x.get("type") == kind and x["id"] not in done
+                       and (x["id"] in (seed.get("links") or [])
+                            or seed["id"] in (x.get("links") or []))),
+                      key=lambda x: x["id"])
+
+    week_meetings = [x for x in meets if x.get("type") == "meeting"]
+    by_id_all = {x["id"]: x for x in ents}
+
+    def meetings_of(o):
+        return sorted((m for m in week_meetings
+                       if o["id"] in (m.get("links") or []) or m["id"] in (o.get("links") or [])),
+                      key=meet_key)
+
+    # ANCHORS. One entity carries the details; everything that would restate
+    # them points at it instead. An explicit `anchor` on the entity wins; a
+    # company that was in a room this week is anchored to that meeting by
+    # default, because the conversation is where the data landed. The
+    # pointer names the section the anchor renders in, so `section_of` is
+    # planned from the layout before anything prints.
+    section_of = {}
+
+    def plan_sections(spec):
+        claimed = set()
+        for title, kind, opts in spec:
+            if kind == "themes":
+                for t in live:
+                    section_of[t["id"]] = title
+                    for k in ents:
+                        if k.get("theme") == t["id"] and k is not t:
+                            section_of[k["id"]] = title
+            elif kind == "meetings":
+                for m in week_meetings:
+                    section_of[m["id"]] = title
+            elif kind == "orgs":
+                want = set(opts.get("tags_any") or [])
+                types = tuple(opts.get("types") or ["org"])
+                for o in (x for x in ents if x.get("type") in types):
+                    if o["id"] in section_of:
+                        continue
+                    tags = set(o.get("tags") or [])
+                    if o.get("type") == "org" and opts.get("rest") and not (tags & (claimed - want)):
+                        section_of[o["id"]] = title
+                    elif want and tags & want:
+                        section_of[o["id"]] = title
+                claimed |= want
+            elif kind == "learnings":
+                for c in concepts:
+                    section_of[c["id"]] = title
+            elif kind == "other":
+                for t in dropped:
+                    section_of[t["id"]] = title
+                for e in other:
+                    section_of[e["id"]] = title
+
+    def anchor_of(e):
+        a = by_id_all.get((e.get("anchor") or "").strip())
+        if a is not None and a is not e:
+            return a
+        if e.get("type") == "org":
+            ms = meetings_of(e)
+            return ms[0] if ms else None
+        return None
+
+    def refs_tail(e):
+        refs = ", ".join(f"#{p}" for p in (here(e).get("prs") or []))
+        return f" ({refs})" if refs else ""
+
+    def urls_tail(e):
+        # Where the thing is published, as trailing links -- on every line
+        # shape, including a pointer, because the address is the one detail a
+        # pointer must not drop.
+        us = e.get("urls") or []
+        return (" · " + " · ".join(f"[{u['label']}]({u['url']})" for u in us)) if us else ""
+
+    def pointer(e, indent=""):
+        # True if the entity was rendered as a pointer to its anchor.
+        a = anchor_of(e)
+        if a is None or a["id"] not in section_of or a["id"] == e["id"]:
+            return False
+        print(f"{indent}- **{e['title']}** — {one_line(e)}. See *{a['title']}* under {section_of[a['id']]}.{refs_tail(e)}{urls_tail(e)}")
+        return True
+
+    def one_line(e):
+        # The standing one-liner, else the first sentence of the week's note.
+        s = " ".join((e.get("summary") or "").split())
+        if not s:
             n = " ".join(here(e).get("note", "").split())
-            if s and (s == n or n.startswith(s)):
-                s = ""
-            return " ".join(x for x in (s, n) if x)
+            s = re.split(r"(?<=[.!?])\s", n, 1)[0] if n else ""
+        return s.rstrip(".")
 
-        def actions(e):
-            w = here(e)
-            for label, key in (("Owed", "owed"), ("Ask", "asks")):
-                items = [" ".join(str(i).split()) for i in (w.get(key) or [])]
-                if items:
-                    print(f"  - **{label}:** " + " · ".join(items))
+    def emit_org(o, indent="", pointer_ok=False):
+        # A company's people are the ones ITS record links to -- the org claims
+        # its founders and team. The reverse edge is not the same claim: a
+        # person whose record links to a company because of an intro thread
+        # is not that company's person, and rendering the graph both ways once
+        # put the founder of one company in the Who: clause of another
+        # while the actual solo founder, met that week, was left out because
+        # the meeting had already claimed him. Directed, and never filtered by
+        # what another section already rendered.
+        done.add(o["id"])
+        folk = sorted((x for x in meets if x.get("type") == "person"
+                       and x["id"] in (o.get("links") or [])), key=lambda x: x["id"])
+        for person in folk:
+            done.add(person["id"])
+        # THE CONVERSATION IS THE RECORD. When a company was in a room this
+        # week, the data lives on the meeting -- what was said, what is owed,
+        # what to ask -- and printing it again under the company is the dual
+        # reference a reader then has to reconcile. The company line becomes
+        # one sentence and a pointer; the full entry is reserved for a company
+        # whose week happened without a conversation, because then the
+        # company record is the only place the news exists.
+        if pointer_ok and pointer(o, indent):
+            return
+        note = f"{indent}- **{o['title']}** — {body(o)}"
+        if folk:
+            who = " · ".join(f"{x['title'].split(' — ')[0].split(',')[0]}"
+                             f"{contact(x).replace(' *(', ' (').replace(')*', ')')}"
+                             for x in folk)
+            note += f" **Who:** {who}."
+        print(note + refs_tail(o) + urls_tail(o))
+        actions(o, indent)
 
-        done, by_id = set(), {x["id"]: x for x in ents}
-
-        def linked(seed, kind):
-            return sorted((x for x in meets
-                           if x.get("type") == kind and x["id"] not in done
-                           and (x["id"] in (seed.get("links") or [])
-                                or seed["id"] in (x.get("links") or []))),
-                          key=lambda x: x["id"])
-
-        # Conversations, in date order. The company and the humans in the room
-        # are absorbed into the entry rather than re-listed under it.
+    def emit_meetings(absorb_orgs):
+        # Conversations, in date order. In the default layout the company and
+        # the humans in the room are absorbed into the entry rather than
+        # re-listed under it; in a layout that gives companies their own
+        # section, the conversation stands alone and the company keeps its
+        # news where the reader will look for it.
         for m in sorted((x for x in meets if x.get("type") == "meeting"), key=meet_key):
             done.add(m["id"])
-            orgs = linked(m, "org")
-            for o in orgs:
-                done.add(o["id"])
-            for o in orgs:
-                for person in linked(o, "person"):
-                    done.add(person["id"])
+            if absorb_orgs:
+                orgs = linked(m, "org")
+                for o in orgs:
+                    done.add(o["id"])
+                for o in orgs:
+                    for person in linked(o, "person"):
+                        done.add(person["id"])
             for person in linked(m, "person"):
                 done.add(person["id"])
-            print(f"- **{m['title']}** — {body(m)}")
+            print(f"- **{m['title']}** — {body(m)}{urls_tail(m)}")
             actions(m)
 
-        # Companies nobody sat down with. Their people become a contact clause
+    def emit_orgs(pred, pointer_ok=False, types=("org",)):
+        # Companies, one entry each. Their people become a contact clause
         # rather than bullets of their own -- someone unmet on live work
-        # is an action item, not a profile.
-        for o in sorted((x for x in meets if x.get("type") == "org" and x["id"] not in done),
-                        key=lambda x: x["id"]):
-            done.add(o["id"])
-            folk = linked(o, "person")
-            for person in folk:
-                done.add(person["id"])
-            note = f"- **{o['title']}** — {body(o)}"
-            if folk:
-                who = " · ".join(f"{x['title'].split(' — ')[0].split(',')[0]}"
-                                 f"{contact(x).replace(' *(', ' (').replace(')*', ')')}"
-                                 for x in folk)
-                note += f" **Who:** {who}."
-            print(note)
-            actions(o)
+        # is an action item, not a profile. A layout section may admit other
+        # types by tag (a thread that shipped a page belongs beside the
+        # subject it shows), rendered in the same shape.
+        pool = meets if tuple(types) == ("org",) else ents
+        for o in sorted((x for x in pool if x.get("type") in types
+                         and x["id"] not in done and pred(x)), key=lambda x: x["id"]):
+            emit_org(o, pointer_ok=pointer_ok)
 
+    def emit_loose_people():
         # Anyone attached to neither -- a network contact with no company here.
-        for e in sorted((x for x in meets if x["id"] not in done), key=lambda x: x["id"]):
+        # People only: a meeting is never "loose", it has its own section.
+        for e in sorted((x for x in meets if x.get("type") == "person" and x["id"] not in done),
+                        key=lambda x: x["id"]):
             done.add(e["id"])
             print(f"- **{e['title']}**{contact(e)} — {body(e)}")
             actions(e)
+
+    def section_meetings(title="Meetings & Notes"):
+        if not meets:
+            return
+        print(f"## {title}\n")
+        emit_meetings(absorb_orgs=True)
+        emit_orgs(lambda o: True)
+        emit_loose_people()
         print()
 
     concepts = [e for e in ents if e.get("type") == "concept" and here(e).get("claim")]
-    if concepts:
+
+    def section_learnings(title="What we learned", spec=None):
+        spec = spec or {}
+        first = spec.get("first") or {}
+        first_tags = set(first.get("tags_any") or [])
+        # A layout may put one strand of learnings FIRST (a strand the reader
+        # tracks separately, say) and summarise its absence rather than skip it --
+        # the reader wants to know that nothing landed there, not silence.
+        firsts = [c for c in concepts if first_tags and set(c.get("tags") or []) & first_tags]
+        rest = [c for c in concepts if c not in firsts]
+        if not concepts and not first_tags:
+            return
         grades, marks = grade_scale(cfg)
-        rank = lambda e: (-(grades.index(here(e).get("grade")) if here(e).get("grade") in grades else -1), e["id"])
-        print("## What we learned\n")
-        shown = sorted(concepts, key=rank)
-        held = []
-        if args.learnings_top and len(shown) > args.learnings_top:
-            shown, held = shown[:args.learnings_top], shown[args.learnings_top:]
-        for e in shown:
+        # Consequence first, evidence second: an explicit `rank` wins, and only
+        # then the grade -- a tooling defect measured in-house grades `measured`
+        # trivially and must not sit above a round that was merely `verified`.
+        rank = lambda e: (here(e).get("rank") or 10**6,
+                          -(grades.index(here(e).get("grade")) if here(e).get("grade") in grades else -1),
+                          e["id"])
+        print(f"## {title}\n")
+
+        def line(e):
             w = here(e)
             mark = marks.get(w.get("grade"), w.get("grade"))
             bits = [w["so_what"].strip()] if w.get("so_what") else []
-            if w.get("open") and not args.no_open:
+            if w.get("open") and args.with_open:
                 bits.append("**Open:** " + w["open"].strip())
             refs = ", ".join(f"#{p}" for p in (w.get("prs") or []))
             tail = f" ({refs})" if refs else ""
             subj = f"*{w['subject']}* · " if w.get("subject") else ""
+            a = anchor_of(e)
+            see = (f" See *{a['title']}* under {section_of[a['id']]}."
+                   if a is not None and a["id"] in section_of else "")
             print(f"- **{w['claim'].strip().rstrip('.')}.** *[{mark}]* {subj}"
-                  + " ".join(bits) + tail)
+                  + " ".join(bits) + see + tail)
+
+        if first_tags:
+            ftitle = first.get("title") or "/".join(sorted(first_tags))
+            if firsts:
+                print(f"**{ftitle}.**\n")
+                for e in sorted(firsts, key=rank):
+                    line(e)
+                print()
+            else:
+                # Summarise, do not skip: what moved in that strand this week
+                # even though nothing was learned from it.
+                moved = sorted((x for x in ents if x.get("type") != "concept"
+                                and set(x.get("tags") or []) & first_tags), key=lambda x: x["id"])
+                if moved:
+                    print(f"**{ftitle}.** No learning landed this week. What moved: "
+                          + "; ".join(x["title"] for x in moved) + ".\n")
+                else:
+                    print(f"**{ftitle}.** Nothing this week.\n")
+            if rest:
+                print(f"**{spec.get('rest_title') or 'Elsewhere'}.**\n")
+
+        top = spec.get("top", args.learnings_top)
+        shown = sorted(rest, key=rank)
+        held = []
+        if top and len(shown) > top:
+            shown, held = shown[:top], shown[top:]
+        for e in shown:
+            line(e)
         if held:
             # Named, never silently dropped -- a learning cut for length is still
             # a thing the week established, and the store is where it lives.
@@ -1443,8 +1815,11 @@ def cmd_render(args, repo, cfg, sdir):
 
     other = [e for e in ents if e.get("type") in ("decision", "other")
              and not e.get("theme")]
-    if dropped or other:
-        print("## Other\n")
+
+    def section_other(title="Other"):
+        if not (dropped or other):
+            return
+        print(f"## {title}\n")
         for t in dropped:
             w = here(t)
             wt = w.get("weight") or {}
@@ -1453,8 +1828,82 @@ def cmd_render(args, repo, cfg, sdir):
             print(f"- *Considered as a theme and dropped* — **{t['title']}**: {why}. "
                   + (w.get("moved") or "").strip())
         for e in sorted(other, key=lambda e: e["id"]):
+            if e.get("anchor") and pointer(e):
+                continue
             print(f"- **{e['title']}** — {here(e).get('note', '').strip()}")
         print()
+
+    # A repo may declare its own section layout under `summary.layout` -- a
+    # list of {title, section, tags_any?, rest?} rendered in order. The
+    # default is the three-question shape (Themes / Meetings & Notes / What
+    # we learned / Other). A layout that gives companies their own sections
+    # ("Customers", "Prospects") does not absorb them into the
+    # conversations, because the reader looks for a company's news under the
+    # company, and for what was said under the meeting. Entities of a type no
+    # section claims stay in the store and out of the prose; the week record
+    # still counts them.
+    layout = (cfg.get("summary") or {}).get("layout")
+    if not layout:
+        plan_sections([("Themes", "themes", {}), ("Meetings & Notes", "meetings", {}),
+                       ("Meetings & Notes", "orgs", {"rest": True}),
+                       ("What we learned", "learnings", {}), ("Other", "other", {})])
+        section_themes()
+        section_meetings()
+        section_learnings()
+        section_other()
+    else:
+        org_sections = [sec for sec in layout if sec.get("section") == "orgs"]
+        plan_sections([(sec.get("title") or sec.get("section"), sec.get("section"), sec) for sec in layout])
+        # Whoever sat in a conversation this week is carried by that
+        # conversation's entry, whichever order the sections render in --
+        # otherwise a company section rendered before Meetings lists them as
+        # loose contacts, beside the meeting that already names them.
+        for m in (x for x in meets if x.get("type") == "meeting"):
+            for person in linked(m, "person"):
+                done.add(person["id"])
+        claimed_tags = set()
+        for sec in org_sections:
+            claimed_tags.update(sec.get("tags_any") or [])
+        for sec in layout:
+            kind = sec.get("section")
+            title = sec.get("title") or kind
+            if kind == "themes":
+                section_themes(title)
+            elif kind == "meetings":
+                if any(x.get("type") == "meeting" for x in meets):
+                    print(f"## {title}\n")
+                    emit_meetings(absorb_orgs=not org_sections)
+                    print()
+            elif kind == "orgs":
+                want = set(sec.get("tags_any") or [])
+                types = tuple(sec.get("types") or ["org"])
+                rest = bool(sec.get("rest"))
+                # `rest` sweeps companies only; every other admitted type must
+                # earn its place by tag, or a section would inherit the repo's
+                # whole thread list.
+                def pred(x, w=want, types=types, rest=rest):
+                    tags = set(x.get("tags") or [])
+                    if x.get("type") == "org":
+                        if rest and not (tags & (claimed_tags - w)):
+                            return True
+                        return bool(w and tags & w)
+                    return x.get("type") in types and bool(w and tags & w)
+                rows = [x for x in ents if x.get("type") in types and x["id"] not in done and pred(x)]
+                if rows or rest:
+                    print(f"## {title}\n")
+                    emit_groups(sec.get("groups"), pred)
+                    emit_orgs(pred, pointer_ok=True, types=types)
+                    # No loose people in a declared layout: a person is a
+                    # company's Who: clause or a conversation's attendee, and
+                    # a network contact with neither is a store record, not a
+                    # line under a company section.
+                    print()
+            elif kind == "learnings":
+                section_learnings(title, sec)
+            elif kind == "other":
+                section_other(title)
+            else:
+                die(f"summary.layout: unknown section {kind!r} -- one of themes, meetings, orgs, learnings, other")
 
     # Derived, not written. See stat_line().
     wpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
@@ -1626,10 +2075,51 @@ def cmd_check_summary(args, repo, cfg, sdir):
         if line.strip().lower().startswith("prs merged:"):
             cited_prs |= {int(n) for n in re.findall(r"#(\d+)", line)}
     # A sha needs a digit: `defaced` is seven characters of valid hex.
-    cited_shas = {s for s in re.findall(r"\b[0-9a-f]{7,40}\b", prose)
+    # A published page's hashed address is eight hex characters with digits in
+    # it, so URLs come out before the sha scan.
+    cited_shas = {s for s in re.findall(r"\b[0-9a-f]{7,40}\b", _URL_RE.sub("", prose))
                   if any(c.isdigit() for c in s)}
 
+    # Prose citations only -- the `PRs merged:` line lists everything and
+    # proves nothing about coverage.
+    prose_prs = set()
+    for group in re.findall(r"\(([^()]*)\)", prose):
+        prose_prs |= {int(n) for n in re.findall(r"#(\d+)", group)}
+    rec = {}
+    rpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
+    if os.path.isfile(rpath):
+        with open(rpath) as fh:
+            rec = json.load(fh)
+    merged = {int(n) for n in ((rec.get("stats") or {}).get("pr_numbers") or [])}
+    shipped = {int(x["number"]): x for x in ((rec.get("stats") or {}).get("prs_shipped") or [])}
+
+    ledger = {int(r["number"]): r for r in (rec.get("pr_ledger") or []) if r.get("number") is not None}
+    # A learning that restates a company or meeting entry is news filed twice.
+    # Measured as content-word overlap between the claim and the other entity's
+    # standing summary and week note; high overlap is reported, not failed --
+    # the remove-and-lose test is a judgment, this is the smoke detector.
+    stop = set("the a an and or of to in on for with by at from as is are was were be it its this that "
+               "we our not no one two into than then over under after before more most".split())
+    def words(t):
+        return {x for x in re.findall(r"[a-z0-9$%.-]+", (t or "").lower()) if x not in stop and len(x) > 2}
+    restated = []
+    for c in (e for e in ents if e.get("type") == "concept"):
+        cw = words(c["weeks"][args.week].get("claim"))
+        if len(cw) < 6:
+            continue
+        for o in (e for e in ents if e.get("type") in ("org", "meeting")):
+            ow = words(o.get("summary")) | words(o["weeks"][args.week].get("note"))
+            if ow and len(cw & ow) / len(cw) >= 0.6:
+                restated.append((c["id"], o["id"], len(cw & ow) / len(cw)))
+                break
     problems = []
+    if ledger:
+        for n in sorted(n for n, r in ledger.items() if r.get("consequence") == "major" and n not in prose_prs):
+            problems.append(f"PR #{n} is judged major in the ledger and the prose never cites it: {ledger[n].get('what')}")
+    for n in sorted(set(shipped) - prose_prs):
+        problems.append(f"PR #{n} shipped something to an audience and the prose never cites it"
+                        + (f" ({', '.join(shipped[n]['urls'][:2])})" if shipped[n].get("urls") else ""))
+    unmentioned = sorted(merged - prose_prs - set(shipped))
     for n in sorted(cited_prs - held_prs):
         problems.append(f"PR #{n} is cited in the summary but carried by no entity")
     for s in sorted(cited_shas):
@@ -1644,6 +2134,100 @@ def cmd_check_summary(args, repo, cfg, sdir):
         sys.exit(1)
     print(f"ok — {args.week}: every citation in the summary is carried by an entity "
           f"({len(cited_prs)} PRs, {len(cited_shas)} shas, {len(ents)} entities)")
+    if ledger:
+        by = Counter(r.get("consequence") for r in ledger.values())
+        sup = sorted(n for n, r in ledger.items() if r.get("consequence") == "supporting" and n not in prose_prs)
+        print(f"     ledger: {len(ledger)} PRs judged — " + ", ".join(f"{by[c]} {c}" for c in PR_CONSEQUENCES if by.get(c))
+              + (f"; supporting PRs not cited: {', '.join(f'#{n}' for n in sup)}" if sup else ""))
+    else:
+        print(f"     no PR ledger in the week record — run `ledger` so the prose can be held to judged consequence")
+    if shipped:
+        print(f"     shipped PRs all cited in the prose: {', '.join(f'#{n}' for n in sorted(shipped))}")
+    for cid, oid, frac in restated:
+        print(f"     learning `{cid}` restates `{oid}` ({frac:.0%} of its words) — apply the remove-and-lose test")
+    if unmentioned:
+        # A warning, not a failure: a layout may hide a repo's own plumbing on
+        # purpose. But it is printed every time, so a hidden PR is a choice
+        # someone can see rather than a loss nobody noticed.
+        print(f"     merged but never cited in the prose ({len(unmentioned)}): "
+              + ", ".join(f"#{n}" for n in unmentioned))
+
+
+def cmd_ledger(args, repo, cfg, sdir):
+    """The PR ledger: one judged line per merged PR, stored in the week record.
+
+    Commit counts and lines say where the typing went. What a PR *did* -- what
+    it shipped, found or decided, who can now see it, and whether it mattered --
+    is a judgment made by reading the PR, and this is where that judgment is
+    kept so the summary can be held to it. `--template` prints a skeleton with
+    every merged PR and the ship signals pre-filled; fill in `what`, `reaches`
+    and `consequence`, then feed it back.
+    """
+    if not WEEK_RE.match(args.week or ""):
+        die(f"week must look like 2026-W35, got {args.week!r}")
+    wpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
+    if args.template:
+        w = _week_from_pull(args.pull, args.week)
+        shipped = {sp["number"]: sp for sp in ship_scan(w, cfg)}
+        rows = []
+        for p in sorted(w.get("pr_details") or [], key=lambda p: p.get("number") or 0):
+            sp = shipped.get(p.get("number"))
+            rows.append({"number": p.get("number"), "title": p.get("title"),
+                         "what": "", "reaches": "partners" if sp else "internal",
+                         "consequence": "", "entity": None,
+                         "urls": (sp["resolved"] or sp["urls"]) if sp else [],
+                         "_files": len(p.get("files") or []), "_body_chars": p.get("body_chars")})
+        print(json.dumps(rows, indent=2))
+        return
+    src = sys.stdin if args.file in (None, "-") else open(args.file)
+    try:
+        rows = json.load(src)
+    finally:
+        if src is not sys.stdin:
+            src.close()
+    if not os.path.isfile(wpath):
+        die(f"no week record at {os.path.relpath(wpath, repo)} -- run record-week first")
+    with open(wpath) as fh:
+        rec = json.load(fh)
+    merged = {int(n) for n in ((rec.get("stats") or {}).get("pr_numbers") or [])}
+    ids = {e["id"] for e in load_all(sdir)}
+    problems, ledger = [], []
+    seen = set()
+    for r in rows:
+        n = r.get("number")
+        try:
+            n = int(n)
+        except (TypeError, ValueError):
+            problems.append(f"row without a PR number: {r}")
+            continue
+        seen.add(n)
+        if not str(r.get("what") or "").strip():
+            problems.append(f"#{n}: `what` is empty -- one line, what this PR did")
+        if r.get("reaches") not in PR_REACHES:
+            problems.append(f"#{n}: `reaches` must be one of {', '.join(PR_REACHES)}")
+        if r.get("consequence") not in PR_CONSEQUENCES:
+            problems.append(f"#{n}: `consequence` must be one of {', '.join(PR_CONSEQUENCES)}")
+        if r.get("entity") and r["entity"] not in ids:
+            problems.append(f"#{n}: entity {r['entity']!r} is not in the store")
+        if r.get("consequence") in ("major", "supporting") and not r.get("entity"):
+            problems.append(f"#{n}: a {r.get('consequence')} PR must name the entity that carries it")
+        ledger.append({k: r.get(k) for k in ("number", "title", "what", "reaches", "consequence", "entity", "urls")})
+    for n in sorted(merged - seen):
+        problems.append(f"#{n} merged this week and is not in the ledger")
+    for n in sorted(seen - merged):
+        problems.append(f"#{n} is in the ledger but did not merge this week")
+    if problems:
+        print(f"{args.week}: ledger has {len(problems)} problem(s):")
+        for p in problems:
+            print("  " + p)
+        sys.exit(1)
+    rec["pr_ledger"] = sorted(ledger, key=lambda r: r["number"])
+    with open(wpath, "w") as fh:
+        json.dump(rec, fh, indent=2)
+        fh.write("\n")
+    by = Counter(r["consequence"] for r in ledger)
+    print(f"ok — {args.week}: {len(ledger)} PRs judged — "
+          + ", ".join(f"{by[c]} {c}" for c in PR_CONSEQUENCES if by.get(c)))
 
 
 def cmd_stats(args, repo, cfg, sdir):
@@ -1744,10 +2328,20 @@ def main():
     p = sub.add_parser("render", parents=[common],
                        help="the whole summary, derived: Themes / Meetings / Learnings / Other")
     p.add_argument("week")
-    p.add_argument("--no-open", action="store_true")
-    p.add_argument("--learnings-top", type=int, metavar="N",
-                   help="strongest N learnings by grade; the rest are named, not dropped")
+    p.add_argument("--with-open", action="store_true",
+                   help="render the `open` clause on learnings; off by default -- the store keeps it")
+    p.add_argument("--learnings-top", type=int, metavar="N", default=4,
+                   help="top N learnings by rank, then grade (default 4 -- a reader keeps three or four); the rest are named, not dropped")
     p.set_defaults(fn=cmd_render)
+
+    p = sub.add_parser("ledger", parents=[common],
+                       help="the PR ledger: one judged line per merged PR, kept in the week record")
+    p.add_argument("--week", required=True)
+    p.add_argument("--pull", help="pull_week.py output; needed for --template")
+    p.add_argument("--template", action="store_true",
+                   help="print a skeleton with every merged PR and the ship signals pre-filled")
+    p.add_argument("--file", help="the filled ledger JSON (default: stdin)")
+    p.set_defaults(fn=cmd_ledger)
 
     p = sub.add_parser("check-summary", parents=[common],
                        help="every citation in the week's prose is carried by an entity")
