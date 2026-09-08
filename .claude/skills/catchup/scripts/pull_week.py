@@ -514,12 +514,26 @@ def gh_pr_details(path, start, end_exclusive, body_limit):
             "merged_at": merged,
             "author": ((pr.get("author") or {}).get("login")),
             "labels": [l.get("name") for l in (pr.get("labels") or [])],
+            # The PR's OWN file list, fetched below for the in-week PRs only:
+            # asking the 300-PR list call for files blew its timeout and the
+            # whole detail set degraded to nothing. Mapping a PR to its paths
+            # through commit subjects fails wherever merge commits do not carry
+            # the number, and a PR that built a page then looks as if it
+            # touched nothing.
+            "files": [],
             "body_chars": len(body),
             "body_truncated": truncated,
             "body": (body[:body_limit] + "\n\n…[truncated -- re-pull with "
                      "--pr-body-limit 0 for the full body]") if truncated else body,
         })
     out.sort(key=lambda p: p["number"] or 0)
+    for pr in out:
+        raw = run(["gh", "pr", "view", str(pr["number"]), "--json", "files",
+                   "--jq", "[.files[].path]"], cwd=path, timeout=45)
+        try:
+            pr["files"] = [x for x in (json.loads(raw) if raw.strip() else []) if isinstance(x, str)]
+        except json.JSONDecodeError:
+            pr["files"] = []
     return out
 
 

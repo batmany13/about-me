@@ -220,6 +220,64 @@ REST-era search-visibility flag and was never a member of this enum.
 Both default off. A catchup is a working artifact; when it lands is the user's
 call, not the skill's.
 
+## `summary.layout` — the sections a reader of this repo wants
+
+The default summary answers three questions in a fixed order — what moved
+(Themes), who did we meet (Meetings & Notes), what do we now know (What we
+learned) — with dropped hypotheses under Other. A repo whose reader asks
+different questions declares its own sections, rendered in that order:
+
+```json
+"summary": {
+  "layout": [
+    { "title": "Customers",       "section": "orgs", "tags_any": ["customer"] },
+    { "title": "Prospects",       "section": "orgs", "rest": true },
+    { "title": "Meetings / Notes","section": "meetings" },
+    { "title": "Learnings",       "section": "learnings" }
+  ]
+}
+```
+
+| `section` | Renders | Options |
+|---|---|---|
+| `themes` | confirmed themes with their children | — |
+| `orgs` | one entry per company, its people as a `Who:` clause | `tags_any` selects by tag; `rest: true` takes every company no other `orgs` section claimed (people attached to no company are not rendered in a declared layout); `types` admits other entity types by tag — `["org", "thread"]` with `tags_any: ["shipped"]` puts the thread that shipped a page under the section its subject belongs to; `groups: [{lead_tags_all | lead, tags_any?, title?}]` renders one banner per group — the lead entity (usually a batch decision; `lead_tags_all` selects every decision carrying those tags, `lead` names one by id) as the line, the companies its record links to as sub-bullets |
+| `meetings` | one entry per conversation, with owed and asks | — |
+| `learnings` | the concepts, by rank then grade | `first: {title, tags_any}` renders one strand first — every concept carrying those tags — and when none landed says so and lists what moved in that strand instead of skipping it; `top` caps the rest (default 4: three or four is what a reader keeps; the remainder are named, never dropped); `rest_title` labels the remainder (default "Elsewhere") |
+| `other` | dropped hypotheses and unattached decisions | — |
+
+Two things follow from declaring one. **Anchors apply across sections.** A
+company that was in a room this week is anchored to that meeting, so its line
+under Customers or Prospects is one sentence — the standing `summary` —
+plus "See *the meeting* under Meetings / Notes", with no note, no `Who:` and
+no owed/asks, because all of that lives on the meeting. A company gets its
+full entry only when its week happened without a conversation: a round
+announced, a divestiture learned from the buyer, an investor update. Any
+entity can declare `anchor: <id>` by hand for the same treatment. So keep a
+company's `summary` to one sentence, and put the week's data on the anchor. And
+**a type no section claims stays out of the prose** — themes in a layout without
+a `themes` section are still weighed, still in the store and the week record,
+and simply not rendered. That is the point: that repo's reader does not want the
+repo's own plumbing in the week.
+
+## `ship` — where this repo publishes, so a shipped PR gets an address
+
+```json
+"ship": {
+  "paths": ["site/**"],
+  "hosts": { "site": "https://example.com" }
+}
+```
+
+| Key | What it does |
+|---|---|
+| `paths[]` | Globs; a PR touching one is *shipped* even if its text never says so |
+| `hosts` | Repo directory → production origin. Only URLs on these origins count as shipped addresses (a PR body is full of other people's links), and a path quoted in the body (`` `/reports/8a1f2c/` ``) resolves against the origin of the directory the PR touched |
+
+`propose` lists shipped PRs with their resolved addresses; `record-week` stores
+them under `stats.prs_shipped`; `check-summary` fails if the prose never cites
+one, and warns about every merged PR the prose never mentions.
+
 ## `subjects` — where this repo's findings live
 
 The altitude rule in Step 2b says a learning is about the subject, not about a

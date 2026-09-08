@@ -122,7 +122,10 @@ directories that moved, and — the part that matters most — **`pr_details`: e
 PR merged in the week, with its title and body.**
 
 **Read the PR bodies. They are the richest source in the pull and a commit log
-cannot substitute for them.** A commit subject is one line written in passing; a
+cannot substitute for them.** Read for two things a subject line never
+says: what was *found*, and what was *put in front of people* — a page
+deployed, a link shared, a document sent. The second is easy to under-weigh,
+because it is often a small PR. A commit subject is one line written in passing; a
 PR body is the considered writeup — what was learned, what turned out wrong, what
 a document or a demo actually said. An extraction built from subjects alone
 reconstructs a week's *mechanics* and loses its *findings*, which is usually the
@@ -206,6 +209,15 @@ Check `files` against `insertions` before believing a number.
 
 Also read `git show --stat <sha>` for any commit whose subject is ambiguous.
 
+**If a PR shipped something to a website, record where it lives** (and see 3b½). A PR body
+says `/reports/8a1f2c/` and never the host — one week's report pages, deployed
+to production so someone outside the repo could read them, went into the
+record without an address because nothing in the diff or the PR text carried one. The host is in
+the site's own config (`astro.config`, `netlify.toml`, a targets registry);
+resolve it, and put the full address in the entity's `urls` as
+`[{"label": "report page", "url": "https://example.com/reports/8a1f2c/"}]`. It
+renders as a trailing link on every line shape, including a pointer.
+
 Two things in that output decide how much to trust it:
 
 - **`category_why`** records the rule that classified each commit.
@@ -275,28 +287,83 @@ nine PRs has neither.
 PR titles are the best seed in the file. Someone already decided those commits
 belonged together and wrote down why.
 
-### 3b · Weigh every candidate before writing any of it down
+### 3a½ · Judge every PR — the ledger
+
+**Commit counts and lines of code are a poor proxy for what mattered.** They
+say where the typing went. One week's report pages were 19 commits and 14%
+and they were the thing people outside the repo could see; the catchup's own
+plumbing was 31% and belonged in no reader's week. So before weighing anything, read every
+merged PR — body, then `git show --stat`, then the diff where the body is
+thin — and write one judged line each:
+
+```bash
+uv run $SKILL/entities.py ledger --repo . --week 2026-W35 --pull /tmp/week.json --template > /tmp/ledger.json
+# fill in what / reaches / consequence / entity, then:
+uv run $SKILL/entities.py ledger --repo . --week 2026-W35 --file /tmp/ledger.json
+```
+
+| Field | Values | Meaning |
+|---|---|---|
+| `what` | one line | what this PR shipped, found, or decided — not what it touched |
+| `reaches` | `internal` · `partners` · `public` | who can now see the result |
+| `consequence` | `major` · `supporting` · `bookkeeping` | whether a reader of the week needs it, whether it supports something they need, or whether it is transcripts and chores |
+| `entity` | id | the entity that carries it — required for major and supporting |
+
+The ledger lives in the week record. `check-summary` fails when a **major** PR
+is never cited in the prose and names the supporting ones that are not. A
+ledger that lists every merged PR is also the honest answer to "was anything
+missed": a PR can be judged bookkeeping, but it cannot be absent.
+
+**The ledger is an output, not a document.** When a judgment is wrong, do not
+hand-edit the row — the row will be wrong again next week for the same reason.
+Fix the rule that produced it (the bar for `major`, what `reaches` means for
+this repo, what counts as bookkeeping) here or in the repo's method notes, and
+**re-run the week**. Bruce, 2026-09-07: the point is to tweak the review logic
+and watch it improve week over week, not to get every line right on the day.
+One week's judgments do not need to be perfect; next week's run reviews them.
+
+### 3b · Weigh every candidate — to know its share, not to decide
 
 ```bash
 uv run $SKILL/entities.py weigh 2026-W35 --repo . --pull /tmp/week.json \
   --label "<your candidate theme>" --prs 12,14,17,21
 ```
 
-| Share of commits | Verdict |
-|---|---|
-| ≥ 15% | **CONFIRMED** — big enough to lead |
-| 5–15% | **THIN** — real work, but supporting detail |
-| < 5% | **DROPPED** — record the hypothesis, do not lead with it |
+`weigh` reports the share as a fact — large, modest or small for this week —
+and **returns no verdict.** The decision is `consequence` on the theme, set
+from the PR ledger:
 
-A theme with no measured weight is an opinion about the week, and `upsert`
-refuses one: a `confirmed` theme requires `weight`, `moved` and
-`why_it_matters`. **A dropped hypothesis is still recorded** — as a theme with
-`disposition: dropped`, which renders as one line under `Other`. "We thought X
-was a theme and it was four commits" is a real result, and deleting it hides
-that the question was ever asked.
+| `consequence` | Meaning |
+|---|---|
+| `major` | a reader of the week needs this; it leads |
+| `supporting` | real work that explains or enables a major theme |
+| `minor` | recorded, rendered last, one paragraph at most |
+
+Share still matters as a *check*: a theme judged major at 3% needs a sentence
+saying why (it shipped, it decided something, it reached people); a theme at
+40% judged minor needs one too (it was plumbing). Themes render by consequence
+first and share second, and the header shows both. A `confirmed` theme still
+requires `weight`, `moved` and `why_it_matters` — the share is measured even
+though it does not decide. **A dropped hypothesis is still recorded** — as a
+theme with `disposition: dropped`, which renders as one line under `Other`.
+"We thought X was a theme and it was four commits" is a real result, and
+deleting it hides that the question was ever asked.
 
 Then read the code behind each confirmed theme (Step 2b) and record what proves
 it in `evidence[]`.
+
+### 3b½ · Shipped work is its own entity, whatever it weighs
+
+`propose` prints **Shipped to an audience**: PRs that touched a path the repo
+declares under `ship.paths`, name an address on one of its own `ship.hosts`,
+or say they deployed and quote a path. **Weight measures effort; it does not
+measure who can now see the result.** One week's report pages — 19 commits,
+14%, THIN — were merged into the decision that needed them and rendered as one
+trimmed line with no address, while the pages sat in production for people
+outside the repo to read. Never merge a shipped PR into another theme: it gets its own `thread`
+(or `decision`), tagged `shipped`, with the address in `urls`. `record-week`
+stores the shipped PRs and `check-summary` fails if the prose never cites one
+— so a layout that hides themes cannot hide a shipped page.
 
 ### 3c · Everything else hangs off a theme
 
@@ -353,29 +420,97 @@ in a repo whose convention is that conversations live in files, also means the
 evaluation is still carrying open questions the conversation may already have
 answered. Say so, and say which records are now stale.
 
-### Altitude: a learning is about the subject, not about a defect in it
+### What a learning is: what happened to the subject, and what it means
 
-The subject rule keeps out maxims. It does not, on its own, keep the **altitude**
-right — and getting that wrong is the more common failure, because a defect is
-concrete, quotable and feels like a finding.
+A human reads this section to find out **what we now know about the world**
+that we did not know last week. Not what state our evidence is in, not what our
+tooling does, not how the finding was produced. The subject rule (below) keeps
+out maxims; this rule keeps out mechanism — and mechanism is the more common
+failure, because a mechanism is concrete, quotable and feels like a finding.
 
-**The question a learning answers is "what can this now do that it could not?"**
-Not what state our evidence is in.
+**Shape: the insight, evidenced by the event.** A learning is what we now
+believe that we did not last week — transferable to the next deal or the next
+build, specific enough to be wrong. The event that taught it is the
+*evidence*, one clause, and it already lives elsewhere on the page (a company
+entry, a meeting), so the learning points at it rather than restating it. Two sentences at most.
 
-| Too low | The altitude that is useful |
+**The remove-and-lose test.** Delete the learning. If nothing is lost that a
+company entry or a meeting entry does not already carry, it was not a learning
+— it was news filed twice. "Vendor X shipped v2 and dropped the endpoint we
+integrate" fails: the company entry says so. "Our integration contract assumed
+an endpoint the vendor never committed to; check the deprecation policy before
+scoring a dependency on it again" passes: no other section says it, and it
+changes what we do next time.
+
+**Concrete, or cut.** A learning names a mechanism, a number, or a rule we
+will act on. "Trust a batch source's numbers and verify its characterizations"
+is a maxim. "In this batch every company's public framing overstated
+model-shift durability, and it decided the ranking — verify that claim first
+next batch" is a learning.
+
+| | The `claim` (what we now believe) | The `so_what` (the evidence, and what we do differently) |
+|---|---|---|
+| A company | what its week revealed about the market, the founder, or our own position that we did not know | the event, one clause, with `anchor` pointing at the entry that carries it — then the action |
+| A technology | what it can now do that it could not, or what it turns out to be | whether that changes what we would build, buy, or back |
+| An area | what several arrivals together say about how a stack is now built | which arrivals, and what to track because of it |
+| Our own method | what the week showed a rubric, a process or a source was actually measuring | the case that exposed it, and the rule that changes |
+
+Two examples of the same fact, one wrong and one right:
+
+| Mechanism (wrong) | Knowledge (right) |
 |---|---|
-| "its egress policy fails open on one code path" | "a live VM can now be forked, checkpointed, moved and forked again — warm roots compose instead of being one-shot" |
-| "four repositories it cites are private 404s" | "the lab shipped an agent harness, not a model, and its plugin substrate is a third-party framework nobody was tracking" |
-| "its value sits behind an account we do not have" | "a cache hit became a validated computation rather than a key lookup, so changing the transform logic invalidates correctly" |
+| "Vendor X shipped v2 in August and dropped the endpoint we integrate." *(the company entry already says this)* | "Our integration contract assumed an endpoint the vendor never committed to." *so_what:* "v2 dropped it with no deprecation notice — check the vendor's policy before scoring a dependency on it again." |
+| "Its egress policy fails open on one code path." | "A live VM can now be forked, checkpointed, moved and forked again — warm roots compose instead of being one-shot." |
 
-The three on the left are all true and all **evidence-status notes** — they say
-where our access stopped. Those belong on the subject's own record, not in a
-learnings section. A defect belongs **inside** a learning as its evidence, never
-as its headline.
+The left column is either mechanism (a code path) or news (a round the page
+already reports). The right column is a belief that changed, with the event
+as its evidence. Evidence-status notes ("its value
+sits behind an account we do not have", "four cited repositories are private
+404s") belong on the subject's own record, never as a learning's headline.
 
-The test: *would this sentence help someone decide whether to use, buy, or build
-on this thing?* A bug found while looking usually would not; a capability that
-did not exist last month usually would.
+**The test, in order:**
+
+1. **Would the owner say this sentence to a colleague over coffee?** If it needs the
+   repo to parse, it is not a learning yet.
+2. **Is it about the subject, or about us?** A finding about our own tooling —
+   an instruction budget, a ledger fix, a gate that runs faster, a renderer
+   defect — is a theme child under Technical Notes, however precisely it was
+   measured. A `concept` is about something someone else could adopt, buy, or
+   back. (What the *method* taught about a subject still counts: "the first
+   look was scoring the packet, not the company" is a learning because it says
+   what a deal looked like; "the V6 rubric has four sections" is not.)
+3. **Does it help someone decide whether to use, buy, build on, or back this
+   thing?** A bug found while looking usually does not; a capability or an
+   event that changes the subject's position usually does.
+
+**Length is a hard cap, not a budget.** `claim` is at most 25 words. `so_what`
+is one sentence. `open` — what is still unanswered — stays in the store and is
+not rendered in the summary. A number belongs in the claim only when the
+number *is* the news (a round size, a milestone missed); a claim with three
+numbers is a table pretending to be a sentence.
+
+**A strand with material is never "nothing learned".** If a layout puts one
+strand first (`first` on the learnings section) and the week's entities in
+that strand carry material — a source clipped, a document filed, a queue that
+grew — then "no learning landed" is an extraction gap, not a result. Open the
+material and derive the learning from it against what the strand already
+holds: a new essay is read against the thesis it bears on, and the learning is
+what it adds, contradicts, or fills. The renderer's fallback line exists so the
+absence is visible; it is not a sentence to ship when the files are there.
+
+**Three or four, not all of them.** The summary renders the top four learnings
+by `rank` and names the rest from the store — a reader keeps three or four, and
+an exhaustive list guarantees none of them lands. A repo may put one strand
+first (`first` on its layout's learnings section) and have its absence stated
+rather than skipped: "no learning landed there this week, here is what moved".
+
+**Ordered by what matters, marked by evidence.** The grade stays as the
+bracketed word on every line, because a slide and a measurement should never
+read alike. But the *order* is consequence, not grade: something you measured
+on your own laptop grades `measured` trivially, and under a grade sort a
+tooling defect would sit above a $40M round. Give each concept a `rank` (1 is
+first) when the grade order is wrong; the renderer shows the top six and names
+the rest.
 
 **Where capability deltas actually live.** Subject artifacts commonly carry a
 release or changelog table — a `what changed` column per version. That table is
@@ -456,8 +591,8 @@ commits are being transcribed rather than entities extracted, and an
 over-decomposed week buries its own movements.
 
 The discipline is to drop the weakest, not to shorten everything. A learning that
-survives is worth its full paragraph; one that does not belongs in the store,
-unrendered, where the summary can name it in a clause.
+survives is two sentences — the event and what it means; one that does not
+belongs in the store, unrendered, where the summary can name it in a clause.
 
 ## Step 3b: Record the week's stats
 
@@ -502,6 +637,27 @@ Open threads: <what is mid-flight going into next week>
 ---
 *Stats: …*
 ```
+
+**Anchors: say it once, point everywhere else.** One entity carries a
+thing's details for the week — its **anchor** — and any other entity that
+would restate them renders as one line and a pointer ("See *X* under
+Meetings / Notes"). A company that was in a room this week is anchored to
+that meeting automatically, because the conversation is where the data
+landed; set `anchor: <id>` on any entity to declare one by hand — a theme
+child that duplicates a meeting, a decision whose substance is a learning.
+The anchor's section is named from the layout, so the pointer is right
+whichever shape the summary takes. The rule for extraction follows from
+it: **put the data on the anchor**, keep every other entity's `summary` to
+one sentence, and never restate a conversation on the company.
+
+**A repo may declare its own sections.** `summary.layout` in config lists the
+sections a reader of *that* repo wants, in order — a relationship repo might
+read as `Customers / Prospects / Meetings / Learnings`, with the repo's own
+plumbing weighed as themes but never rendered. See `reference/config.md`. In such a
+layout the meeting anchors the company (above), so the company line is one
+sentence and a pointer. The rule that
+the sections are derived, not composed, is unchanged: add the entity, never the
+prose.
 
 Check it before committing:
 
@@ -726,6 +882,7 @@ DeepVista sync, which is off by default.
 - **Transcribing commits as entities.** If an entity's note could only ever be
   written once, it is evidence, not an entity.
 - **Commit count is not importance.** A 300-commit week can be one idea explored
-  300 times; a 4-commit week can close a quarter of work.
+  300 times; a 4-commit week can close a quarter of work. The PR ledger and
+  `consequence` exist so this is judged per PR, not inferred from volume.
 - **Letting `other` absorb everything.** A repo whose weeks are 70% `other` needs
   category rules in its config. Say so rather than shipping a vague summary.
