@@ -1,14 +1,9 @@
 ---
-description: Write the weekly Field Notes & Reflections (commits, events, founder lessons)
-argument-hint: [last week | this week | last 2 weeks | the week of Aug 17 | backfill | (empty for last closed week)]
+description: Write the weekly Field Notes & Reflections — the machine writes the whole week, then asks one question per turn
 ---
 
 Run the **fnr** skill with the following user args.
 
-The skill lives at `.claude/skills/fnr/SKILL.md`.  It resolves natural-language args into ISO weeks, pulls commits across the private repos listed in `fnr/.private/repos.json` plus attended calendar events, writes detailed unscrubbed catchups into each source repo, then publishes a scrubbed public reflection to `fnr/<YYYY-WNN>.md`.  Follow that skill's Steps 0–8 exactly — including reading `fnr/.private/scrub_policy.md` in full before writing anything public, and don't stop at draft 1: Step 6 folds his reflections in, Step 7 reports the scrub delta, and Step 8 opens the coming week's WIP file.
+The skill lives at `.claude/skills/fnr/SKILL.md`.  It resolves the week (default: the last closed one), checks that each source repo's `catchup` has run and rolls them up from the private repo, then writes the whole weekly in one pass — the unredacted draft, the scrubbed public candidate with every owner block wrapped in `<!-- fnr:key -->` markers, and the delta between them.  Only then does it ask the owner **one question per turn** (`reference/questions.md`), showing the unredacted and scrubbed section together, and writes each answer straight into the public file, verbatim, through `scripts/state.py`.  Every question is optional except **Top of Mind for Founders**.  If a `drafts/<week>.state.json` exists, resume at the next pending question — that is how a reply to the current question lands.  Read `fnr/.private/scrub_policy.md` in full before writing anything public; never publish without the required block; never edit an answered block by hand.
 
-**User's args:** $ARGUMENTS
-
-If `$ARGUMENTS` is empty, default to the last closed week (the skill's Step 1 default) — not the current in-progress week.
-
-If the resolution is more than 4 weeks, confirm before running.
+Args: $ARGUMENTS

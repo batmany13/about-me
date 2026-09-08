@@ -189,17 +189,16 @@ construction**. Repo names live in `fnr/.private/repos.json` and nowhere else in
 this repo.
 
 ### Writing the weekly (fnr/)
-Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-write these — the skill exists so the scrub policy is applied consistently.
+Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-write these — the skill exists so the scrub policy is applied consistently and his own words are never touched.
 
 0. If `fnr/.private/` is missing, it was never cloned into this checkout — not lost:
    `git clone https://github.com/batmany13/about-me-private.git fnr/.private`.
    **Never reconstruct `repos.json` or `scrub_policy.md` from memory or from a conversation** — clone the reviewed copy.
 1. Read `fnr/.private/repos.json` and `fnr/.private/scrub_policy.md`, and check that repo for uncommitted or unpushed work first (a nested repo in an ignored path is invisible to `git status` here)
-2. Run `.claude/skills/fnr/scripts/pull_week.py <YYYY-WNN>` for commits + attended events
-3. Write the **unscrubbed** catchup into each source repo's `<output.dir>/<week>.md` (`catchup/` by default)
-3b. Roll up across repos **from the private repo** with the DeepVista control (`rollup.py <week> --snapshot rollups --control deepvista`), write each repo's card-only summary as `drafts/<week>.deepvista.<repo>.md`, run it again to compare, then write the sum-up — the weekly's draft 1 from the cards alone — as `drafts/<week>.deepvista-draft1.md`, with the delta against the manual draft at its end. Everything a person reads from DeepVista lives in `drafts/`
-4. Derive the **scrubbed** public file at `fnr/<YYYY-WNN>.md` from those catchups
-5. Report the scrub delta — what was held back, by category
+2. Each source repo's `catchup` must have run for the week (run `/catchup` **in that repo** if not); then roll up from the private repo (`rollup.py <week> --snapshot rollups`)
+3. Write the whole week in one pass: `fnr/.private/drafts/<week>.unredacted.md` (names and numbers intact), the scrubbed candidate `fnr/<week>.md` with every owner block in `<!-- fnr:key -->` markers and filled with its machine default, and `drafts/<week>.delta.md` (what was held back, plus the flagged list)
+4. Ask the owner **one question per turn**, showing the unredacted and scrubbed section together; each answer is written straight into the public file, verbatim, via `scripts/state.py` — never scrubbed, never edited afterwards. Every question is optional except **Top of Mind for Founders**; the weekly does not publish without it. `drafts/<week>.state.json` makes it resumable across sessions
+5. Publish check on the flagged list, then the public file on a branch + PR here, and the private artifacts (unredacted, delta, state, rollup snapshot, next week's `wip`) on a branch + PR in the private repo
 
 Default week is the **last closed week**, not the current one.
 
