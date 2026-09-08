@@ -33,10 +33,12 @@ Usage:
     state.py answer 2026-W36 blurb --file a.md # the owner's words, verbatim
     state.py answer 2026-W36 blurb --keep      # the machine text stands
     state.py answer 2026-W36 next --skip       # not answered; machine text stands
-    state.py paste 2026-W36 fnr/2026-W36.md    # write answered blocks into the file
-    state.py check 2026-W36 fnr/2026-W36.md    # every answered block is in the file, unchanged
+    state.py paste 2026-W36 drafts/2026-W36.public.md   # answered blocks into the PRIVATE candidate
+    state.py check 2026-W36 drafts/2026-W36.public.md
     state.py show 2026-W36
-    state.py publish 2026-W36 --decision publish|hold
+    state.py publish 2026-W36 --decision hold
+    state.py publish 2026-W36 --decision publish --quote "<his words, containing 'publish'>"
+    state.py release 2026-W36 fnr/2026-W36.md   # the ONLY writer of the public path; refuses without the quote
 """
 
 import argparse
@@ -218,9 +220,39 @@ def cmd_publish(args):
     for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
             die(f"{k} is required and not answered -- nothing publishes")
+    if args.decision == "publish":
+        # PUBLISH IS A WORD THE OWNER SAYS. Not a decision on the flagged
+        # list, not silence, not "looks fine" -- the literal word, quoted here
+        # from his message. A weekly once reached the public repo because his
+        # answers on four flagged items were read as consent to publish.
+        quote = (args.quote or "").strip()
+        if "publish" not in quote.lower():
+            die("publish needs --quote with the owner's own words containing the word 'publish'. "
+                "Decisions on flagged items are not a publish decision. Record hold instead.")
+        st["publish_quote"] = quote
     st["publish"] = args.decision
     save(args, st)
     print(f"{st['week']}: {args.decision}")
+
+
+def cmd_release(args):
+    """Copy the private candidate into the public repo -- the ONLY writer of that path."""
+    st = load(args)
+    if st.get("publish") != "publish" or "publish" not in (st.get("publish_quote") or "").lower():
+        die("not published: the state does not carry the owner's explicit 'publish'. Nothing is copied.")
+    src = os.path.join(args.state_dir, f"{args.week}.public.md")
+    if not os.path.isfile(src):
+        die(f"no candidate at {src}")
+    body = open(src).read()
+    blocks = {m.group(1): m.group(2) for m in _MARK.finditer(body)}
+    for k in st["order"]:
+        q = st["questions"][k]
+        if q["status"] == "answered" and blocks.get(k) != q["text"]:
+            die(f"{k}: the candidate differs from the owner's answer -- run `paste` first")
+    os.makedirs(os.path.dirname(args.public_path) or ".", exist_ok=True)
+    with open(args.public_path, "w") as fh:
+        fh.write(body)
+    print(f"released {src} -> {args.public_path} (owner said: {st['publish_quote'][:60]!r})")
 
 
 def main():
@@ -240,7 +272,11 @@ def main():
     p = sub.add_parser("paste"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_paste)
     p = sub.add_parser("check"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_check)
     p = sub.add_parser("show"); p.add_argument("week"); p.set_defaults(fn=cmd_show)
-    p = sub.add_parser("publish"); p.add_argument("week"); p.add_argument("--decision", choices=["publish", "hold"], required=True); p.set_defaults(fn=cmd_publish)
+    p = sub.add_parser("publish"); p.add_argument("week"); p.add_argument("--decision", choices=["publish", "hold"], required=True)
+    p.add_argument("--quote", help="the owner's own words; must contain 'publish' for --decision publish")
+    p.set_defaults(fn=cmd_publish)
+    p = sub.add_parser("release", help="copy drafts/<W>.public.md into the public repo -- refuses without an explicit publish")
+    p.add_argument("week"); p.add_argument("public_path"); p.set_defaults(fn=cmd_release)
     args = ap.parse_args()
     if not re.match(r"^\d{4}-W\d{2}$", args.week):
         die(f"week must look like 2026-W36, got {args.week!r}")

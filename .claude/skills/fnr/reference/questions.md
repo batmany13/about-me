@@ -54,7 +54,11 @@ publishes.
 
 **After the last block**, one more question — the delta's flagged list, which
 is borderline scrub calls on *machine* text only — with two options: publish,
-or hold.
+or hold. **Only an answer containing the word "publish" is publish.** His
+decisions on the flagged items are applied to the candidate and the question
+is asked again; anything else is hold. `state.py publish --decision publish`
+requires his words quoted and refuses without the word; `state.py release`
+is the only command that writes the public path.
 
 ## Under Claude
 

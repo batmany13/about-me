@@ -156,7 +156,7 @@ or three, abstracted of system vocabulary, and say what the fix bought.
 | File | What |
 |---|---|
 | `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. |
-| `fnr/<W>.md` (on a branch of about-me) | The same weekly after the scrub policy. **Every owner block wrapped in markers** and filled with its machine default. |
+| `fnr/.private/drafts/<W>.public.md` | The same weekly after the scrub policy — **the candidate, and it stays in the private repo.** Every owner block wrapped in markers and filled with its machine default. It reaches `fnr/<W>.md` in about-me only through `state.py release`, only after Step 6. |
 | `fnr/.private/drafts/<W>.delta.md` | What was held back, by category, and a `## Flagged for review` list of borderline calls the policy says cut but he might want. |
 
 **No block is left empty.** Each owner block carries the machine default the
@@ -191,12 +191,12 @@ delta's flagged list and ask at Step 6 rather than guessing in public.
 uv run .claude/skills/fnr/scripts/state.py next <W>      # which block
 # show the unredacted section, the scrubbed section, the nudge, then ask ONE thing
 uv run .claude/skills/fnr/scripts/state.py answer <W> <key> --file /tmp/a.md   # or --keep / --skip
-uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/<W>.md
+uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.public.md
 ```
 
 - **Show both versions of the section every time.** The unredacted one is
   why he can answer; the scrubbed one is what his answer joins.
-- **Write his answer into the public file directly**, verbatim. It is not
+- **Write his answer into the candidate directly**, verbatim. It is not
   scrubbed. Mirror it into the unredacted file so the private record is whole.
 - **The required block refuses Skip.** Show its `nudge` from the unredacted
   draft and remind him nothing in the nudge may appear by name. If he stops
@@ -205,20 +205,35 @@ uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/<W>.md
 - **Never batch the questions.** One per turn is the design: he answers each
   with the section in front of him.
 
-## Step 6 — Publish check, then publish
+## Step 6 — Publish check, then publish — and publish is a word he says
 
 When `state.py next` says `publish`, show the delta's `## Flagged for review`
 list — machine calls only, never his text — and ask once: publish, or hold?
 
+**Publish is the literal word, from him, in answer to that question.** A
+decision on the flagged items ("1 is fine, cut 2") is not a publish decision.
+"Looks good" is not. Silence is not. Until his message contains the word
+*publish*, the answer is hold, the candidate stays in the private repo, and
+nothing is written to about-me. This is enforced, not remembered:
+
 ```bash
-uv run .claude/skills/fnr/scripts/state.py publish <W> --decision publish
+uv run .claude/skills/fnr/scripts/state.py publish <W> --decision hold
+# or, only with his words in hand:
+uv run .claude/skills/fnr/scripts/state.py publish <W> --decision publish --quote "<his message>"
+uv run .claude/skills/fnr/scripts/state.py release <W> fnr/<W>.md      # the ONLY writer of the public path
 uv run .claude/skills/fnr/scripts/state.py check <W> fnr/<W>.md
 ```
 
-Then land it: the public file on a branch of about-me with a PR; the
-unredacted draft, the delta, the state file and the rollup snapshot on a
-branch of the private repo with a PR. Never commit or push to `main`; never
-merge.
+`publish` refuses a `--quote` that does not contain the word; `release`
+refuses a state without it. **Never write `fnr/<W>.md` by any other means.**
+A weekly once reached a public pull request because the owner's answers on
+four flagged items were read as consent — he had not read the private draft
+and had never said publish.
+
+Then land it: the released file on a branch of about-me with a PR; the
+unredacted draft, the candidate, the delta, the state file and the rollup
+snapshot on a branch of the private repo with a PR. Never commit or push to
+`main`; never merge.
 
 ## Step 7 — Open the coming week
 
@@ -320,6 +335,8 @@ item. Cut vague-and-pointless lines rather than shipping them hollow.
 
 ## Common pitfalls
 
+- **Inferring publish.** Only the word, from him, quoted into the state.
+  Everything before that is hold, and the public repo is not touched.
 - **Asking a question before the whole draft exists.** The draft is the thing
   he reacts to; a prompt in an empty slot is not.
 - **Writing a reflection he didn't write.** The default is the machine's own
