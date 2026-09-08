@@ -14,7 +14,10 @@ under Claude or Codex alike.
 
     fnr/.private/drafts/<W>.state.json
 
-Blocks the owner may write are marked in the public file:
+The sections, which blocks are the owner's, which are required, and the
+question asked for each are declared in the PRIVATE config
+(`fnr/.private/fnr.config.json`) -- nothing here names a section. Blocks the
+owner may write are marked in the public file:
 
     <!-- fnr:blurb -->
     ...machine default, or the owner's words...
@@ -25,7 +28,7 @@ so a re-render can never overwrite what the owner wrote. The machine never
 edits an answered block; the only way to change one is another `answer`.
 
 Usage:
-    state.py init 2026-W36 [--no-rooms] [--state-dir fnr/.private/drafts]
+    state.py init 2026-W36 [--without <key>] [--config fnr/.private/fnr.config.json]
     state.py next 2026-W36                     # the next pending question, or "done"
     state.py answer 2026-W36 blurb --file a.md # the owner's words, verbatim
     state.py answer 2026-W36 blurb --keep      # the machine text stands
@@ -43,10 +46,24 @@ import os
 import re
 import sys
 
-ORDER = ["blurb", "building_learning", "fund_learning", "rooms", "top_of_mind", "next"]
-REQUIRED = {"top_of_mind"}
 STATUSES = ("pending", "answered", "kept", "skipped")
 DEFAULT_STATE_DIR = os.path.join("fnr", ".private", "drafts")
+DEFAULT_CONFIG = os.path.join("fnr", ".private", "fnr.config.json")
+
+# Which blocks exist, their order, and which are required come from the
+# PRIVATE config, never from this file: the section titles and the questions
+# are the owner's, and this script is committed to a public repo.
+
+
+def read_config(path):
+    if not os.path.isfile(path):
+        die(f"no fnr config at {path} -- the blocks and questions live in the private repo")
+    with open(path) as fh:
+        cfg = json.load(fh)
+    blocks = [s for s in (cfg.get("sections") or []) if s.get("owner") == "owner" and s.get("key")]
+    if not blocks:
+        die(f"{path}: no owner blocks declared under `sections`")
+    return cfg, blocks
 
 
 def die(msg):
@@ -84,16 +101,21 @@ def cmd_init(args):
     if os.path.isfile(p):
         print(f"exists: {p}")
         return
-    order = [k for k in ORDER if not (args.no_rooms and k == "rooms")]
+    _, blocks = read_config(args.config)
+    without = set(args.without or [])
+    order = [b["key"] for b in blocks if b["key"] not in without]
+    required = sorted(b["key"] for b in blocks if b.get("required") and b["key"] in order)
     st = {
         "week": args.week,
         "started": now(),
+        "config": args.config,
         "order": order,
+        "required": required,
         "questions": {k: {"status": "pending", "text": None, "at": None} for k in order},
         "publish": "pending",
     }
     save(args, st)
-    print(f"wrote {p} -- {len(order)} questions, required: {', '.join(sorted(REQUIRED))}")
+    print(f"wrote {p} -- {len(order)} questions, required: {', '.join(required) or 'none'}")
 
 
 def cmd_next(args):
@@ -104,7 +126,7 @@ def cmd_next(args):
             return
     # Every question has a status. The required ones must be ANSWERED, not
     # skipped -- skip is refused for them in `answer`, so this is a belt.
-    for k in REQUIRED:
+    for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
             print(k)
             return
@@ -120,7 +142,7 @@ def cmd_answer(args):
     if args.keep:
         q.update(status="kept", text=None, at=now())
     elif args.skip:
-        if k in REQUIRED:
+        if k in (st.get("required") or []):
             die(f"{k} is required -- it cannot be skipped. Answer it, or stop here; the draft is saved.")
         q.update(status="skipped", text=None, at=now())
     else:
@@ -171,7 +193,7 @@ def cmd_check(args):
         q = st["questions"][k]
         if q["status"] == "answered" and blocks[k] != q["text"]:
             problems.append(f"{k}: the file differs from the owner's answer -- run `paste`, never edit the block")
-        if k in REQUIRED and q["status"] != "answered":
+        if k in (st.get("required") or []) and q["status"] != "answered":
             problems.append(f"{k}: required and not answered")
     if problems:
         print(f"{args.week}: {len(problems)} problem(s):")
@@ -186,14 +208,14 @@ def cmd_show(args):
     print(f"{st['week']}  publish={st['publish']}")
     for k in st["order"]:
         q = st["questions"][k]
-        req = " (required)" if k in REQUIRED else ""
+        req = " (required)" if k in (st.get("required") or []) else ""
         preview = (q["text"] or "").replace("\n", " ")[:70]
         print(f"  {k:<18} {q['status']:<9}{req}  {preview}")
 
 
 def cmd_publish(args):
     st = load(args)
-    for k in REQUIRED:
+    for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
             die(f"{k} is required and not answered -- nothing publishes")
     st["publish"] = args.decision
@@ -204,8 +226,12 @@ def cmd_publish(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--state-dir", default=DEFAULT_STATE_DIR)
+    ap.add_argument("--config", default=DEFAULT_CONFIG,
+                    help="the private fnr config declaring the sections, owner blocks and questions")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("init"); p.add_argument("week"); p.add_argument("--no-rooms", action="store_true"); p.set_defaults(fn=cmd_init)
+    p = sub.add_parser("init"); p.add_argument("week")
+    p.add_argument("--without", action="append", metavar="KEY", help="drop a conditional block this week (repeatable)")
+    p.set_defaults(fn=cmd_init)
     p = sub.add_parser("next"); p.add_argument("week"); p.set_defaults(fn=cmd_next)
     p = sub.add_parser("answer"); p.add_argument("week"); p.add_argument("key")
     g = p.add_mutually_exclusive_group(required=True)
