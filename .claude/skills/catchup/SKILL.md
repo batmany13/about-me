@@ -762,6 +762,18 @@ manual recovery command for a card created before local write-back completed.
 The free tier is 100 credits a month, and re-pushing an unchanged card spends
 one to change nothing.
 
+**If the repo's config declares `deepvista.databases`**, follow the push with
+the rows pass — a database card's grid is a typed edge the push does not emit,
+so a database whose rows were never declared renders empty:
+
+```bash
+uv run $SKILL/deepvista_cards.py rows --repo . --week <W>           # preview
+uv run $SKILL/deepvista_cards.py rows --repo . --week <W> --apply   # read, write the union
+```
+
+It reads the current rows and writes back the union, so a row someone added in
+the product survives. See `reference/deepvista.md`.
+
 ## Step 5b (optional): Read the week back from DeepVista — the control
 
 Only where the sync is on and the week has been pushed. The cards hold the same
