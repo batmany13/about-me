@@ -137,6 +137,55 @@ class DeepVistaCardBodyTest(unittest.TestCase):
         self.assertNotIn("**Ask:**", body)
 
 
+class DeepVistaTechFieldsTest(unittest.TestCase):
+    """The tech lane had the same defect as meetings, and more of it.
+
+    A theme card carried what MOVED and never whether it stuck; a concept card
+    carried a claim and never its rank; and PRs still open, where an entity is
+    published, and who was in the room reached no card at all.
+    """
+
+    def test_theme_carries_disposition_and_consequence(self):
+        e = {"id": "t", "type": "theme", "title": "T", "summary": "s",
+             "category": "technical", "status": "active",
+             "weeks": {"2026-W36": {"moved": "Rebuilt the ladder.",
+                                    "disposition": "dropped",
+                                    "consequence": "Cost a week and bought nothing."}}}
+        body = deepvista_cards.render_body(e, {}, "fixture")
+        self.assertIn("**Disposition:** dropped", body)
+        self.assertIn("**Consequence:** Cost a week and bought nothing.", body)
+
+    def test_concept_claim_carries_its_rank_beside_its_grade(self):
+        e = {"id": "c", "type": "concept", "title": "C", "summary": "s",
+             "category": "technical", "status": "active",
+             "weeks": {"2026-W36": {"claim": "A cache hit is a validated computation.",
+                                    "grade": "measured", "rank": 2}}}
+        body = deepvista_cards.render_body(e, {}, "fixture")
+        self.assertIn("*[measured]*", body)
+        self.assertIn("*[rank 2]*", body)
+
+    def test_attendees_render_as_names_and_open_prs_as_still_open(self):
+        e = {"id": "m", "type": "meeting", "title": "M", "summary": "s",
+             "category": "meeting", "status": "active",
+             "links": ["dana-lee"],
+             "weeks": {"2026-W36": {"attendees": ["dana-lee", "unknown-id"],
+                                    "prs": ["12"], "open_prs": ["13"]}}}
+        body = deepvista_cards.render_body(e, {}, "fixture", {"dana-lee": "Dana Lee"})
+        self.assertIn("In the room: Dana Lee, unknown-id", body)   # id is the fallback
+        self.assertIn("Still open: #13", body)
+        # Related resolves the same way, so a card reads as names not slugs.
+        self.assertIn("- Dana Lee (`dana-lee`)", body)
+
+    def test_published_urls_reach_the_card(self):
+        e = {"id": "p", "type": "thread", "title": "P", "summary": "s",
+             "category": "technical", "status": "active",
+             "urls": [{"label": "index", "url": "https://example.com/x/"}],
+             "weeks": {"2026-W36": {"note": "n"}}}
+        body = deepvista_cards.render_body(e, {}, "fixture")
+        self.assertIn("## Published", body)
+        self.assertIn("- [index](https://example.com/x/)", body)
+
+
 class DeepVistaTypeFilterTest(unittest.TestCase):
     """`category` is the summary bucket, not the entity type.
 
@@ -164,11 +213,18 @@ class DeepVistaTypeFilterTest(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_type_narrows_within_a_category(self):
-        args = argparse.Namespace(week=None, all=True, category="meeting", type="meeting",
+        args = argparse.Namespace(week=None, all=True, category="meeting", type=["meeting"],
                                   status=None, limit=0, force=True, show_body=True,
                                   include_skipped=False)
         result = deepvista_cards.build_plan(args, str(self.repo), self.cfg, str(self.store))
         self.assertEqual([i["entity_id"] for i in result["plan"]], ["m1"])
+
+    def test_several_types_at_once(self):
+        args = argparse.Namespace(week=None, all=True, category=None, type=["meeting", "org"],
+                                  status=None, limit=0, force=True, show_body=True,
+                                  include_skipped=False)
+        result = deepvista_cards.build_plan(args, str(self.repo), self.cfg, str(self.store))
+        self.assertEqual(sorted(i["entity_id"] for i in result["plan"]), ["m1", "o1"])
 
     def test_category_alone_still_takes_the_whole_bucket(self):
         args = argparse.Namespace(week=None, all=True, category="meeting", type=None,
