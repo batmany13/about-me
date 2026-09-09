@@ -170,9 +170,16 @@ After a renderer change, re-push the affected slice with `--force`, narrowly,
 because that is one credit per card:
 
 ```bash
-uv run scripts/deepvista_cards.py plan --repo . --all --category meeting --force
-uv run scripts/deepvista_cards.py push --repo . --all --category meeting --force --apply
+uv run scripts/deepvista_cards.py plan --repo . --all --type meeting --force
+uv run scripts/deepvista_cards.py push --repo . --all --type meeting --force --apply
 ```
+
+**Narrow by `--type`, not `--category`.** The category is the *summary bucket*
+and is much broader than it reads: on a relationship repo `category: meeting`
+holds the people, the companies, the decisions and the corrections too — 111
+entities against 15 of `type: meeting`. A renderer fix that changes only
+meeting bodies re-pushed by category spends a credit each on about a hundred
+cards whose bodies are byte-identical.
 
 Hashing the rendered body instead would make this automatic. It would also
 invalidate every stored hash at once -- a full re-push of the entire store on

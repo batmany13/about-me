@@ -561,6 +561,13 @@ def build_plan(args, repo, cfg, sdir):
         die("pass --week YYYY-WNN or --all")
     if args.category:
         ents = [e for e in ents if e.get("category") == args.category]
+    # `category` is the summary bucket and is much broader than it reads: on a
+    # relationship repo `meeting` holds the people, the companies, the decisions
+    # and the corrections too -- 111 entities where `type: meeting` is 15. So a
+    # renderer fix that only changes meeting BODIES needs the type, or the
+    # --force re-push spends a credit each on a hundred cards it does not alter.
+    if getattr(args, "type", None):
+        ents = [e for e in ents if e.get("type") == args.type]
     if args.status:
         ents = [e for e in ents if e.get("status") == args.status]
 
@@ -1059,6 +1066,8 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE),
+                   help="entity type — narrower than --category, which is the summary bucket")
     p.add_argument("--status")
     p.add_argument("--force", action="store_true", help="re-push even if unchanged")
     p.add_argument("--show-body", action="store_true", help="full markdown, not truncated")
@@ -1096,6 +1105,8 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE),
+                   help="entity type — narrower than --category, which is the summary bucket")
     p.add_argument("--status")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--force", action="store_true", help="re-push unchanged cards or override disabled config")

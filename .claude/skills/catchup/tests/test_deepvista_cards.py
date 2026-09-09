@@ -137,6 +137,47 @@ class DeepVistaCardBodyTest(unittest.TestCase):
         self.assertNotIn("**Ask:**", body)
 
 
+class DeepVistaTypeFilterTest(unittest.TestCase):
+    """`category` is the summary bucket, not the entity type.
+
+    On a relationship repo `category: meeting` holds the people, companies,
+    decisions and corrections as well -- 111 entities where `type: meeting` is
+    15. A renderer fix that only changes meeting bodies needs the type, or the
+    --force re-push spends a credit each on a hundred unchanged cards.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        self.store = self.repo / "catchup" / "entities"
+        self.store.mkdir(parents=True)
+        for eid, etype in (("m1", "meeting"), ("p1", "person"), ("o1", "org")):
+            (self.store / f"{eid}.json").write_text(json.dumps({
+                "id": eid, "type": etype, "title": eid, "summary": "s",
+                "category": "meeting", "status": "active", "tags": [], "links": [],
+                "weeks": {"2026-W35": {"note": "n"}},
+                "deepvista": {"card_id": f"card-{eid}", "content_hash": None},
+            }))
+        self.cfg = {"repo": {"label": "fixture"}, "deepvista": {"enabled": True}}
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_type_narrows_within_a_category(self):
+        args = argparse.Namespace(week=None, all=True, category="meeting", type="meeting",
+                                  status=None, limit=0, force=True, show_body=True,
+                                  include_skipped=False)
+        result = deepvista_cards.build_plan(args, str(self.repo), self.cfg, str(self.store))
+        self.assertEqual([i["entity_id"] for i in result["plan"]], ["m1"])
+
+    def test_category_alone_still_takes_the_whole_bucket(self):
+        args = argparse.Namespace(week=None, all=True, category="meeting", type=None,
+                                  status=None, limit=0, force=True, show_body=True,
+                                  include_skipped=False)
+        result = deepvista_cards.build_plan(args, str(self.repo), self.cfg, str(self.store))
+        self.assertEqual(len(result["plan"]), 3)
+
+
 class DeepVistaRegistrationTest(unittest.TestCase):
     def test_repository_mcp_config_does_not_register_deepvista(self):
         root = Path(__file__).resolve().parents[4]
