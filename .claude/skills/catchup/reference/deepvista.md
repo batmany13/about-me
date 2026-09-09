@@ -158,6 +158,27 @@ per repo with `deepvista.card_types`.
 The body ends with an HTML comment `<!-- catchup-entity: <id> -->`, so a card
 can be traced back to its entity even if its title is edited in the product.
 
+## A renderer change does not dirty the hash
+
+`content_hash` covers the **entity**, not the rendered card. So a change to
+`render_body` -- a field that was never emitted, a layout fix -- alters what
+every card should say while every entity hashes exactly as before, and `plan`
+reports the whole store as `skip`. The improvement ships to no card at all,
+silently and at no cost, which is the worst combination for noticing.
+
+After a renderer change, re-push the affected slice with `--force`, narrowly,
+because that is one credit per card:
+
+```bash
+uv run scripts/deepvista_cards.py plan --repo . --all --category meeting --force
+uv run scripts/deepvista_cards.py push --repo . --all --category meeting --force --apply
+```
+
+Hashing the rendered body instead would make this automatic. It would also
+invalidate every stored hash at once -- a full re-push of the entire store on
+the next run -- so it is a deliberate decision with a credit bill attached, not
+a tidy-up.
+
 ## The gotcha
 
 **Agent-created cards default to `unconfirmed`, and search filters those out** —

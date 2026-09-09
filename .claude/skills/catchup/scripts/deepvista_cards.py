@@ -403,6 +403,21 @@ def render_body(e, titles, repo_label):
         if blk.get("note"):
             lines.append("")
             lines.append(blk["note"].strip())
+
+        # What is owed and what is still to ask -- the half of a conversation
+        # that EXPIRES. The local summary has rendered these as sub-bullets
+        # since the meetings format was rewritten; this renderer never emitted
+        # them, so every meeting card could say what the conversation was about
+        # and nothing about what it left outstanding. Found by the W35 control
+        # run, when the card-only fund summary came back unable to name a single
+        # follow-up, and open through W36.
+        for label, key in (("Owed", "owed"), ("Ask", "asks")):
+            items = [" ".join(str(i).split()) for i in (blk.get(key) or []) if str(i).strip()]
+            if items:
+                lines.append("")
+                lines.append(f"**{label}:**")
+                lines += [f"- {x}" for x in items]
+
         ev = []
         if blk.get("people"):
             ev.append("People: " + ", ".join(blk["people"]))

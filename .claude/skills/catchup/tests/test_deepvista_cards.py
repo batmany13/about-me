@@ -92,6 +92,51 @@ class DeepVistaPushTest(unittest.TestCase):
         self.assertEqual(calls[-1], ("close",))
 
 
+class DeepVistaCardBodyTest(unittest.TestCase):
+    def test_meeting_card_carries_what_is_owed_and_still_to_ask(self):
+        """The half of a conversation that expires.
+
+        The local summary has rendered these as sub-bullets since the meetings
+        format was rewritten; the card renderer never emitted them, so the W35
+        control's card-only summary could say what every conversation was about
+        and not one thing it left outstanding.
+        """
+        entity = {
+            "id": "meeting-acme",
+            "type": "meeting",
+            "title": "Acme — Dana",
+            "summary": "First call.",
+            "category": "meetings",
+            "status": "active",
+            "weeks": {"2026-W35": {
+                "date": "2026-08-27",
+                "note": "They walked through the pipeline.",
+                "owed": ["Intro to the   infra lead", "Send the memo"],
+                "asks": ["Their churn number"],
+                "people": ["dana"],
+            }},
+        }
+        body = deepvista_cards.render_body(entity, {"meetings": "Meetings"}, "fixture")
+        self.assertIn("**Owed:**", body)
+        self.assertIn("- Intro to the infra lead", body)   # whitespace collapsed
+        self.assertIn("- Send the memo", body)
+        self.assertIn("**Ask:**", body)
+        self.assertIn("- Their churn number", body)
+        # The note is the synthesis and still leads; the actions follow it.
+        self.assertLess(body.index("They walked through"), body.index("**Owed:**"))
+        self.assertLess(body.index("**Owed:**"), body.index("**Ask:**"))
+
+    def test_an_entity_with_neither_gains_no_empty_headings(self):
+        entity = {
+            "id": "concept-x", "type": "concept", "title": "X", "summary": "s",
+            "category": "technical", "status": "active",
+            "weeks": {"2026-W35": {"claim": "c", "owed": [], "asks": None}},
+        }
+        body = deepvista_cards.render_body(entity, {}, "fixture")
+        self.assertNotIn("**Owed:**", body)
+        self.assertNotIn("**Ask:**", body)
+
+
 class DeepVistaRegistrationTest(unittest.TestCase):
     def test_repository_mcp_config_does_not_register_deepvista(self):
         root = Path(__file__).resolve().parents[4]
