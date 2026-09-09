@@ -81,7 +81,9 @@
     "card_types": {
       "$comment": "Override the entity-type -> DeepVista card_type mapping. Values must be DeepVista's own card types.",
       "thread": "topic"
-    }
+    },
+    "$comment_databases": "Database cards this repo fills the rows of. A row is a TYPED edge (rel_type row_of); ordinary relations do not appear in the grid. One database belongs to one repo -- the row list is a full replace, so two writers would delete each other's rows. Run `deepvista_cards.py rows --apply` after a push.",
+    "databases": []
   },
   "subjects": {
     "$comment": "What this repo produces evidence ABOUT, and where that evidence lives. Only meaningful for a repo that evaluates or researches things outside itself; omit it entirely otherwise. Without it the altitude rule is unenforceable — a commit log describes what changed in the repo, and only these artifacts describe the thing being studied, so a learning drifts into being about a defect in the tooling instead of about the subject.",

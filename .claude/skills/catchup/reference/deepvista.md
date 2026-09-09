@@ -158,6 +158,63 @@ per repo with `deepvista.card_types`.
 The body ends with an HTML comment `<!-- catchup-entity: <id> -->`, so a card
 can be traced back to its entity even if its title is edited in the product.
 
+## Database rows — a typed edge, and a full replace
+
+A **database** card renders a grid, and what fills it is not an ordinary
+relation. From `upsert_context_card`'s served schema:
+
+> a database's rows MUST be declared this way, because ids passed in
+> `related_context_card_ids` mean only 'generally related' and will NOT appear
+> in the database's grid
+
+The push emits `related_context_card_ids` and nothing else, so every card it
+has ever written is *related to* things and a *row of* nothing. A database card
+pointed at them renders empty — which is exactly what a tracker built by hand
+in the product did, with a working push behind it and no rows in the grid.
+
+`rows` is the command that fixes it, and it is separate from `push` because it
+writes to a different card:
+
+```bash
+uv run scripts/deepvista_cards.py rows --repo . --week 2026-W35            # preview
+uv run scripts/deepvista_cards.py rows --repo . --week 2026-W35 --apply    # read, then write the union
+```
+
+Two properties of the write shape the whole command, and both cut against the
+way the rest of this bridge works.
+
+**Replace semantics, per relation type.** Passing `row_of` sets the database's
+*full* row list — it leaves `RELATED` alone, but every row it does not name is
+gone. So the apply path reads the current rows first and writes back the union.
+A row that maps to none of this repo's entities is never removed, only carried
+through: someone adding a row in the product must not lose it to the next sync.
+`--prune` is the only way a row is removed, and even then only one that maps to
+one of *our* entities that no longer selects.
+
+A truncated read is therefore fatal, not a warning. If the row listing comes
+back at its cap the command refuses to write, because writing back a truncated
+list would delete the remainder — the one failure here that destroys data
+rather than merely not creating it.
+
+**The write lands on the database, not on the row.** Everywhere else the repo
+that owns an entity pushes it; here the payload is the database's row list. Two
+repos writing one database would clobber each other by turns, so **a database
+belongs to exactly one repo's config** (`deepvista.databases`, see
+`reference/config.md`). That is the one documented exception to the ownership
+rule above.
+
+The update sends the database's own `type`, `title`, `description` and `status`
+back alongside the relations. A links-only upsert — `properties` omitted — is
+what re-saved 41 card bodies through an HTML-escaping pass on 2026-09-02;
+sending properties in the same call left them untouched. The database's body is
+short and plain, but the failure mode is the same one.
+
+The preview is local, like `plan`'s: it lists the rows *this repo would
+contribute* and says plainly that it cannot know the current ones without a
+read. It also reports selected entities with no `card_id` — an entity that was
+never pushed cannot be a row, and an empty-looking grid whose real cause is an
+unfinished push is the confusing case worth naming.
+
 ## The gotcha
 
 **Agent-created cards default to `unconfirmed`, and search filters those out** —
