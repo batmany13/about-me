@@ -228,11 +228,19 @@ def load_all(sdir):
 
 
 def content_hash(e):
-    """Hash of everything a DeepVista card would carry.
+    """Hash of the ENTITY a DeepVista card is rendered from -- not of the card.
 
     The sync compares this to what it last pushed, so an unchanged entity costs
     no API call and no credit. Deliberately excludes the `deepvista` block, which
     the sync itself writes -- otherwise every push would dirty its own input.
+
+    The gap to know about: a change to `render_body` alters what the card says
+    without touching the entity, so every already-pushed card hashes as `skip`
+    and the improvement never ships. Re-push the affected category with
+    `--force` after a renderer change -- narrowly, since that is a credit per
+    card. Hashing the rendered body instead would make this automatic and would
+    also invalidate every stored hash at once, which is a full re-push of every
+    card in the store; worth doing deliberately, not as a side effect.
     """
     payload = {k: v for k, v in e.items()
                if k not in ("deepvista", "_path", "updated_at")}

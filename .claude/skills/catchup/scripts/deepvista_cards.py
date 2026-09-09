@@ -331,7 +331,7 @@ def card_status(dv_cfg):
     return want
 
 
-def render_body(e, titles, repo_label):
+def render_body(e, titles, repo_label, by_id=None):
     """The card's markdown body.
 
     Carries the full week-by-week timeline, not just the current summary. That is
@@ -339,6 +339,13 @@ def render_body(e, titles, repo_label):
     that the cards should hold enough for DeepVista to compose a catchup itself.
     A card that only said "here is the latest" could not.
     """
+    by_id = by_id or {}
+
+    def name(eid):
+        """An entity id as a reader's name. Falls back to the id itself, which
+        is what a card said for attendees before they were rendered at all."""
+        return by_id.get(eid) or eid
+
     weeks = sorted(e.get("weeks") or {})
     lines = [e.get("summary", "").strip(), ""]
 
@@ -384,6 +391,16 @@ def render_body(e, titles, repo_label):
                 bits.append(f"{wt['commits']} commits")
             lines.append("")
             lines.append("**Weight:** " + " · ".join(bits))
+        # What became of the theme, and what it cost or bought. A theme card
+        # that carries `moved` and not `disposition` says what happened and not
+        # whether it stuck -- and `dropped` is the single most useful thing a
+        # later reader can know about a week's theme.
+        if blk.get("disposition"):
+            lines.append("")
+            lines.append(f"**Disposition:** {blk['disposition']}")
+        if blk.get("consequence"):
+            lines.append("")
+            lines.append(f"**Consequence:** {str(blk['consequence']).strip()}")
         if blk.get("evidence"):
             lines.append("")
             lines.append("**Evidence:**")
@@ -391,8 +408,10 @@ def render_body(e, titles, repo_label):
 
         if blk.get("claim"):
             grade = blk.get("grade")
+            rank = blk.get("rank")
             lines.append(f"**Claim:** {blk['claim'].strip()}"
-                         + (f"  *[{grade}]*" if grade else ""))
+                         + (f"  *[{grade}]*" if grade else "")
+                         + (f"  *[rank {rank}]*" if rank else ""))
         if blk.get("so_what"):
             lines.append("")
             lines.append(blk["so_what"].strip())
@@ -403,11 +422,34 @@ def render_body(e, titles, repo_label):
         if blk.get("note"):
             lines.append("")
             lines.append(blk["note"].strip())
+
+        # What is owed and what is still to ask -- the half of a conversation
+        # that EXPIRES. The local summary has rendered these as sub-bullets
+        # since the meetings format was rewritten; this renderer never emitted
+        # them, so every meeting card could say what the conversation was about
+        # and nothing about what it left outstanding. Found by the W35 control
+        # run, when the card-only fund summary came back unable to name a single
+        # follow-up, and open through W36.
+        for label, key in (("Owed", "owed"), ("Ask", "asks")):
+            items = [" ".join(str(i).split()) for i in (blk.get(key) or []) if str(i).strip()]
+            if items:
+                lines.append("")
+                lines.append(f"**{label}:**")
+                lines += [f"- {x}" for x in items]
+
         ev = []
+        # Who was in the room. `attendees` is the canonical field -- the one
+        # contact_state derives "have I met this person" from -- and it never
+        # reached the card, so 4 of the fund's 15 meeting cards named nobody at
+        # all and the rest named only whoever also appeared in `people`.
+        if blk.get("attendees"):
+            ev.append("In the room: " + ", ".join(name(a) for a in blk["attendees"]))
         if blk.get("people"):
             ev.append("People: " + ", ".join(blk["people"]))
         if blk.get("prs"):
             ev.append("PRs: " + ", ".join(f"#{p}" for p in blk["prs"]))
+        if blk.get("open_prs"):
+            ev.append("Still open: " + ", ".join(f"#{p}" for p in blk["open_prs"]))
         if blk.get("commits"):
             ev.append("Commits: " + ", ".join(blk["commits"][:8])
                       + (f" (+{len(blk['commits']) - 8} more)" if len(blk["commits"]) > 8 else ""))
@@ -418,10 +460,20 @@ def render_body(e, titles, repo_label):
             lines += [f"- {x}" for x in ev]
         lines.append("")
 
+    if e.get("urls"):
+        lines.append("## Published")
+        lines.append("")
+        for u in e["urls"]:
+            if isinstance(u, dict) and u.get("url"):
+                lines.append(f"- [{u.get('label') or u['url']}]({u['url']})")
+            elif u:
+                lines.append(f"- {u}")
+        lines.append("")
+
     if e.get("links"):
         lines.append("## Related")
         lines.append("")
-        lines += [f"- `{l}`" for l in e["links"]]
+        lines += [f"- {name(l)} (`{l}`)" for l in e["links"]]
         lines.append("")
 
     lines.append(f"<!-- catchup-entity: {e['id']} -->")
@@ -546,6 +598,13 @@ def build_plan(args, repo, cfg, sdir):
         die("pass --week YYYY-WNN or --all")
     if args.category:
         ents = [e for e in ents if e.get("category") == args.category]
+    # `category` is the summary bucket and is much broader than it reads: on a
+    # relationship repo `meeting` holds the people, the companies, the decisions
+    # and the corrections too -- 111 entities where `type: meeting` is 15. So a
+    # renderer fix that only changes meeting BODIES needs the type, or the
+    # --force re-push spends a credit each on a hundred cards it does not alter.
+    if getattr(args, "type", None):
+        ents = [e for e in ents if e.get("type") in set(args.type)]
     if args.status:
         ents = [e for e in ents if e.get("status") == args.status]
 
@@ -559,6 +618,7 @@ def build_plan(args, repo, cfg, sdir):
     card_of = {x["id"]: (x.get("deepvista") or {}).get("card_id")
                for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
 
+    by_id = {x["id"]: x.get("title") for x in all_ents if x.get("title")}
     plan, counts = [], {"create": 0, "update": 0, "skip": 0}
     for e in sorted(ents, key=lambda x: (CATEGORY_ORDER.index(x.get("category", "other"))
                                          if x.get("category") in CATEGORY_ORDER else 9, x["id"])):
@@ -604,7 +664,7 @@ def build_plan(args, repo, cfg, sdir):
             "card": {
                 "type": type_map.get(e.get("type"), "note"),
                 "title": e["title"],
-                "description": render_body(e, titles, repo_label),
+                "description": render_body(e, titles, repo_label, by_id),
                 "tags": build_tags(e, cfg, repo_label, all_ents),
                 "status": card_status(dv_cfg),
             },
@@ -951,7 +1011,8 @@ def cmd_fetch(args, repo, cfg, sdir):
                 continue
             body = card.get("description") or ""
             tracer = _tracer_state(body, e["id"])
-            state = _body_state(body, render_body(e, titles, repo_label), tracer)
+            state = _body_state(body, render_body(e, titles, repo_label,
+                                     {x['id']: x.get('title') for x in all_ents if x.get('title')}), tracer)
             cards.append({
                 "entity_id": e["id"],
                 "entity_type": e.get("type"),
@@ -1044,6 +1105,9 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE), nargs="+", metavar="TYPE",
+                   help="one or more entity types — narrower than --category, which is "
+                        "the summary bucket. A renderer change usually touches several.")
     p.add_argument("--status")
     p.add_argument("--force", action="store_true", help="re-push even if unchanged")
     p.add_argument("--show-body", action="store_true", help="full markdown, not truncated")
@@ -1081,6 +1145,9 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE), nargs="+", metavar="TYPE",
+                   help="one or more entity types — narrower than --category, which is "
+                        "the summary bucket. A renderer change usually touches several.")
     p.add_argument("--status")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--force", action="store_true", help="re-push unchanged cards or override disabled config")
