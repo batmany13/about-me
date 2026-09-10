@@ -146,21 +146,74 @@ def is_ignored(repo, rel):
     return p.returncode == 0
 
 
+def fetch_origin(repo):
+    """Refresh origin's refs, and SAY SO when it cannot.
+
+    This was best-effort and silent, which is the worst shape for it: a fetch
+    that fails leaves `origin/<default>` wherever it was last time, the new
+    branch is cut from there, and nothing in the output says the base is old.
+    Two prepared re-pushes were planned against a 28-commit-stale store before
+    anyone noticed -- and it was noticed from a diff, not from this tool.
+    """
+    p = subprocess.run(["git", "-C", repo, "fetch", "-q", "origin"],
+                       capture_output=True, text=True)
+    if p.returncode == 0:
+        return True
+    # git's failure is several lines and the LAST one is a sentence fragment
+    # ("and the repository exists."). The `fatal:` line is the one that says
+    # what went wrong.
+    lines = [l.strip() for l in (p.stderr or p.stdout).splitlines() if l.strip()]
+    detail = next((l for l in lines if l.startswith("fatal:")), lines[0] if lines else "")
+    print(f"  WARNING: could not fetch origin in {repo}"
+          + (f" -- {detail}" if detail else ""))
+    print("           Its refs may be stale, so a new branch would be cut from an old base.")
+    return False
+
+
+def report_base(repo, path):
+    """How far behind origin's default branch this worktree sits.
+
+    Printed on BOTH paths -- created and reused -- because a reused worktree
+    keeps whatever base it was made with, and re-running a deploy into one is
+    exactly how a stale base survives the fetch that would have caught it.
+    """
+    default = default_branch(repo)
+    if not default:
+        return
+    ref = f"origin/{default}"
+    if not git(repo, "rev-parse", "--verify", "-q", f"refs/remotes/{ref}", ok_fail=True):
+        return
+    behind = git(path, "rev-list", "--count", f"HEAD..{ref}", ok_fail=True)
+    if behind is None:
+        return
+    if behind == "0":
+        print(f"  base: current with {ref}")
+        return
+    print(f"  WARNING: this worktree is {behind} commit(s) behind {ref}.")
+    print("           Anything planned from it -- a push, a summary, a week's stats --")
+    print("           reads a store that is missing those commits.")
+    print(f"           git -C {path} fetch origin {default} && git -C {path} rebase {ref}")
+
+
 def ensure_worktree(repo, name):
     """A worktree of `repo` at .claude/worktrees/<name> on branch <name>.
 
     Reused if it already exists. Otherwise created from origin's default branch
-    when that ref is known (after a best-effort fetch), else from HEAD -- so a
+    when that ref is known (after a fetch that reports its own failure),
+    else from HEAD -- so a
     deploy starts from what main actually is, not from wherever the primary
     checkout happened to be left.
     """
     path = os.path.join(repo, WORKTREES_REL, name)
+    # Fetch FIRST, and before the reuse check, so both paths judge staleness
+    # against refs that were just refreshed rather than against last week's.
+    fetch_origin(repo)
     if os.path.isdir(path) and os.path.exists(os.path.join(path, ".git")):
         print(f"worktree: using existing {os.path.relpath(path, repo)} "
               f"(branch {current_branch(path) or 'DETACHED'})")
+        report_base(repo, path)
         return path
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    subprocess.run(["git", "-C", repo, "fetch", "-q", "origin"], capture_output=True)
     if git(repo, "rev-parse", "--verify", "-q", f"refs/heads/{name}", ok_fail=True):
         git(repo, "worktree", "add", path, name)
         print(f"worktree: checked out existing branch {name} at {os.path.relpath(path, repo)}")
@@ -178,6 +231,7 @@ def ensure_worktree(repo, name):
             ok_fail=True) else "HEAD"
         git(repo, "worktree", "add", "-b", name, path, base)
         print(f"worktree: created {os.path.relpath(path, repo)} on new branch {name} from {base}")
+    report_base(repo, path)
     if not is_ignored(repo, os.path.join(WORKTREES_REL, name)):
         print(f"  WARNING: {WORKTREES_REL}/ is not ignored in {repo}, so the worktree itself")
         print("           shows up as an untracked directory in the main checkout.")
