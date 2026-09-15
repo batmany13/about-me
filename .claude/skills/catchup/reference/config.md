@@ -202,6 +202,7 @@ work — only a commit that is nothing but bookkeeping is bookkeeping.
 | `tags[]` | `["catchup"]` | Base tags on every card |
 | `card_status` | `"active"` | Must be one of the values the server serves |
 | `card_types{}` | built-in map | Override entity-type → DeepVista card_type |
+| `databases[]` | `[]` | Database cards this repo fills the rows of — see below |
 
 **`card_status` is checked against the served enum** — `pending`,
 `not_started`, `in_progress`, `completed`, `for_review`, `active`, `archived` —
@@ -209,6 +210,49 @@ and a value outside it fails at the first card with the vocabulary printed,
 rather than being accepted and quietly discarded by a server that ignores
 unknown keys. An older `confirmed` is mapped to `active`; it came from a
 REST-era search-visibility flag and was never a member of this enum.
+
+### `databases[]` — the rows of a database card
+
+A DeepVista **database** card renders a grid, and its rows are a *typed* edge:
+`rel_type: "row_of"`. Ids passed as ordinary relations mean only "generally
+related" and **do not appear in the grid**. Each entry names one database card
+and the entities that are its rows:
+
+```json
+"databases": [
+  {
+    "$comment": "Every tracked organization is a row of the tracker card.",
+    "card_id": "<database card id>",
+    "title": "<human label, for command output only>",
+    "types": ["org"],
+    "tags_any": ["tracked"],
+    "weeks": "all"
+  }
+]
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `card_id` | — | **Required.** The database card whose rows these are |
+| `title` | `null` | Label in command output; never sent |
+| `types[]` | any | Entity types eligible as rows |
+| `categories[]` | any | Entity categories eligible as rows |
+| `tags_any[]` | any | Entity must carry at least one |
+| `tags_all[]` | none | Entity must carry all |
+| `weeks` | `"all"` | `"all"` for the whole store, `"week"` for one week's entities (then `--week` is required) |
+
+Every clause narrows, so a spec with no selectors takes the repo's whole store
+— which is what a per-week database wants, bounded by `weeks: "week"`.
+
+**A database belongs to exactly one repo's config.** The row list has replace
+semantics per relation type, so two repos writing the same database would
+delete each other's rows by turns. This is the one place the "the repo that
+owns the entity pushes it" rule does not extend: the write lands on the
+database card, not on the row.
+
+Selector keys are closed and validated locally, because a typo is silent at
+the endpoint — it selects nothing, the union writes back what was already
+there, and the grid stays empty with no error anywhere.
 
 ## `git`
 
