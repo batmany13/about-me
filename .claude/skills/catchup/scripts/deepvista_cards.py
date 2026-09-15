@@ -36,6 +36,8 @@ Usage:
     deepvista_cards.py push --week 2026-W35 --apply     # explicit MCP write
     deepvista_cards.py plan --all --category meeting
     deepvista_cards.py plan --week 2026-W35 --show-body    # eyeball the markdown
+    deepvista_cards.py rows --week 2026-W35              # which cards would be rows
+    deepvista_cards.py rows --week 2026-W35 --apply      # read rows, write the union
     deepvista_cards.py record --id ray-summit --card-id abc-123  # recovery only
 """
 
@@ -331,7 +333,7 @@ def card_status(dv_cfg):
     return want
 
 
-def render_body(e, titles, repo_label):
+def render_body(e, titles, repo_label, by_id=None):
     """The card's markdown body.
 
     Carries the full week-by-week timeline, not just the current summary. That is
@@ -339,6 +341,13 @@ def render_body(e, titles, repo_label):
     that the cards should hold enough for DeepVista to compose a catchup itself.
     A card that only said "here is the latest" could not.
     """
+    by_id = by_id or {}
+
+    def name(eid):
+        """An entity id as a reader's name. Falls back to the id itself, which
+        is what a card said for attendees before they were rendered at all."""
+        return by_id.get(eid) or eid
+
     weeks = sorted(e.get("weeks") or {})
     lines = [e.get("summary", "").strip(), ""]
 
@@ -384,6 +393,16 @@ def render_body(e, titles, repo_label):
                 bits.append(f"{wt['commits']} commits")
             lines.append("")
             lines.append("**Weight:** " + " · ".join(bits))
+        # What became of the theme, and what it cost or bought. A theme card
+        # that carries `moved` and not `disposition` says what happened and not
+        # whether it stuck -- and `dropped` is the single most useful thing a
+        # later reader can know about a week's theme.
+        if blk.get("disposition"):
+            lines.append("")
+            lines.append(f"**Disposition:** {blk['disposition']}")
+        if blk.get("consequence"):
+            lines.append("")
+            lines.append(f"**Consequence:** {str(blk['consequence']).strip()}")
         if blk.get("evidence"):
             lines.append("")
             lines.append("**Evidence:**")
@@ -391,8 +410,10 @@ def render_body(e, titles, repo_label):
 
         if blk.get("claim"):
             grade = blk.get("grade")
+            rank = blk.get("rank")
             lines.append(f"**Claim:** {blk['claim'].strip()}"
-                         + (f"  *[{grade}]*" if grade else ""))
+                         + (f"  *[{grade}]*" if grade else "")
+                         + (f"  *[rank {rank}]*" if rank else ""))
         if blk.get("so_what"):
             lines.append("")
             lines.append(blk["so_what"].strip())
@@ -403,11 +424,34 @@ def render_body(e, titles, repo_label):
         if blk.get("note"):
             lines.append("")
             lines.append(blk["note"].strip())
+
+        # What is owed and what is still to ask -- the half of a conversation
+        # that EXPIRES. The local summary has rendered these as sub-bullets
+        # since the meetings format was rewritten; this renderer never emitted
+        # them, so every meeting card could say what the conversation was about
+        # and nothing about what it left outstanding. Found by the W35 control
+        # run, when the card-only fund summary came back unable to name a single
+        # follow-up, and open through W36.
+        for label, key in (("Owed", "owed"), ("Ask", "asks")):
+            items = [" ".join(str(i).split()) for i in (blk.get(key) or []) if str(i).strip()]
+            if items:
+                lines.append("")
+                lines.append(f"**{label}:**")
+                lines += [f"- {x}" for x in items]
+
         ev = []
+        # Who was in the room. `attendees` is the canonical field -- the one
+        # contact_state derives "have I met this person" from -- and it never
+        # reached the card, so 4 of the fund's 15 meeting cards named nobody at
+        # all and the rest named only whoever also appeared in `people`.
+        if blk.get("attendees"):
+            ev.append("In the room: " + ", ".join(name(a) for a in blk["attendees"]))
         if blk.get("people"):
             ev.append("People: " + ", ".join(blk["people"]))
         if blk.get("prs"):
             ev.append("PRs: " + ", ".join(f"#{p}" for p in blk["prs"]))
+        if blk.get("open_prs"):
+            ev.append("Still open: " + ", ".join(f"#{p}" for p in blk["open_prs"]))
         if blk.get("commits"):
             ev.append("Commits: " + ", ".join(blk["commits"][:8])
                       + (f" (+{len(blk['commits']) - 8} more)" if len(blk["commits"]) > 8 else ""))
@@ -418,10 +462,20 @@ def render_body(e, titles, repo_label):
             lines += [f"- {x}" for x in ev]
         lines.append("")
 
+    if e.get("urls"):
+        lines.append("## Published")
+        lines.append("")
+        for u in e["urls"]:
+            if isinstance(u, dict) and u.get("url"):
+                lines.append(f"- [{u.get('label') or u['url']}]({u['url']})")
+            elif u:
+                lines.append(f"- {u}")
+        lines.append("")
+
     if e.get("links"):
         lines.append("## Related")
         lines.append("")
-        lines += [f"- `{l}`" for l in e["links"]]
+        lines += [f"- {name(l)} (`{l}`)" for l in e["links"]]
         lines.append("")
 
     lines.append(f"<!-- catchup-entity: {e['id']} -->")
@@ -546,6 +600,13 @@ def build_plan(args, repo, cfg, sdir):
         die("pass --week YYYY-WNN or --all")
     if args.category:
         ents = [e for e in ents if e.get("category") == args.category]
+    # `category` is the summary bucket and is much broader than it reads: on a
+    # relationship repo `meeting` holds the people, the companies, the decisions
+    # and the corrections too -- 111 entities where `type: meeting` is 15. So a
+    # renderer fix that only changes meeting BODIES needs the type, or the
+    # --force re-push spends a credit each on a hundred cards it does not alter.
+    if getattr(args, "type", None):
+        ents = [e for e in ents if e.get("type") in set(args.type)]
     if args.status:
         ents = [e for e in ents if e.get("status") == args.status]
 
@@ -559,6 +620,7 @@ def build_plan(args, repo, cfg, sdir):
     card_of = {x["id"]: (x.get("deepvista") or {}).get("card_id")
                for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
 
+    by_id = {x["id"]: x.get("title") for x in all_ents if x.get("title")}
     plan, counts = [], {"create": 0, "update": 0, "skip": 0}
     for e in sorted(ents, key=lambda x: (CATEGORY_ORDER.index(x.get("category", "other"))
                                          if x.get("category") in CATEGORY_ORDER else 9, x["id"])):
@@ -604,7 +666,7 @@ def build_plan(args, repo, cfg, sdir):
             "card": {
                 "type": type_map.get(e.get("type"), "note"),
                 "title": e["title"],
-                "description": render_body(e, titles, repo_label),
+                "description": render_body(e, titles, repo_label, by_id),
                 "tags": build_tags(e, cfg, repo_label, all_ents),
                 "status": card_status(dv_cfg),
             },
@@ -692,11 +754,34 @@ def _record_card_id(sdir, entity_id, card_id):
     return e["deepvista"]
 
 
-def cmd_push(args, repo, cfg, sdir):
-    """Explicitly write planned cards through one short-lived MCP proxy."""
+def require_enabled(cfg, args, verb):
+    """The repo's `deepvista` block, or stop -- unless --force says otherwise.
+
+    Every command that reaches the endpoint asks this the same way, so it is
+    asked in one place: a sync that is off in config stays off by default.
+    """
     dv_cfg = cfg.get("deepvista") or {}
     if not dv_cfg.get("enabled") and not args.force:
-        die("deepvista.enabled is not true in this repo's config; pass --force to push anyway")
+        die(f"deepvista.enabled is not true in this repo's config; pass --force to {verb} anyway")
+    return dv_cfg
+
+
+def open_client(args):
+    """One short-lived proxy session, for a command that has decided to call.
+
+    Resolved and opened only on the path that actually makes calls, never on a
+    preview -- which is why this is a function and not module setup.
+    """
+    npx = resolve_npx(args.npx)
+    if not npx:
+        die(f"no npx {MCP_MIN_NPX}+ found to run the mcp-remote proxy -- `brew install node`, "
+            "or pass --npx /path/to/npx")
+    return McpClient(npx, timeout=args.timeout)
+
+
+def cmd_push(args, repo, cfg, sdir):
+    """Explicitly write planned cards through one short-lived MCP proxy."""
+    dv_cfg = require_enabled(cfg, args, "push")
 
     # The preview path is deliberately local-only. Merely asking what would be
     # pushed must not authenticate, contact the endpoint, or spend a credit.
@@ -714,11 +799,7 @@ def cmd_push(args, repo, cfg, sdir):
                           "network_called": False}, indent=2))
         return
 
-    npx = resolve_npx(args.npx)
-    if not npx:
-        die(f"no npx {MCP_MIN_NPX}+ found to run the mcp-remote proxy -- `brew install node`, "
-            "or pass --npx /path/to/npx")
-    client = McpClient(npx, timeout=args.timeout)
+    client = open_client(args)
     applied = []
     try:
         for item in result["plan"]:
@@ -740,6 +821,235 @@ def cmd_push(args, repo, cfg, sdir):
     finally:
         client.close()
     print(json.dumps({"applied": True, "count": len(applied), "cards": applied,
+                      "session": {"handshake_attempts": client.attempts,
+                                  "reinits": client.reinits}}, indent=2))
+
+
+# ------------------------------------------------------------ database rows
+#
+# A database card's rows are a TYPED edge, and nothing else counts. From
+# `upsert_context_card`'s served schema, read 2026-09-09:
+#
+#   "a database's rows MUST be declared this way, because ids passed in
+#    `related_context_card_ids` mean only 'generally related' and will NOT
+#    appear in the database's grid"
+#
+# This bridge emitted only `related_context_card_ids` until now, so every card
+# it has ever pushed is *related to* things and a *row of* nothing -- which is
+# why a database card pointed at them renders an empty grid. That is the whole
+# defect this command exists to fix.
+#
+# Two properties of the write decide its shape, and both cut against the way
+# the rest of this file works:
+#
+#   REPLACE SEMANTICS, PER rel_type. Passing `row_of` sets the database's FULL
+#   row list (and leaves its RELATED links alone). So a write naming only the
+#   rows this repo knows about DELETES every row anyone else added -- a human
+#   in the product, or another repo. The apply path therefore READS the current
+#   rows first and writes back the union. A row that maps to none of our
+#   entities is never removed, only ever carried through.
+#
+#   THE WRITE LANDS ON THE DATABASE, not on the row. Everywhere else here the
+#   repo that owns an entity pushes it; a database written by two repos would
+#   have them clobbering each other's rows by turns. So a database belongs to
+#   exactly one repo's config, and the union above is the guard for the human
+#   case rather than for a second repo.
+
+ROW_SPEC_KEYS = {"card_id", "title", "types", "categories",
+                 "tags_any", "tags_all", "weeks", "$comment"}
+
+
+def row_databases(cfg):
+    """The `deepvista.databases` specs, validated here rather than at the call.
+
+    A typo in a selector is silent at the endpoint -- it selects nothing, the
+    union writes back exactly what was already there, and the grid stays empty
+    with no error anywhere. So the vocabulary is closed and checked locally.
+    """
+    dv = cfg.get("deepvista") or {}
+    specs = dv.get("databases") or []
+    if isinstance(specs, dict):
+        specs = [specs]
+    out = []
+    for i, s in enumerate(specs):
+        if not isinstance(s, dict) or not s.get("card_id"):
+            die(f"deepvista.databases[{i}] needs a card_id -- the id of the "
+                "database card whose rows these are")
+        unknown = set(s) - ROW_SPEC_KEYS
+        if unknown:
+            die(f"deepvista.databases[{i}] ({s['card_id']}) has unknown keys: "
+                f"{', '.join(sorted(unknown))}. Known: {', '.join(sorted(ROW_SPEC_KEYS))}")
+        if s.get("weeks") not in (None, "all", "week"):
+            die(f"deepvista.databases[{i}] weeks must be \"all\" or \"week\", "
+                f"not {s['weeks']!r}")
+        out.append(s)
+    return out
+
+
+def selects_row(e, spec, week=None):
+    """Whether one entity belongs in this database's grid.
+
+    Every clause is a narrowing filter, so a spec with no selectors at all
+    takes the repo's whole store. That is deliberate -- a week database wants
+    exactly that, bounded by `weeks: "week"`.
+    """
+    if spec.get("types") and e.get("type") not in spec["types"]:
+        return False
+    if spec.get("categories") and e.get("category") not in spec["categories"]:
+        return False
+    own = set(e.get("tags") or [])
+    if spec.get("tags_any") and not own & set(spec["tags_any"]):
+        return False
+    if spec.get("tags_all") and not set(spec["tags_all"]) <= own:
+        return False
+    if spec.get("weeks") == "week" and week not in (e.get("weeks") or {}):
+        return False
+    return True
+
+
+def build_rows_plan(args, repo, cfg, sdir):
+    """Local preview: which of this repo's cards would be rows of which database.
+
+    Deliberately local-only, like `plan`. It cannot know the database's CURRENT
+    rows without a read, and says so rather than implying the list it prints is
+    the list the grid would end up with.
+    """
+    ents = load_all(sdir)
+    repo_label = (cfg.get("repo") or {}).get("label") or os.path.basename(repo)
+    specs = row_databases(cfg)
+    if args.database:
+        specs = [s for s in specs if s["card_id"] == args.database]
+        if not specs:
+            die(f"no deepvista.databases entry with card_id {args.database}")
+    if not specs:
+        die("this repo's config declares no deepvista.databases, so there is no "
+            "grid to fill. See reference/deepvista.md.")
+
+    plan = []
+    for s in specs:
+        if s.get("weeks") == "week" and not args.week:
+            die(f"database {s['card_id']} selects its rows by week; pass --week YYYY-WNN")
+        rows, unpushed = [], []
+        for e in sorted(ents, key=lambda x: x["id"]):
+            if not selects_row(e, s, args.week):
+                continue
+            cid = (e.get("deepvista") or {}).get("card_id")
+            (rows if cid else unpushed).append(
+                {"entity_id": e["id"], "card_id": cid} if cid else e["id"])
+        plan.append({
+            "database": s["card_id"],
+            "title": s.get("title"),
+            "weeks": s.get("weeks") or "all",
+            "ours": rows,
+            # An entity with no card cannot be a row. Reported rather than
+            # skipped silently: an empty-looking grid whose cause is an
+            # unfinished push is the confusing case worth naming.
+            "unpushed": unpushed,
+        })
+    return {
+        "endpoint": MCP_ENDPOINT,
+        "repo": repo_label,
+        "week": args.week,
+        "enabled": (cfg.get("deepvista") or {}).get("enabled", False),
+        "databases": plan,
+    }
+
+
+def _row_ids(listing):
+    """Card ids out of a `list_related_context_cards` reply, order preserved."""
+    items = []
+    if isinstance(listing, dict):
+        items = listing.get("cards") or listing.get("hits") or listing.get("results") or []
+    out = []
+    for it in items:
+        cid = (it or {}).get("card_id") or (it or {}).get("id")
+        if cid and cid not in out:
+            out.append(cid)
+    return out
+
+
+def cmd_rows(args, repo, cfg, sdir):
+    """Declare this repo's cards as rows of its database cards.
+
+    Read the current rows, write back the union, and leave anything we did not
+    put there alone. `--prune` is the one way a row is removed, and even then
+    only a row that maps to one of THIS repo's entities that no longer selects.
+    """
+    dv_cfg = require_enabled(cfg, args, "row up")
+
+    result = build_rows_plan(args, repo, cfg, sdir)
+    if not args.apply:
+        result["applied"] = False
+        result["next"] = (
+            "No DeepVista call was made. This preview lists only the rows THIS REPO "
+            "would contribute -- it cannot know the database's current rows without "
+            "reading them. Re-run with --apply to read the existing rows and write "
+            "the union.")
+        print(json.dumps(result, indent=2))
+        return
+
+    ents = load_all(sdir)
+    ours_by_card = {(e.get("deepvista") or {}).get("card_id"): e["id"]
+                    for e in ents if (e.get("deepvista") or {}).get("card_id")}
+
+    client = open_client(args)
+    applied = []
+    try:
+        for entry in result["databases"]:
+            db = entry["database"]
+            listing = client.call("list_related_context_cards", card_id=db,
+                                  relation_type="row_of", limit=args.limit)
+            if isinstance(listing, dict) and listing.get("_error"):
+                die(f"list_related_context_cards for {db}: {listing['_error']}")
+            existing = _row_ids(listing)
+            if len(existing) >= args.limit:
+                die(f"database {db} already lists {len(existing)} rows at the read "
+                    f"limit of {args.limit}; raise --limit rather than writing back a "
+                    "truncated row list, which would delete the remainder")
+
+            want = [r["card_id"] for r in entry["ours"]]
+            dropped = []
+            if args.prune:
+                # Only ever a row we recognise as one of our own entities that
+                # no longer selects. A row belonging to nobody we know is not
+                # ours to remove, however stale it looks.
+                keep = []
+                for cid in existing:
+                    if cid in ours_by_card and cid not in want:
+                        dropped.append({"card_id": cid, "entity_id": ours_by_card[cid]})
+                    else:
+                        keep.append(cid)
+                existing = keep
+            merged = existing + [c for c in want if c not in existing]
+            added = [c for c in want if c not in existing]
+
+            if not added and not dropped:
+                applied.append({"database": db, "written": False, "reason": "already current",
+                                "rows": len(merged)})
+                continue
+
+            # Echo the card's own properties back with the relations. A
+            # links-only upsert -- `properties` omitted -- is what re-saved 41
+            # card bodies through an HTML-escaping pass on 2026-09-02; sending
+            # properties in the same call left them untouched. The database's
+            # body is short and plain, but the failure mode is the same one.
+            card = client.call("read_context_card", card_id=db)
+            if not isinstance(card, dict) or card.get("_error") or not card.get("id"):
+                die(f"read_context_card for {db}: "
+                    f"{(card or {}).get('_error', 'no card returned')}")
+            props = {k: card.get(k) for k in ("type", "title", "description", "status")
+                     if card.get(k) is not None}
+            response = client.call(
+                "upsert_context_card", card_id=db, properties=props,
+                relations=[{"card_id": c, "rel_type": "row_of"} for c in merged])
+            if isinstance(response, dict) and response.get("_error"):
+                die(f"upsert_context_card rows for {db}: {response['_error']}")
+            applied.append({"database": db, "written": True, "rows": len(merged),
+                            "added": added, "dropped": dropped,
+                            "carried_through": len(existing) - len(added)})
+    finally:
+        client.close()
+    print(json.dumps({"applied": True, "databases": applied,
                       "session": {"handshake_attempts": client.attempts,
                                   "reinits": client.reinits}}, indent=2))
 
@@ -912,17 +1222,11 @@ def cmd_fetch(args, repo, cfg, sdir):
     if not ents:
         die(f"no entities recorded for {args.week or 'any week'}")
 
-    dv_cfg = cfg.get("deepvista") or {}
-    if not dv_cfg.get("enabled") and not args.force:
-        die("deepvista.enabled is not true in this repo's config; pass --force to read anyway")
+    dv_cfg = require_enabled(cfg, args, "read")
     titles = category_titles(cfg)
     repo_label = (cfg.get("repo") or {}).get("label") or os.path.basename(repo)
 
-    npx = resolve_npx(args.npx)
-    if not npx:
-        die(f"no npx {MCP_MIN_NPX}+ found to run the mcp-remote proxy -- `brew install node`, "
-            "or pass --npx /path/to/npx")
-    client = McpClient(npx, timeout=args.timeout)
+    client = open_client(args)
     try:
         # The complete listing under this repo's tag, which is the only way to
         # see cards the store has forgotten -- a `record` that never ran leaves a
@@ -951,7 +1255,8 @@ def cmd_fetch(args, repo, cfg, sdir):
                 continue
             body = card.get("description") or ""
             tracer = _tracer_state(body, e["id"])
-            state = _body_state(body, render_body(e, titles, repo_label), tracer)
+            state = _body_state(body, render_body(e, titles, repo_label,
+                                     {x['id']: x.get('title') for x in all_ents if x.get('title')}), tracer)
             cards.append({
                 "entity_id": e["id"],
                 "entity_type": e.get("type"),
@@ -1044,6 +1349,9 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE), nargs="+", metavar="TYPE",
+                   help="one or more entity types — narrower than --category, which is "
+                        "the summary bucket. A renderer change usually touches several.")
     p.add_argument("--status")
     p.add_argument("--force", action="store_true", help="re-push even if unchanged")
     p.add_argument("--show-body", action="store_true", help="full markdown, not truncated")
@@ -1081,6 +1389,9 @@ def main():
     p.add_argument("--week")
     p.add_argument("--all", action="store_true")
     p.add_argument("--category", choices=CATEGORY_ORDER)
+    p.add_argument("--type", choices=sorted(CARD_TYPE), nargs="+", metavar="TYPE",
+                   help="one or more entity types — narrower than --category, which is "
+                        "the summary bucket. A renderer change usually touches several.")
     p.add_argument("--status")
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--force", action="store_true", help="re-push unchanged cards or override disabled config")
@@ -1088,6 +1399,20 @@ def main():
     p.add_argument("--npx", default=None, help="npx to run the mcp-remote proxy with")
     p.add_argument("--timeout", type=int, default=90, help="seconds to wait per call")
     p.set_defaults(fn=cmd_push)
+
+    p = sub.add_parser("rows", parents=[common],
+                       help="declare this repo's cards as ROWS of its database cards")
+    p.add_argument("--week", help="required by a database whose spec says weeks: \"week\"")
+    p.add_argument("--database", default=None, help="only this database card id")
+    p.add_argument("--apply", action="store_true",
+                   help="read the current rows and write the union; omitted means local preview")
+    p.add_argument("--prune", action="store_true",
+                   help="also REMOVE rows that are this repo's entities and no longer select")
+    p.add_argument("--force", action="store_true", help="row up even if deepvista.enabled is false")
+    p.add_argument("--limit", type=int, default=500, help="row-read cap; a full read is required to write safely")
+    p.add_argument("--npx", default=None, help="npx to run the mcp-remote proxy with")
+    p.add_argument("--timeout", type=int, default=90, help="seconds to wait per call")
+    p.set_defaults(fn=cmd_rows)
 
     p = sub.add_parser("record", parents=[common], help="write back the card id after an MCP call")
     p.add_argument("--id", required=True)
