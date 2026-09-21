@@ -1419,6 +1419,12 @@ def cmd_render(args, repo, cfg, sdir):
                              -((here(t).get("weight") or {}).get("share") or 0)))
 
     def section_themes(title="Themes"):
+        # Skip the heading when nothing confirmed, the way every other section
+        # already does. A week with no theme was printing a bare "## Themes"
+        # followed by the next heading -- which reads like a section that
+        # failed to render rather than a week that had none.
+        if not live:
+            return
         print(f"## {title}\n")
         for t in live:
             w = here(t)
