@@ -390,6 +390,12 @@ def normalize(raw, week, grades=None):
         "subject": subject or None,
         "so_what": (raw.get("so_what") or "").strip() or None,
         "open": (raw.get("open") or "").strip() or None,
+        # CONSEQUENCE order for learnings. Validated above as a positive int and
+        # then never stored, so `render` fell through to its grade tiebreak on
+        # every week ever written -- which is the exact inversion the grade/rank
+        # split exists to prevent: three things measured on your own laptop
+        # sorting above the finding that actually changed what you believe.
+        "rank": raw.get("rank"),
         "note": note,
         "commits": sorted({str(c)[:9] for c in (raw.get("commits") or [])}),
         "prs": sorted({int(p) for p in (raw.get("prs") or []) if str(p).isdigit()}),
@@ -430,6 +436,13 @@ def normalize(raw, week, grades=None):
         # A DIRECTED parent edge, unlike `links`, so the renderer can group work
         # under the arc it belongs to instead of listing leaves side by side.
         "theme": (raw.get("theme") or "").strip().lower() or None,
+        # Where this entity is PUBLISHED. It is entity-level rather than
+        # per-week because an address outlives the week that shipped it, and
+        # `urls_tail` reads it from here. This was validated above and then
+        # dropped on the floor -- every shipped address an extraction recorded
+        # was silently lost, which made the ship rule ("record the address")
+        # unenforceable no matter how carefully it was followed.
+        "urls": raw.get("urls") or None,
         "week_entry": {k: v for k, v in entry.items() if v is not None},
         "_week": week,
     }
@@ -455,6 +468,7 @@ def merge(existing, incoming):
             "tags": incoming["tags"],
             "links": incoming["links"],
             "theme": incoming.get("theme"),
+            "urls": incoming.get("urls"),
             "first_seen": week,
             "last_seen": week,
             "weeks": {},
@@ -473,6 +487,13 @@ def merge(existing, incoming):
             e["type"] = incoming["type"]
             if incoming.get("theme"):
                 e["theme"] = incoming["theme"]
+        # An address is additive: a page that moved gets a new url, and an
+        # extraction that simply did not repeat last week's must not erase it.
+        if incoming.get("urls"):
+            seen = {u["url"]: u for u in (e.get("urls") or [])}
+            for u in incoming["urls"]:
+                seen[u["url"]] = u
+            e["urls"] = list(seen.values())
         e["tags"] = sorted(set(e.get("tags", [])) | set(incoming["tags"]))
         e["links"] = sorted(set(e.get("links", [])) | set(incoming["links"]))
         e["first_seen"] = min(e.get("first_seen", week), week)
@@ -1821,8 +1842,18 @@ def cmd_render(args, repo, cfg, sdir):
                   + ", ".join(subjects) + ".*")
         print()
 
-    other = [e for e in ents if e.get("type") in ("decision", "other")
-             and not e.get("theme")]
+    # `Other` is the floor of the default layout: anything real that belongs to
+    # no theme, no conversation and no learning lands here rather than nowhere.
+    # It used to admit only `decision` and `other`, which meant a parentless
+    # `thread` rendered in no section at all -- and the entity most likely to be
+    # parentless is a SHIPPED one, because the ship rule forbids merging it into
+    # another theme. A week that put its site into production had that thread
+    # vanish from its own summary while `check-summary` still passed, because
+    # the prose it checks is written from this render. Types that have their own
+    # section (theme, concept, meeting, org, person) are excluded; the rest fall
+    # through to here.
+    HOMED = ("theme", "concept", "meeting", "org", "person")
+    other = [e for e in ents if e.get("type") not in HOMED and not e.get("theme")]
 
     def section_other(title="Other"):
         if not (dropped or other):
@@ -1838,7 +1869,11 @@ def cmd_render(args, repo, cfg, sdir):
         for e in sorted(other, key=lambda e: e["id"]):
             if e.get("anchor") and pointer(e):
                 continue
-            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}")
+            # `urls` is a trailing link on every other line shape; without it
+            # here, the one section a shipped entity can land in is the one
+            # section that drops its address -- which is the whole point of
+            # recording a shipped page.
+            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}{urls_tail(e)}")
         print()
 
     # A repo may declare its own section layout under `summary.layout` -- a
