@@ -1873,7 +1873,12 @@ def cmd_render(args, repo, cfg, sdir):
             # here, the one section a shipped entity can land in is the one
             # section that drops its address -- which is the whole point of
             # recording a shipped page.
-            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}{urls_tail(e)}")
+            # `refs_tail` too, for the same reason: `Other` is now where a
+            # parentless entity lands, and check-summary reads the prose for
+            # `#NN`. Without it, a PR the ledger judges major can be rendered
+            # in full and still report as never cited.
+            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}"
+                  f"{refs_tail(e)}{urls_tail(e)}")
         print()
 
     # A repo may declare its own section layout under `summary.layout` -- a
