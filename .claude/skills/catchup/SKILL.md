@@ -365,6 +365,44 @@ outside the repo to read. Never merge a shipped PR into another theme: it gets i
 stores the shipped PRs and `check-summary` fails if the prose never cites one
 — so a layout that hides themes cannot hide a shipped page.
 
+### 3b¾ · When an arc closes, say what now has the attention
+
+**"X is done" is half the news, and it is the half a reader cannot act on.**
+A theme that reaches `done` is the one moment the succession is knowable and the
+one moment it is cheap to record — so a closing theme carries `succeeded_by`, a
+list of the entity ids that inherit its unfinished work, and whatever picks that
+work up carries `succeeds` pointing back.
+
+```json
+{ "id": "store-migration", "type": "theme", "status": "done",
+  "succeeded_by": ["product-loop", "operating-rigor", "agent-quality"] }
+```
+
+`succeeded_by: []` is a real answer and has to be given deliberately: a theme
+that genuinely finished with nothing carried forward says so, and explains it in
+the note. **Omitting the field is the failure** — the skill warns on write,
+`record-week` stores every theme that closed in `stats.themes_closed`, and
+`check-summary` fails three ways: the succession was never declared, it names an
+entity that does not exist, or it exists and the prose never mentions it.
+
+The real case: a week closed a nine-month outcome eleven days early and split its
+remainder three ways, creating two outcomes that had not existed on Monday. The
+catchup recorded the closure, recorded one of the three successors as a theme in
+its own right, and **never mentioned the third at all** — so the summary reported
+an ending and left the reader with no next. Every fact needed was in the diff;
+nothing in the format asked for it.
+
+Two things follow from the rule:
+
+- **A successor that does not exist yet is an extraction gap, not an absence.**
+  If a closing theme hands work to something with no entity, create it — even
+  when it is one charter file and no commits yet. A new arc's first week is
+  usually its thinnest, and it is exactly the week a reader most needs naming.
+- **Read the transfer register, not the closure note.** A closure says *that* it
+  closed; the register beside it says *what went where, and to whom*. That is
+  where the successors, their boundaries and the items that moved between them
+  are written down, and it is routinely the densest file in the week.
+
 ### 3c · Everything else hangs off a theme
 
 Threads, decisions and corrections carry `theme: <id>` — a directed parent edge,
@@ -581,7 +619,7 @@ uv run $SKILL/entities.py validate --repo .
 
 **Types:** `theme` · `meeting` · `person` · `org` · `thread` · `decision` ·
 `correction` · `concept` · `other`. **Statuses:** `active` · `done` · `parked` ·
-`dropped`.
+`dropped`. A theme moving to `done` needs `succeeded_by` — see 3b¾.
 
 **Less is more, and it is a hard rule rather than a preference.** Aim for
 **2–4 themes, at most 3–4 children each, and 20–25 entities total**, of which
@@ -818,6 +856,9 @@ Tell the user:
 - the summary path and the week's headline, in one sentence
 - **entities: N new, N updated** — and name any entity that just crossed into a
   second week, because that is the signal the store exists to produce
+- **any theme that closed, and what inherits it** — an arc ending is the single
+  most consequential thing a week can contain, and the reader's next question is
+  always what now has the attention
 - anything classified `other` by `default` that probably deserved a category
   rule
 - if syncing: cards created/updated/skipped
@@ -896,5 +937,10 @@ DeepVista sync, which is off by default.
 - **Commit count is not importance.** A 300-commit week can be one idea explored
   300 times; a 4-commit week can close a quarter of work. The PR ledger and
   `consequence` exist so this is judged per PR, not inferred from volume.
+- **Reporting an ending with no next.** A closed theme whose `succeeded_by` is
+  missing leaves the reader with the one fact they cannot act on. Worse, the
+  successors are usually *new* entities with almost no commits behind them, so
+  every other signal in the week argues against extracting them — which is
+  exactly why the rule has to be explicit.
 - **Letting `other` absorb everything.** A repo whose weeks are 70% `other` needs
   category rules in its config. Say so rather than shipping a vague summary.
