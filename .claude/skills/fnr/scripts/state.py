@@ -118,19 +118,106 @@ def cmd_init(args):
     }
     save(args, st)
     print(f"wrote {p} -- {len(order)} questions, required: {', '.join(required) or 'none'}")
+    # Hand straight over to question 1. The draft is finished at this point and
+    # the next move is always the same move; printing a count and stopping is
+    # what turns a walk into something someone has to remember to start.
+    print()
+    packet(args, order[0])
+
+
+def _draft(args, suffix):
+    """A sibling draft file, by convention: <state-dir>/<week>.<suffix>.md."""
+    p = os.path.join(args.state_dir, f"{args.week}.{suffix}.md")
+    try:
+        with open(p) as fh:
+            return p, fh.read()
+    except OSError:
+        return p, None
+
+
+def _block(body, key):
+    if not body:
+        return None
+    m = re.search(rf"<!-- fnr:{key} -->\n?(.*?)\n?<!-- /fnr:{key} -->", body, re.S)
+    return m.group(1).strip() if m else None
+
+
+def _learning_counts(args):
+    """`{sources}` / `{promoted}` in a question, filled from the reading lane."""
+    p = os.path.join(os.path.dirname(os.path.abspath(args.state_dir)),
+                     "learning", f"{args.week}.md")
+    try:
+        body = open(p).read()
+    except OSError:
+        return {"sources": "no sources captured", "promoted": "0"}
+    rows = [l for l in body.splitlines()
+            if l.startswith("|") and not l.startswith("| Source |") and set(l) > set("|- ")]
+    yes = sum(1 for l in rows if l.rstrip("|").rsplit("|", 1)[-1].strip() == "yes")
+    n = len(rows)
+    return {"sources": f"{n} source{'' if n == 1 else 's'}", "promoted": str(yes)}
+
+
+def packet(args, key):
+    """Everything needed to ASK one question, so asking takes no judgment.
+
+    The weekly is a walk, not a set of prompts someone remembers to run. This
+    prints the whole turn -- position, both versions of the block, the question
+    and the allowed answers -- so `init`, `next` and `answer` each hand the
+    caller the next step instead of a bare key. A draft that ends with a report
+    instead of question 1 is the failure this removes.
+    """
+    st = load(args)
+    _, blocks = read_config(args.config)
+    cfg = {b["key"]: b for b in blocks}.get(key, {})
+    order = st["order"]
+    n, total = (order.index(key) + 1, len(order)) if key in order else (0, len(order))
+    title = cfg.get("title") or "the opening line"
+    req = key in (st.get("required") or [])
+
+    _, unred = _draft(args, "unredacted")
+    pub_path, pub = _draft(args, "public")
+
+    out = [f"=== {args.week} — question {n} of {total} — `{key}`  [{title}]"
+           + ("   REQUIRED" if req else "")]
+
+    u = _block(unred, key)
+    out += ["", "--- in the record (unredacted, private):",
+            u if u else "    (no marked block -- open the unredacted draft and show this section by hand)"]
+    p = _block(pub, key)
+    out += ["", "--- in the candidate (what his answer would replace):",
+            p if p else "    (block not found in the candidate)"]
+
+    q = (cfg.get("question") or "").strip()
+    if "{sources}" in q or "{promoted}" in q:
+        try:
+            q = q.format(**_learning_counts(args))
+        except (KeyError, IndexError):
+            pass
+    out += ["", "--- ask exactly this:", q or "(no question declared in the config)"]
+    if cfg.get("nudge"):
+        out += ["", f"--- nudge (from the unredacted draft, never published by name): {cfg['nudge']}"]
+
+    keep = "" if req else "  keep   -> answer %s %s --keep\n" % (args.week, key)
+    skip = ("  skip   -> REFUSED, this block is required\n" if req
+            else "  skip   -> answer %s %s --skip\n" % (args.week, key))
+    out += ["", "--- record his reply with ONE of:",
+            keep + "  words  -> answer %s %s --file <his words verbatim>\n" % (args.week, key) + skip
+            + "  then:     paste %s %s" % (args.week, pub_path)]
+    out += ["", "(his words are written in verbatim -- grammar and spelling only, never voice)"]
+    print("\n".join(out))
 
 
 def cmd_next(args):
     st = load(args)
     for k in st["order"]:
         if st["questions"][k]["status"] == "pending":
-            print(k)
+            print(k) if args.bare else packet(args, k)
             return
     # Every question has a status. The required ones must be ANSWERED, not
     # skipped -- skip is refused for them in `answer`, so this is a belt.
     for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
-            print(k)
+            print(k) if args.bare else packet(args, k)
             return
     print("done" if st["publish"] != "pending" else "publish")
 
@@ -155,6 +242,12 @@ def cmd_answer(args):
         q.update(status="answered", text=text, at=now())
     save(args, st)
     print(f"{k}: {q['status']}")
+    # ... and immediately the next question, so the loop advances on its own.
+    # `paste` still has to run to put an answer into the candidate; the
+    # reminder is in every packet's footer.
+    print()
+    args.bare = False
+    cmd_next(args)
 
 
 _MARK = re.compile(r"<!-- fnr:(\w+) -->\n(.*?)\n<!-- /fnr:\1 -->", re.S)
@@ -264,7 +357,10 @@ def main():
     p = sub.add_parser("init"); p.add_argument("week")
     p.add_argument("--without", action="append", metavar="KEY", help="drop a conditional block this week (repeatable)")
     p.set_defaults(fn=cmd_init)
-    p = sub.add_parser("next"); p.add_argument("week"); p.set_defaults(fn=cmd_next)
+    p = sub.add_parser("next"); p.add_argument("week")
+    p.add_argument("--bare", action="store_true",
+                   help="print just the key, not the whole question packet")
+    p.set_defaults(fn=cmd_next)
     p = sub.add_parser("answer"); p.add_argument("week"); p.add_argument("key")
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--file"); g.add_argument("--text"); g.add_argument("--keep", action="store_true"); g.add_argument("--skip", action="store_true")

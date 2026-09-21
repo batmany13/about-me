@@ -155,7 +155,7 @@ or three, abstracted of system vocabulary, and say what the fix bought.
 
 | File | What |
 |---|---|
-| `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. |
+| `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. **Mark its owner blocks with the same `<!-- fnr:key -->` markers** — that is what lets `next` show both sides of a block without anyone deciding which passage to quote. |
 | `fnr/.private/drafts/<W>.public.md` | The same weekly after the scrub policy — **the candidate, and it stays in the private repo.** Every owner block wrapped in markers and filled with its machine default. It reaches `fnr/<W>.md` in about-me only through `state.py release`, only after Step 6. |
 | `fnr/.private/drafts/<W>.delta.md` | What was held back, by category, and a `## Flagged for review` list of borderline calls the policy says cut but he might want. |
 
@@ -179,6 +179,13 @@ has no material for:
 uv run .claude/skills/fnr/scripts/state.py init <W> [--without <key>]
 ```
 
+**`init` prints question 1 and you ask it in the same turn.** Do not stop here
+to report that the draft is written. The draft being finished *is* the trigger
+for the walk, and a summary-instead-of-question is the one thing that reliably
+stalls a weekly: the owner reads a status update, says something that is not an
+answer, and the sequence never starts. `init`, `next` and `answer` each end by
+printing the next question packet for exactly this reason.
+
 The scrub happens **here, once, on machine text.** Derive the public file from
 the unredacted one under `scrub_policy.md`. When unsure, hold it in the
 delta's flagged list and ask at Step 6 rather than guessing in public.
@@ -188,11 +195,28 @@ delta's flagged list and ask at Step 6 rather than guessing in public.
 `reference/questions.md` has the mechanism; the config has the questions.
 
 ```bash
-uv run .claude/skills/fnr/scripts/state.py next <W>      # which block
-# show the unredacted section, the scrubbed section, the nudge, then ask ONE thing
+uv run .claude/skills/fnr/scripts/state.py next <W>      # the whole question packet
 uv run .claude/skills/fnr/scripts/state.py answer <W> <key> --file /tmp/a.md   # or --keep / --skip
 uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.public.md
 ```
+
+**`next` prints the turn, not a key.** Position (`question 3 of 6`), the block
+as the unredacted draft has it, the block as the candidate has it, the question
+to ask verbatim, the nudge if there is one, and which replies are legal —
+`skip` is shown as refused on the required block rather than offered and then
+rejected. `--bare` gives just the key, for scripts.
+
+**`answer` prints the next packet**, so the walk advances on its own. The only
+step it cannot do for you is `paste`; every packet's footer says so.
+
+Two rules the packet cannot enforce, so hold them yourself:
+
+- **One question per turn.** The packet is the turn. Do not read ahead and ask
+  two, and do not summarise the remaining four — he answers each with that
+  section in front of him, which is the whole reason the sequence exists.
+- **The machine sections are not in the walk.** Only owner blocks are asked.
+  He changes a machine section by telling you, and you re-render and say what
+  moved; there is no question for it and inventing one wastes a turn.
 
 - **Show both versions of the section every time.** The unredacted one is
   why he can answer; the scrubbed one is what his answer joins.
@@ -339,6 +363,9 @@ item. Cut vague-and-pointless lines rather than shipping them hollow.
   Everything before that is hold, and the public repo is not touched.
 - **Asking a question before the whole draft exists.** The draft is the thing
   he reacts to; a prompt in an empty slot is not.
+- **Finishing the draft and reporting instead of asking.** `init` ends with
+  question 1 precisely so that the handover is a question. A status update
+  invites a reply that is not an answer, and then nobody is in the sequence.
 - **Writing a reflection he didn't write.** The default is the machine's own
   best answer, from where the config says — never an invented feeling in his
   voice.
