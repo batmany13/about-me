@@ -117,6 +117,46 @@ def load_registry(path):
         die(f"cannot read registry {path}: {e}")
 
 
+def read_learning(registry_path, week):
+    """The week's reading and listening, if it was captured.
+
+    The one lane no catchup can see: every other input here is derived from a
+    git history, and this is INPUT. Nothing generates it, so a week where
+    nobody wrote it down is indistinguishable from a week where nothing was
+    read -- which is the failure this exists to make visible rather than fix.
+
+    Lives beside the registry, at `learning/<week>.md` in the private repo.
+    Returned verbatim; the rollup is private, so an unpromoted item is safe
+    here. Only the weekly's own section can publish any of it.
+    """
+    # Beside the registry, then beside the DEFAULT one. The two differ whenever
+    # `--registry` is pointing at an override -- which is for relocating REPO
+    # paths, not the private layer, so an override must not make an existing
+    # reading log look like a week nobody read anything.
+    cands = [os.path.join(os.path.dirname(os.path.abspath(c)), "learning", f"{week}.md")
+             for c in (registry_path, DEFAULT_REGISTRY) if c]
+    p = next((c for c in cands if os.path.isfile(c)), None)
+    if p is None:
+        return None
+    try:
+        with open(p) as fh:
+            body = fh.read()
+    except OSError:
+        return None
+    # `| Source | Kind | Link | promote |` rows, so the caller can count them
+    # and see the gate without parsing prose.
+    rows = []
+    for line in body.splitlines():
+        if not line.startswith("|") or line.startswith("| Source |") or set(line) <= set("|- "):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) >= 4:
+            rows.append({"source": cells[0], "kind": cells[1], "link": cells[2], "promote": cells[3]})
+    return {"path": p, "body": body, "sources": rows,
+            "promoted": [r["source"] for r in rows if r["promote"] == "yes"],
+            "undecided": [r["source"] for r in rows if r["promote"] == "?"]}
+
+
 def repo_output_dir(repo_path, registry_entry):
     """Where THIS repo keeps its catchup output.
 
@@ -177,6 +217,9 @@ def read_entities(repo_path, week, out_dir, ids):
 
 
 def collect(week, registry, args):
+    # The reading lane lives beside the registry, not inside any repo -- it is
+    # the one input that is not derived from a git history.
+    learning = read_learning(args.registry or DEFAULT_REGISTRY, week)
     repos, missing_records = [], []
     for r in registry.get("repos", []) or []:
         path = resolve_path(r.get("path"))
@@ -313,6 +356,7 @@ def collect(week, registry, args):
             "prs_merged": total_pub("prs_merged"),
             "prs_open_now": total_pub("prs_open_now"),
         },
+        "learning": learning,
         "cross_repo_entities": cross,
         "cross_repo_candidates": dict(sorted(candidates.items())),
         "top_tags": dict(tags.most_common(20)),
@@ -350,6 +394,17 @@ def render_table(d):
     out.append(f"  entities by category: " +
                ", ".join(f"{k} {v}" for k, v in t["entities_by_category"].items()))
     out.append(f"  carried over from earlier weeks: {t['carried_over']}")
+    lr = d.get("learning")
+    if lr is None:
+        out += ["", "  learning & reading: NOTHING CAPTURED for this week.",
+                "    Not the same as nothing read -- nothing generates this lane.",
+                "    `uv run scripts/learning.py add --source ... --kind ... --note ...`"]
+    else:
+        out += ["", f"  learning & reading: {len(lr['sources'])} source(s)" +
+                (f", {len(lr['promoted'])} promoted" if lr["promoted"] else "") +
+                (f", {len(lr['undecided'])} undecided" if lr["undecided"] else "")]
+        for r in lr["sources"]:
+            out.append(f"    [{r['promote']}] {r['source']} ({r['kind']})")
     if d["cross_repo_entities"]:
         out += ["", "  same entity id in more than one repo:"]
         for eid, names in sorted(d["cross_repo_entities"].items()):
