@@ -29,6 +29,56 @@ git -C <repo> worktree add -b <branch> .claude/worktrees/<name>
   merging is a human action.
 - Clean the worktree up after the PR lands: `git worktree remove <path>`.
 
+### This repo is PUBLIC. Two hard rules before anything is pushed.
+
+**1 — Never write a private name into about-me. Anywhere.**
+
+That means files, **and commit messages, and PR titles, and PR bodies**. Git
+history is public and permanent: once GitHub has served a commit message it is
+in forks, caches, notifications and mirrors, and a force-push does not un-publish
+it. A leak in a commit message is worse than one in a file, because nobody
+reviews it.
+
+Never, in any of those places:
+
+- **The tech repo, its project, or its URL** — Bruce's call, 2026-08-22. Refer
+  to it as *the tech repo* or *the tech side*. The same goes for the fund repo.
+- **Any company** in the portfolio or the pipeline, any founder, any person in
+  the network, any score, band, valuation, check size, decision or unannounced
+  deal.
+- **Any dated finding about a product** — what a version does, what an
+  evaluation concluded, what a refresh found. Public skills carry the
+  **mechanism** and never the run output. A tool's *name* in a mechanism doc is
+  fine (`deepvista_cards.py` is a script here); what that tool *found last week*
+  is not.
+- **Anything from the personal repo's contents** — finances, benefits,
+  household specifics, family members. The repo itself is nameable in
+  moderation; its contents never are.
+
+Run this before every push, and read the result rather than trusting the diff:
+
+```bash
+git log --format='%B' origin/main..HEAD > /tmp/msgs && git diff origin/main..HEAD > /tmp/diff
+grep -niE '<the private names>' /tmp/msgs /tmp/diff
+```
+
+The names live in `fnr/.private/repos.json` and the scrub policy — read them
+there, never from memory. **If a name would be the first occurrence in this
+repo, that is the signal, not a coincidence.**
+
+**2 — Never open a PR here that touches `.claude/skills/` without explicit approval.**
+
+The skills are deployed into the private repos; a change here is a change
+everywhere, and it is the surface most likely to carry a leak because it is
+written while looking at real weeks. So when a session's change touches
+`.claude/skills/`: create the worktree, commit, run the scan above — **and
+stop.** Say what changed and what it fixes, and ask. Do not push the branch and
+do not open the pull request until Bruce says to.
+
+A fix found while running a skill in another repo is still a skill change. Carry
+it back with `--pull-back` and hold it on the branch; landing it in that repo's
+own PR is fine, landing it here is the part that waits.
+
 ### Python runs through `uv`
 
 **`uv run <script>`, never `python3 <script>`** — matching the source repos.
@@ -219,6 +269,9 @@ Don't update it as if it were live. It's a record of 2020–2026. Fix broken lin
 - Update the speaking break status when it changes
 
 ## What NOT to change without explicit ask
+- **Anything under `.claude/skills/` if the change would be pushed or PR'd here**
+  — the fix itself is welcome, the PR waits for approval. See *This repo is
+  PUBLIC* above
 - The core leadership philosophy in README.md (Trusting Teams, Seeking Excellence, Driving Customer Delight)
 - The "About Me Personally" section and its subsections
 - The reading list — only add, don't remove or reorganize

@@ -170,11 +170,7 @@ is reused on the second run — `--refetch` to pull again.
    repo; never edit the summary here.
 4. `only_ours` is usually the push not carrying something. Rarely interesting.
 
-The control's own findings go in the rollup under `## Learning & reading
-| Source | Kind | promote | What landed |
-(from the learning lane; `— not captured —` when the week has none, never omitted)
-
-## Control: DeepVista`, and
+The control's own findings go in the rollup under `## Control: DeepVista`, and
 the per-repo fixes go back to the repo that owns the entity.
 
 **Then write the weekly's draft 1 from the cards**, as `drafts/<W>.deepvista-draft1.md`
@@ -285,6 +281,10 @@ directory if absent.
 
 ## Carried over
 - <what is continuing, with its span>
+
+## Learning & reading
+| Source | Kind | promote | What landed |
+(from the learning lane; `— not captured —` when the week has none, never omitted)
 
 ## Control: DeepVista
 | Repo | Cards | Tracer | Body | Both | Only local | Only DV | Neither |
