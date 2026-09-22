@@ -297,10 +297,18 @@ def cmd_check(args):
     blocks = {m.group(1): m.group(2) for m in _MARK.finditer(src)}
     problems = []
     for k in st["order"]:
+        q = st["questions"][k]
+        # A skipped block is SUPPOSED to be gone -- `paste` removes it. Absence
+        # is the correct state, and flagging it as a missing marker turned a
+        # decision into an error message. Its presence is the real problem:
+        # that would mean a block he declined is still in the candidate.
+        if q["status"] == "skipped":
+            if k in blocks:
+                problems.append(f"{k}: skipped, but still in the file -- run `paste` to remove it")
+            continue
         if k not in blocks:
             problems.append(f"{k}: no markers in the file")
             continue
-        q = st["questions"][k]
         if q["status"] == "answered" and blocks[k] != q["text"]:
             problems.append(f"{k}: the file differs from the owner's answer -- run `paste`, never edit the block")
         if k in (st.get("required") or []) and q["status"] != "answered":
