@@ -334,6 +334,42 @@ learning, grouped by cohort, never a conclusion>
   allowance, kept sparse; the policy's standing exceptions are the only names
   cleared by default.
 
+### Insight-forward — the event is one clause, the insight is the paragraph
+
+The single most useful shape in this document, and the one a draft reliably
+misses. Bruce, 2026-09-22, on the paragraph that finally landed after three
+rewrites of a section: *"this is strong, exact kind of insight forward we
+should focus on."*
+
+> A company shed an entire product line and the team that ran it.  The
+> transaction isn't the interesting part; the willingness is.  A working
+> customer base can belong to the company you used to be rather than the one
+> you're becoming, and being able to let it go is a capability most teams
+> don't have.
+
+Four moves, in this order:
+
+1. **The event, one clause.** Enough to ground it and not a word more.
+2. **Name what is *not* the point.** The move drafts skip, and the one that
+   converts news into a lesson. It tells the reader where to look.
+3. **The general form, in the reader's own terms** — a sentence they can hold
+   against their own company without translating it first.
+4. **The cost, or the rarity.** Why it is hard, and therefore worth saying.
+
+**The test: cover the first clause.** If what remains still teaches, the
+paragraph is insight-forward. If what remains is nothing, it was news wearing a
+lesson's clothes — and anonymising it does not fix that, it just makes the news
+harder to read.
+
+Note what the shape costs: nothing. No name, no number, no decision, no date —
+because an insight that depended on identity was never an insight. **Paragraphs
+in this shape are the easiest in the weekly to scrub**, which is the tell that
+they are the right ones. When a paragraph is fighting the scrub policy, the
+usual cause is that it is event-forward and the event is the only content.
+
+A rough signal while drafting: **if a paragraph's first sentence is its
+longest, it is probably event-forward.**
+
 ### Voice
 
 Direct, first person, past tense, active. Two spaces after a period. Keep his
@@ -366,6 +402,9 @@ item. Cut vague-and-pointless lines rather than shipping them hollow.
 - **Finishing the draft and reporting instead of asking.** `init` ends with
   question 1 precisely so that the handover is a question. A status update
   invites a reply that is not an answer, and then nobody is in the sequence.
+- **Event-forward paragraphs.** Reporting a thing that happened, accurately and
+  anonymised, and leaving the reader nothing to do with it. See *Insight-forward*
+  above; the fix is never more careful anonymisation, it is a different paragraph.
 - **Writing a reflection he didn't write.** The default is the machine's own
   best answer, from where the config says — never an invented feeling in his
   voice.

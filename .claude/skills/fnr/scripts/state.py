@@ -266,14 +266,29 @@ def cmd_paste(args):
         q = st["questions"].get(k)
         if q and q["status"] == "answered":
             return f"<!-- fnr:{k} -->\n{q['text']}\n<!-- /fnr:{k} -->"
+        # SKIPPED means the block comes OUT -- it does not mean the machine
+        # default stands. Leaving it was the worst failure this file could
+        # have: the owner says "don't say this" and the candidate keeps
+        # saying it, in his weekly, under his name, with the state file
+        # recording that he declined it.
+        if q and q["status"] == "skipped":
+            return "\x00SKIP\x00"
         return m.group(0)
 
     out = _MARK.sub(sub, src)
+    # Remove the skipped block along with the title line that introduces it
+    # (`**Learning.**  <!-- fnr:key -->`) and any heading left standing alone.
+    out = re.sub(r"\n*(?:^|\n)[^\n]*\x00SKIP\x00", "", out)
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    # A section heading whose only content was the skipped block goes too.
+    out = re.sub(r"\n## [^\n]+\n+(?=## )", "\n", out)
     if out != src:
         with open(args.file, "w") as fh:
             fh.write(out)
     n = sum(1 for k in st["order"] if st["questions"][k]["status"] == "answered")
-    print(f"pasted {n} answered block(s) into {args.file}")
+    sk = [k for k in st["order"] if st["questions"][k]["status"] == "skipped"]
+    print(f"pasted {n} answered block(s) into {args.file}"
+          + (f"; removed {len(sk)} skipped ({', '.join(sk)})" if sk else ""))
 
 
 def cmd_check(args):
