@@ -205,6 +205,35 @@ Two guards, and use both:
 If a theme deserves the lead, its weight says so. If nothing in the rollup
 supports the sentence you are writing, delete the sentence.
 
+## Step 2c: The reading lane — the one input no repo produces
+
+Every other source here is derived from a git history. **What he read, watched
+and listened to is not**, and nothing generates it — so a week where nobody
+wrote it down is indistinguishable from a week where nothing was read. That is
+the failure this exists to make visible.
+
+It lives beside the registry in the private repo, `learning/<week>.md`, captured
+as it happens:
+
+```bash
+uv run scripts/learning.py add --source "<name>" --kind podcast --url <url> --note "<what landed>"
+```
+
+`rollup.py` picks it up and prints it in the table with each item's **promote**
+gate — `?` captured and undecided, `yes` the weekly may draw on it, `no` held
+back. **Private on arrival, always**; the gate is usually not confidentiality,
+since most of it is public material, but whether the item is worth anyone
+else's time. That call is Bruce's, made in the file, before a draft exists.
+
+When nothing is captured the table says so loudly rather than omitting the
+section, because the absence is the thing worth seeing.
+
+Carry it into the rollup under **Learning & reading**: the sources, their gates,
+and what landed. An entry is not a summary of the source — it is what changed
+and what he now does differently. **Never write one for him.** A source with a
+table row and no substance is a normal outcome and an honest one; a fabricated
+insight in his voice is the one thing this lane must never produce.
+
 ## Step 3: Read across, not down
 
 The per-repo summaries already exist — restating them is not the job. What this
@@ -253,6 +282,10 @@ directory if absent.
 ## Carried over
 - <what is continuing, with its span>
 
+## Learning & reading
+| Source | Kind | promote | What landed |
+(from the learning lane; `— not captured —` when the week has none, never omitted)
+
 ## Control: DeepVista
 | Repo | Cards | Tracer | Body | Both | Only local | Only DV | Neither |
 (from the control table; then what the buckets mean, read across repos)
@@ -288,6 +321,10 @@ then the coverage buckets — and name what goes back to which repo.
   layer. Every time.
 - **Re-deriving a week from git.** If the number is wrong, fix it in the repo's
   catchup and re-run — don't compute a second version here.
+- **Writing a learning entry for him.** The reading lane is his own account of
+  what changed in his head. A plausible-sounding insight attributed to a source
+  he skimmed is worse than an empty section, and unlike every other gap here it
+  is not detectable from the record.
 - **Restating the per-repo summaries.** If a paragraph would be equally true in
   a single repo's catchup, it does not belong in the rollup.
 - **Writing the control summary with the local one open.** A card-only summary

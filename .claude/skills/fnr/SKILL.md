@@ -129,7 +129,13 @@ uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 - **Events**: name, host, date, public link. The registry's `format`/`venue`
   describe the plan; `entities[].note` and `disposition` are judgments about
   people in a social room — never quoted, never paraphrased.
-- **The vetting queue**: the processed queue and the outbox, `public_summary`
+- **The vetting queue** — **check the registry's `intake` block first.** A
+  source marked `retired` is gone on purpose (the processed queue moved into the
+  database), and a compacted outbox reads empty after delivery. Either way, say
+  the section's source is **unavailable** and ask; never fill Interesting Tech
+  from memory, from older weeks, or by digging through archives until something
+  plausible turns up. When the registry declares an MCP source, use that. Then:
+  the processed queue and the outbox, `public_summary`
   only — never `id`, `source_uri`, or anything implying a watchlist. Prefer
   items that trace to something in this weekly; group cohorts; researching a
   conference program is not attending it.
@@ -144,8 +150,10 @@ uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 ## Step 3 — Mine the corrections for a pattern
 
 Both catchups carry `correction` entities. Read them together and name the
-shared shape — **publish the pattern, never the incident.** A correction only
-an insider can parse is trivia; the same correction seen with the week's
+shared shape for the unredacted draft and the rollup. Whether it reaches the
+public weekly is the config's call, per section, not this step's. Where it
+does: **publish the pattern, never the incident.** A correction only an insider
+can parse is trivia; the same correction seen with the week's
 twenty others is a class of mistake a stranger recognizes. Illustrate with two
 or three, abstracted of system vocabulary, and say what the fix bought.
 
@@ -153,9 +161,25 @@ or three, abstracted of system vocabulary, and say what the fix bought.
 
 **Three files, in one pass, before any question is asked.**
 
+**Read the past cases first**, for every section, machine ones included:
+
+```bash
+uv run .claude/skills/fnr/scripts/state.py examples
+```
+
+The private config's `examples` holds what landed, what was cut and what was
+rewritten into what, on weeks already walked, each with the owner's reason and
+the rule it generalises to. Most cuts happen in the machine sections, which are
+never asked about, so this is the only point where their cases reach the draft.
+Draft against the rules, not the texts: an example is there to teach a shape, and
+a paragraph that echoes one is as wrong as one that ignores it. The cases are
+private and named; nothing in them is quoted into the weekly. After each walk,
+add that week's kept, cut and rewritten blocks to `examples` in the private
+repo. That is how the next draft starts closer.
+
 | File | What |
 |---|---|
-| `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. |
+| `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. **Mark its owner blocks with the same `<!-- fnr:key -->` markers** — that is what lets `next` show both sides of a block without anyone deciding which passage to quote. |
 | `fnr/.private/drafts/<W>.public.md` | The same weekly after the scrub policy — **the candidate, and it stays in the private repo.** Every owner block wrapped in markers and filled with its machine default. It reaches `fnr/<W>.md` in about-me only through `state.py release`, only after Step 6. |
 | `fnr/.private/drafts/<W>.delta.md` | What was held back, by category, and a `## Flagged for review` list of borderline calls the policy says cut but he might want. |
 
@@ -179,6 +203,13 @@ has no material for:
 uv run .claude/skills/fnr/scripts/state.py init <W> [--without <key>]
 ```
 
+**`init` prints question 1 and you ask it in the same turn.** Do not stop here
+to report that the draft is written. The draft being finished *is* the trigger
+for the walk, and a summary-instead-of-question is the one thing that reliably
+stalls a weekly: the owner reads a status update, says something that is not an
+answer, and the sequence never starts. `init`, `next` and `answer` each end by
+printing the next question packet for exactly this reason.
+
 The scrub happens **here, once, on machine text.** Derive the public file from
 the unredacted one under `scrub_policy.md`. When unsure, hold it in the
 delta's flagged list and ask at Step 6 rather than guessing in public.
@@ -188,11 +219,29 @@ delta's flagged list and ask at Step 6 rather than guessing in public.
 `reference/questions.md` has the mechanism; the config has the questions.
 
 ```bash
-uv run .claude/skills/fnr/scripts/state.py next <W>      # which block
-# show the unredacted section, the scrubbed section, the nudge, then ask ONE thing
+uv run .claude/skills/fnr/scripts/state.py next <W>      # the whole question packet
 uv run .claude/skills/fnr/scripts/state.py answer <W> <key> --file /tmp/a.md   # or --keep / --skip
 uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.public.md
 ```
+
+**`next` prints the turn, not a key.** Position (`question 3 of 6`), the block
+as the unredacted draft has it, the block as the candidate has it, the question
+to ask verbatim, the nudge if there is one, the block's past cases from the
+config's `examples`, and which replies are legal —
+`skip` is shown as refused on the required block rather than offered and then
+rejected. `--bare` gives just the key, for scripts.
+
+**`answer` prints the next packet**, so the walk advances on its own. The only
+step it cannot do for you is `paste`; every packet's footer says so.
+
+Two rules the packet cannot enforce, so hold them yourself:
+
+- **One question per turn.** The packet is the turn. Do not read ahead and ask
+  two, and do not summarise the remaining four — he answers each with that
+  section in front of him, which is the whole reason the sequence exists.
+- **The machine sections are not in the walk.** Only owner blocks are asked.
+  He changes a machine section by telling you, and you re-render and say what
+  moved; there is no question for it and inventing one wastes a turn.
 
 - **Show both versions of the section every time.** The unredacted one is
   why he can answer; the scrubbed one is what his answer joins.
@@ -264,7 +313,8 @@ marked block holding the machine default.
 _<N> commits · <N> PRs · <N> open · ~<N> commits/day_   ← on the build-lane section only
 
 <3–4 short paragraphs at the level of the decision, ordered by consequence.
-The corrections pattern from Step 3 belongs in the build-lane section.>
+The corrections pattern from Step 3 goes only where a section's `source` in the
+config asks for it; where none does, it stays in the private files.>
 
 **<owner block title>**  <!-- fnr:<key> -->
 <the machine default the config names>
@@ -310,6 +360,42 @@ learning, grouped by cohort, never a conclusion>
   allowance, kept sparse; the policy's standing exceptions are the only names
   cleared by default.
 
+### Insight-forward — the event is one clause, the insight is the paragraph
+
+The single most useful shape in this document, and the one a draft reliably
+misses. Bruce, 2026-09-22, on the paragraph that finally landed after three
+rewrites of a section: *"this is strong, exact kind of insight forward we
+should focus on."* The example below is invented; it has the same shape.
+
+> A team rebuilt its onboarding flow and sign-ups fell for a month.  The dip
+> isn't the interesting part; holding the line through it is.  A change that
+> removes a shortcut people relied on looks like a regression before it looks
+> like an improvement, and deciding up front how long you'll wait is what keeps
+> a good change from being rolled back.
+
+Four moves, in this order:
+
+1. **The event, one clause.** Enough to ground it and not a word more.
+2. **Name what is *not* the point.** The move drafts skip, and the one that
+   converts news into a lesson. It tells the reader where to look.
+3. **The general form, in the reader's own terms** — a sentence they can hold
+   against their own company without translating it first.
+4. **The cost, or the rarity.** Why it is hard, and therefore worth saying.
+
+**The test: cover the first clause.** If what remains still teaches, the
+paragraph is insight-forward. If what remains is nothing, it was news wearing a
+lesson's clothes — and anonymising it does not fix that, it just makes the news
+harder to read.
+
+Note what the shape costs: nothing. No name, no number, no decision, no date —
+because an insight that depended on identity was never an insight. **Paragraphs
+in this shape are the easiest in the weekly to scrub**, which is the tell that
+they are the right ones. When a paragraph is fighting the scrub policy, the
+usual cause is that it is event-forward and the event is the only content.
+
+A rough signal while drafting: **if a paragraph's first sentence is its
+longest, it is probably event-forward.**
+
 ### Voice
 
 Direct, first person, past tense, active. Two spaces after a period. Keep his
@@ -339,6 +425,12 @@ item. Cut vague-and-pointless lines rather than shipping them hollow.
   Everything before that is hold, and the public repo is not touched.
 - **Asking a question before the whole draft exists.** The draft is the thing
   he reacts to; a prompt in an empty slot is not.
+- **Finishing the draft and reporting instead of asking.** `init` ends with
+  question 1 precisely so that the handover is a question. A status update
+  invites a reply that is not an answer, and then nobody is in the sequence.
+- **Event-forward paragraphs.** Reporting a thing that happened, accurately and
+  anonymised, and leaving the reader nothing to do with it. See *Insight-forward*
+  above; the fix is never more careful anonymisation, it is a different paragraph.
 - **Writing a reflection he didn't write.** The default is the machine's own
   best answer, from where the config says — never an invented feeling in his
   voice.

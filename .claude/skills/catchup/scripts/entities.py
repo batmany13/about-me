@@ -105,6 +105,13 @@ STATUSES = ["active", "done", "parked", "dropped"]
 # learning the way that repo does rather than introducing a second scale nobody
 # reconciles. `measured` is the only grade that survives someone else disagreeing
 # with you, whatever the rungs below it are called.
+# HOW the week's material reached us. Without it a meeting, an investor
+# update, a relayed voice note, a recap sent to LPs and a desk read of public
+# filings all land as the same `org` note, and any reader downstream has to be
+# told by a human which of them was contact. That cost one weekly section three
+# rewrites before it was named.
+CHANNELS = ("meeting", "call", "written-update", "relayed", "lp-communication", "desk")
+
 DEFAULT_GRADES = ["asserted", "reported", "observed", "verified", "measured"]
 DEFAULT_GRADE_MARKS = {
     "asserted": "asserted",
@@ -347,6 +354,16 @@ def normalize(raw, week, grades=None):
     why = (raw.get("why_it_matters") or "").strip()
     weight = raw.get("weight") or {}
     disposition = (raw.get("disposition") or "confirmed").strip().lower()
+    # Channel / confidential / lesson are checked here, at function level and
+    # ahead of every type-specific block -- they apply to every entity type.
+    channel = (raw.get("channel") or "").strip().lower() or None
+    if channel and channel not in CHANNELS:
+        raise ValueError(f"{eid}: bad channel {channel!r} -- one of {', '.join(CHANNELS)}")
+    confidential = raw.get("confidential")
+    if confidential is not None and not isinstance(confidential, bool):
+        raise ValueError(f"{eid}: `confidential` must be true or false")
+    if etype == "concept" and (raw.get("lesson") or "").strip():
+        raise ValueError(f"{eid}: `lesson` belongs on a theme -- a concept already says what it taught, in `claim`")
     if etype == "theme":
         if disposition not in THEME_DISPOSITIONS:
             raise ValueError(f"{eid}: bad disposition {disposition!r} -- "
@@ -363,6 +380,15 @@ def normalize(raw, week, grades=None):
             print(f"warning: {eid}: a confirmed theme should carry `consequence` "
                   f"({' | '.join(THEME_CONSEQUENCES)}) -- share is a measurement, not a verdict",
                   file=sys.stderr)
+        # A theme reaching `done` is the one moment the succession is knowable,
+        # and the one moment it is cheap to record. Asked for here rather than
+        # enforced, because `succeeded_by: []` is a real answer -- but the week
+        # record and check-summary both hold the prose to whatever is declared.
+        if status == "done" and "succeeded_by" not in raw:
+            print(f"warning: {eid}: this theme closed and does not say what inherits it -- "
+                  f"set `succeeded_by: [ids]`, or `[]` with a note saying nothing carried "
+                  f"forward. 'X is done' is half the news; the half a reader can act on is "
+                  f"what now has the attention.", file=sys.stderr)
         if disposition == "confirmed":
             if not why:
                 raise ValueError(f"{eid}: a confirmed theme needs `why_it_matters` -- "
@@ -390,6 +416,12 @@ def normalize(raw, week, grades=None):
         "subject": subject or None,
         "so_what": (raw.get("so_what") or "").strip() or None,
         "open": (raw.get("open") or "").strip() or None,
+        # CONSEQUENCE order for learnings. Validated above as a positive int and
+        # then never stored, so `render` fell through to its grade tiebreak on
+        # every week ever written -- which is the exact inversion the grade/rank
+        # split exists to prevent: three things measured on your own laptop
+        # sorting above the finding that actually changed what you believe.
+        "rank": raw.get("rank"),
         "note": note,
         "commits": sorted({str(c)[:9] for c in (raw.get("commits") or [])}),
         "prs": sorted({int(p) for p in (raw.get("prs") or []) if str(p).isdigit()}),
@@ -415,6 +447,34 @@ def normalize(raw, week, grades=None):
         # action list, a checklist -- and rendering the narration while
         # dropping it is how a summary ends up long and useless at once.
         "owed": [str(x).strip() for x in (raw.get("owed") or []) if str(x).strip()],
+        # SUCCESSION. A closing theme's last useful act is to say what now has
+        # the attention -- "the big one is done" is half the news, and the half
+        # a reader cannot act on. `succeeded_by` names what inherits the
+        # unfinished work; `succeeds` is the same edge from the inheritor's
+        # side, so a new theme can declare its parentage in the week it opens.
+        # Empty is a legitimate answer and must be given deliberately: a theme
+        # that finished with nothing carried forward says `succeeded_by: []`
+        # and explains it in the note.
+        # None when the key was never given, `[]` when it was given empty. The
+        # entry filter drops None, so the two stay distinguishable downstream:
+        # a closed theme with no key at all is an omission, one with an empty
+        # list is a decision.
+        # How this week's material arrived, and whether the channel itself was
+        # privileged. `confidential` exists because the substance can be
+        # harmless while the SOURCE is not: a co-investor's decisions reported
+        # to limited partners are confidential by channel, whatever they say.
+        "channel": channel,
+        "confidential": confidential,
+        # What the WORK taught us about our own work. A `concept` is barred from
+        # carrying this -- it must name an outside subject -- so without a slot
+        # here the lesson of a week's building had nowhere to live except prose,
+        # and a reader wanting "the week's learning" was always served a
+        # research finding instead. It happened on two consecutive weeks.
+        "lesson": (raw.get("lesson") or "").strip() or None,
+        "succeeded_by": ([str(x).strip().lower() for x in (raw.get("succeeded_by") or []) if str(x).strip()]
+                         if "succeeded_by" in raw else None),
+        "succeeds": ([str(x).strip().lower() for x in (raw.get("succeeds") or []) if str(x).strip()]
+                     if "succeeds" in raw else None),
         "asks": [str(x).strip() for x in (raw.get("asks") or []) if str(x).strip()],
         "date": raw.get("date"),
     }
@@ -430,6 +490,13 @@ def normalize(raw, week, grades=None):
         # A DIRECTED parent edge, unlike `links`, so the renderer can group work
         # under the arc it belongs to instead of listing leaves side by side.
         "theme": (raw.get("theme") or "").strip().lower() or None,
+        # Where this entity is PUBLISHED. It is entity-level rather than
+        # per-week because an address outlives the week that shipped it, and
+        # `urls_tail` reads it from here. This was validated above and then
+        # dropped on the floor -- every shipped address an extraction recorded
+        # was silently lost, which made the ship rule ("record the address")
+        # unenforceable no matter how carefully it was followed.
+        "urls": raw.get("urls") or None,
         "week_entry": {k: v for k, v in entry.items() if v is not None},
         "_week": week,
     }
@@ -455,6 +522,7 @@ def merge(existing, incoming):
             "tags": incoming["tags"],
             "links": incoming["links"],
             "theme": incoming.get("theme"),
+            "urls": incoming.get("urls"),
             "first_seen": week,
             "last_seen": week,
             "weeks": {},
@@ -473,6 +541,13 @@ def merge(existing, incoming):
             e["type"] = incoming["type"]
             if incoming.get("theme"):
                 e["theme"] = incoming["theme"]
+        # An address is additive: a page that moved gets a new url, and an
+        # extraction that simply did not repeat last week's must not erase it.
+        if incoming.get("urls"):
+            seen = {u["url"]: u for u in (e.get("urls") or [])}
+            for u in incoming["urls"]:
+                seen[u["url"]] = u
+            e["urls"] = list(seen.values())
         e["tags"] = sorted(set(e.get("tags", [])) | set(incoming["tags"]))
         e["links"] = sorted(set(e.get("links", [])) | set(incoming["links"]))
         e["first_seen"] = min(e.get("first_seen", week), week)
@@ -764,6 +839,18 @@ def cmd_record_week(args, repo, cfg, sdir):
             # addresses the scan could resolve. check-summary holds the prose
             # to these: a shipped PR the summary never mentions is a failure,
             # whatever its commit share.
+            # Themes that reached `done` this week, with whatever succession
+            # they declared. This is the only machine-readable record that an
+            # arc ENDED, and the only place a reader of next week can find out
+            # what inherited it. check-summary holds the prose to it.
+            "themes_closed": [
+                {"id": e["id"], "title": e["title"],
+                 "succeeded_by": (e["weeks"][args.week] or {}).get("succeeded_by")}
+                for e in sorted(ents, key=lambda x: x["id"])
+                if e.get("type") == "theme" and e.get("status") == "done"
+                and args.week in (e.get("weeks") or {})
+                and max(e["weeks"]) == args.week
+            ],
             "prs_shipped": [{"number": sp["number"], "urls": sp["resolved"] or sp["urls"]}
                             for sp in ship_scan(w, cfg)],
         },
@@ -1389,6 +1476,7 @@ def cmd_render(args, repo, cfg, sdir):
     if not ents:
         die(f"no entities recorded for {args.week}")
     here = lambda e: e["weeks"][args.week]
+    by_id = {e["id"]: e for e in ents}
 
     themes = [e for e in ents if e.get("type") == "theme"]
     live = [t for t in themes if (here(t) or {}).get("disposition", "confirmed") == "confirmed"]
@@ -1398,6 +1486,12 @@ def cmd_render(args, repo, cfg, sdir):
                              -((here(t).get("weight") or {}).get("share") or 0)))
 
     def section_themes(title="Themes"):
+        # Skip the heading when nothing confirmed, the way every other section
+        # already does. A week with no theme was printing a bare "## Themes"
+        # followed by the next heading -- which reads like a section that
+        # failed to render rather than a week that had none.
+        if not live:
+            return
         print(f"## {title}\n")
         for t in live:
             w = here(t)
@@ -1406,6 +1500,24 @@ def cmd_render(args, repo, cfg, sdir):
             churn = f" · {wt['line_share']:.0%} of its churn" if wt.get("line_share") else ""
             cons = f"{w['consequence']} · " if w.get("consequence") else ""
             print(f"### {t['title']}  ·  {cons}{share}{churn}\n")
+            # SUCCESSION, on the line right under the header, because a reader
+            # who has just been told an arc ended needs the next thing in the
+            # same breath. Rendered from the store so the prose and the record
+            # cannot drift.
+            def _name(i):
+                o = by_id.get(i)
+                return f"**{o['title']}**" if o else f"`{i}`"
+            if w.get("lesson"):
+                print(f"**Lesson:** {w['lesson'].strip()}\n")
+            if t.get("status") == "done":
+                succ = w.get("succeeded_by")
+                if succ:
+                    print(f"**Closed.** Its unfinished work now sits with "
+                          + ", ".join(_name(i) for i in succ) + ".\n")
+                elif succ == []:
+                    print("**Closed**, with nothing carried forward.\n")
+            if w.get("succeeds"):
+                print("**Continues** " + ", ".join(_name(i) for i in w["succeeds"]) + ".\n")
             print(w["moved"].strip() + "\n")
             print(f"**Why it matters:** {w['why_it_matters'].strip()}\n")
             kids = [e for e in ents if e.get("theme") == t["id"] and e is not t]
@@ -1821,8 +1933,18 @@ def cmd_render(args, repo, cfg, sdir):
                   + ", ".join(subjects) + ".*")
         print()
 
-    other = [e for e in ents if e.get("type") in ("decision", "other")
-             and not e.get("theme")]
+    # `Other` is the floor of the default layout: anything real that belongs to
+    # no theme, no conversation and no learning lands here rather than nowhere.
+    # It used to admit only `decision` and `other`, which meant a parentless
+    # `thread` rendered in no section at all -- and the entity most likely to be
+    # parentless is a SHIPPED one, because the ship rule forbids merging it into
+    # another theme. A week that put its site into production had that thread
+    # vanish from its own summary while `check-summary` still passed, because
+    # the prose it checks is written from this render. Types that have their own
+    # section (theme, concept, meeting, org, person) are excluded; the rest fall
+    # through to here.
+    HOMED = ("theme", "concept", "meeting", "org", "person")
+    other = [e for e in ents if e.get("type") not in HOMED and not e.get("theme")]
 
     def section_other(title="Other"):
         if not (dropped or other):
@@ -1838,7 +1960,16 @@ def cmd_render(args, repo, cfg, sdir):
         for e in sorted(other, key=lambda e: e["id"]):
             if e.get("anchor") and pointer(e):
                 continue
-            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}")
+            # `urls` is a trailing link on every other line shape; without it
+            # here, the one section a shipped entity can land in is the one
+            # section that drops its address -- which is the whole point of
+            # recording a shipped page.
+            # `refs_tail` too, for the same reason: `Other` is now where a
+            # parentless entity lands, and check-summary reads the prose for
+            # `#NN`. Without it, a PR the ledger judges major can be rendered
+            # in full and still report as never cited.
+            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}"
+                  f"{refs_tail(e)}{urls_tail(e)}")
         print()
 
     # A repo may declare its own section layout under `summary.layout` -- a
@@ -2127,6 +2258,30 @@ def cmd_check_summary(args, repo, cfg, sdir):
     for n in sorted(set(shipped) - prose_prs):
         problems.append(f"PR #{n} shipped something to an audience and the prose never cites it"
                         + (f" ({', '.join(shipped[n]['urls'][:2])})" if shipped[n].get("urls") else ""))
+    # SUCCESSION. A theme that closed this week has to say what now has the
+    # attention -- otherwise the summary reports an ending and leaves the
+    # reader with no next. Three separate failures, each its own line:
+    # the succession was never declared; it names an entity that does not
+    # exist; or it exists and the prose never mentions it.
+    closed = (rec.get("stats") or {}).get("themes_closed") or []
+    by_id = {e["id"]: e for e in ents}
+    for c in closed:
+        succ = c.get("succeeded_by")
+        if succ is None:
+            problems.append(
+                f"theme `{c['id']}` closed this week and never says what inherits it — "
+                f"set `succeeded_by: [ids]`, or `[]` with a note saying nothing carried forward")
+            continue
+        for sid in succ:
+            if sid not in by_id:
+                problems.append(
+                    f"theme `{c['id']}` closed and names `{sid}` as its successor, "
+                    f"but no entity in this week carries that id")
+            elif by_id[sid]["title"] not in prose and f"`{sid}`" not in prose:
+                problems.append(
+                    f"theme `{c['id']}` closed and handed its work to `{sid}`, "
+                    f"and the prose never mentions it — a reader is told what ended "
+                    f"and not what now has the attention")
     unmentioned = sorted(merged - prose_prs - set(shipped))
     for n in sorted(cited_prs - held_prs):
         problems.append(f"PR #{n} is cited in the summary but carried by no entity")
@@ -2151,6 +2306,10 @@ def cmd_check_summary(args, repo, cfg, sdir):
         print(f"     no PR ledger in the week record — run `ledger` so the prose can be held to judged consequence")
     if shipped:
         print(f"     shipped PRs all cited in the prose: {', '.join(f'#{n}' for n in sorted(shipped))}")
+    for c in closed:
+        succ = c.get("succeeded_by") or []
+        print(f"     theme `{c['id']}` closed → " +
+              (", ".join(f"`{x}`" for x in succ) if succ else "nothing carried forward (declared)"))
     for cid, oid, frac in restated:
         print(f"     learning `{cid}` restates `{oid}` ({frac:.0%} of its words) — apply the remove-and-lose test")
     if unmentioned:

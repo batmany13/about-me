@@ -163,9 +163,19 @@ def collect_repo(repo, start, end, emails):
         "prs": [],
         "top_dirs": [],
         "authors": {},
+        # Set here as well as below, because the guard underneath returns early
+        # and the totals line reads these unconditionally. An unreachable repo
+        # used to take the whole pull down with a KeyError instead of being
+        # reported as one missing source.
+        "prs_merged": None,
+        "prs_open_now": None,
     }
 
-    if not os.path.isdir(os.path.join(path, ".git")):
+    # `os.path.exists`, not `isdir`: in a WORKTREE `.git` is a FILE holding a
+    # gitdir pointer, and in a submodule likewise. Checking for a directory
+    # declared every worktree "not a git repo" -- which is every repo, on any
+    # week whose catchups are still on an unmerged branch.
+    if not os.path.exists(os.path.join(path, ".git")):
         out["error"] = f"not a git repo: {path}"
         return out
     out["available"] = True

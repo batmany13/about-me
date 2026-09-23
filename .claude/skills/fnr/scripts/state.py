@@ -118,19 +118,138 @@ def cmd_init(args):
     }
     save(args, st)
     print(f"wrote {p} -- {len(order)} questions, required: {', '.join(required) or 'none'}")
+    # Hand straight over to question 1. The draft is finished at this point and
+    # the next move is always the same move; printing a count and stopping is
+    # what turns a walk into something someone has to remember to start.
+    print()
+    packet(args, order[0])
+
+
+def _draft(args, suffix):
+    """A sibling draft file, by convention: <state-dir>/<week>.<suffix>.md."""
+    p = os.path.join(args.state_dir, f"{args.week}.{suffix}.md")
+    try:
+        with open(p) as fh:
+            return p, fh.read()
+    except OSError:
+        return p, None
+
+
+def _block(body, key):
+    if not body:
+        return None
+    m = re.search(rf"<!-- fnr:{key} -->\n?(.*?)\n?<!-- /fnr:{key} -->", body, re.S)
+    return m.group(1).strip() if m else None
+
+
+def _learning_counts(args):
+    """`{sources}` / `{promoted}` in a question, filled from the reading lane."""
+    p = os.path.join(os.path.dirname(os.path.abspath(args.state_dir)),
+                     "learning", f"{args.week}.md")
+    try:
+        body = open(p).read()
+    except OSError:
+        return {"sources": "no sources captured", "promoted": "0"}
+    # A separator row is one whose characters are ALL pipes, dashes and spaces.
+    # This was a strict-superset test, which silently required an ASCII hyphen
+    # somewhere in every data row -- so a row whose title used an em dash and
+    # whose link carried no hyphen was counted as a separator and dropped.
+    rows = [l for l in body.splitlines()
+            if l.startswith("|") and not l.startswith("| Source |")
+            and not set(l) <= set("|-: ")]
+    yes = sum(1 for l in rows if l.rstrip("|").rsplit("|", 1)[-1].strip() == "yes")
+    n = len(rows)
+    return {"sources": f"{n} source{'' if n == 1 else 's'}", "promoted": str(yes)}
+
+
+def _fmt_examples(cfg, key, indent="    "):
+    """Past cases for one block, from the private config's `examples`.
+
+    The public skill describes the shapes; the real material they were learned
+    on lives in the private config, so no real week ever has to be quoted here
+    to teach one. Kept first, then rewritten, then cut.
+    """
+    cases = (cfg.get("examples") or {}).get(key) or []
+    order = {"kept": 0, "rewritten": 1, "cut": 2}
+    out = []
+    for e in sorted(cases, key=lambda e: order.get(e.get("verdict"), 3)):
+        v = e.get("verdict", "?")
+        tag = f"[{e.get('week', '?')} · {v}{' · summary' if e.get('summary') else ''}]"
+        label = "drafted" if v == "rewritten" else v
+        out.append(f"{indent}{tag}")
+        out.append(f"{indent}  {label}: {e.get('text', '')}")
+        if e.get("became"):
+            out.append(f"{indent}  became:  {e['became']}")
+        for f in ("why", "rule"):
+            if e.get(f):
+                out.append(f"{indent}  {f}: {e[f]}")
+    return out
+
+
+def packet(args, key):
+    """Everything needed to ASK one question, so asking takes no judgment.
+
+    The weekly is a walk, not a set of prompts someone remembers to run. This
+    prints the whole turn -- position, both versions of the block, the question
+    and the allowed answers -- so `init`, `next` and `answer` each hand the
+    caller the next step instead of a bare key. A draft that ends with a report
+    instead of question 1 is the failure this removes.
+    """
+    st = load(args)
+    full, blocks = read_config(args.config)
+    cfg = {b["key"]: b for b in blocks}.get(key, {})
+    order = st["order"]
+    n, total = (order.index(key) + 1, len(order)) if key in order else (0, len(order))
+    title = cfg.get("title") or "the opening line"
+    req = key in (st.get("required") or [])
+
+    _, unred = _draft(args, "unredacted")
+    pub_path, pub = _draft(args, "public")
+
+    out = [f"=== {args.week} — question {n} of {total} — `{key}`  [{title}]"
+           + ("   REQUIRED" if req else "")]
+
+    u = _block(unred, key)
+    out += ["", "--- in the record (unredacted, private):",
+            u if u else "    (no marked block -- open the unredacted draft and show this section by hand)"]
+    p = _block(pub, key)
+    out += ["", "--- in the candidate (what his answer would replace):",
+            p if p else "    (block not found in the candidate)"]
+
+    q = (cfg.get("question") or "").strip()
+    if "{sources}" in q or "{promoted}" in q:
+        try:
+            q = q.format(**_learning_counts(args))
+        except (KeyError, IndexError):
+            pass
+    out += ["", "--- ask exactly this:", q or "(no question declared in the config)"]
+    if cfg.get("nudge"):
+        out += ["", f"--- nudge (from the unredacted draft, never published by name): {cfg['nudge']}"]
+    ex = _fmt_examples(full, key)
+    if ex:
+        out += ["", "--- past cases for this block (private config, never quoted in the weekly):"] + ex
+
+    keep = "" if req else "  keep   -> answer %s %s --keep\n" % (args.week, key)
+    skip = ("  skip   -> REFUSED, this block is required\n" if req
+            else "  skip   -> answer %s %s --skip\n" % (args.week, key))
+    out += ["", "--- record his reply with ONE of:",
+            keep + "  words  -> answer %s %s --file <his words verbatim>\n" % (args.week, key) + skip
+            + "  then:     paste %s %s" % (args.week, pub_path)]
+    out += ["", "(his words are written in verbatim -- grammar and spelling only, never voice)"]
+    print("\n".join(out))
 
 
 def cmd_next(args):
     st = load(args)
     for k in st["order"]:
         if st["questions"][k]["status"] == "pending":
-            print(k)
+            print(k) if args.bare else packet(args, k)
             return
     # Every question has a status. The required ones must be ANSWERED, not
     # skipped -- skip is refused for them in `answer`, so this is a belt.
     for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
-            print(k)
+            print(k) if args.bare else packet(args, k)
             return
     print("done" if st["publish"] != "pending" else "publish")
 
@@ -155,6 +274,12 @@ def cmd_answer(args):
         q.update(status="answered", text=text, at=now())
     save(args, st)
     print(f"{k}: {q['status']}")
+    # ... and immediately the next question, so the loop advances on its own.
+    # `paste` still has to run to put an answer into the candidate; the
+    # reminder is in every packet's footer.
+    print()
+    args.bare = False
+    cmd_next(args)
 
 
 _MARK = re.compile(r"<!-- fnr:(\w+) -->\n(.*?)\n<!-- /fnr:\1 -->", re.S)
@@ -164,7 +289,11 @@ def cmd_paste(args):
     st = load(args)
     src = open(args.file).read()
     found = {m.group(1) for m in _MARK.finditer(src)}
-    missing = [k for k in st["order"] if k not in found]
+    # A skipped block has already been removed by an earlier paste; requiring
+    # its markers makes the second paste of a week fail on a decision that was
+    # correctly honoured. Same bug `check` had.
+    missing = [k for k in st["order"] if k not in found
+               and st["questions"][k]["status"] != "skipped"]
     if missing:
         die(f"{args.file} has no markers for: {', '.join(missing)} -- the public file must carry every block")
 
@@ -173,14 +302,29 @@ def cmd_paste(args):
         q = st["questions"].get(k)
         if q and q["status"] == "answered":
             return f"<!-- fnr:{k} -->\n{q['text']}\n<!-- /fnr:{k} -->"
+        # SKIPPED means the block comes OUT -- it does not mean the machine
+        # default stands. Leaving it was the worst failure this file could
+        # have: the owner says "don't say this" and the candidate keeps
+        # saying it, in his weekly, under his name, with the state file
+        # recording that he declined it.
+        if q and q["status"] == "skipped":
+            return "\x00SKIP\x00"
         return m.group(0)
 
     out = _MARK.sub(sub, src)
+    # Remove the skipped block along with the title line that introduces it
+    # (`**Learning.**  <!-- fnr:key -->`) and any heading left standing alone.
+    out = re.sub(r"\n*(?:^|\n)[^\n]*\x00SKIP\x00", "", out)
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    # A section heading whose only content was the skipped block goes too.
+    out = re.sub(r"\n## [^\n]+\n+(?=## )", "\n", out)
     if out != src:
         with open(args.file, "w") as fh:
             fh.write(out)
     n = sum(1 for k in st["order"] if st["questions"][k]["status"] == "answered")
-    print(f"pasted {n} answered block(s) into {args.file}")
+    sk = [k for k in st["order"] if st["questions"][k]["status"] == "skipped"]
+    print(f"pasted {n} answered block(s) into {args.file}"
+          + (f"; removed {len(sk)} skipped ({', '.join(sk)})" if sk else ""))
 
 
 def cmd_check(args):
@@ -189,10 +333,18 @@ def cmd_check(args):
     blocks = {m.group(1): m.group(2) for m in _MARK.finditer(src)}
     problems = []
     for k in st["order"]:
+        q = st["questions"][k]
+        # A skipped block is SUPPOSED to be gone -- `paste` removes it. Absence
+        # is the correct state, and flagging it as a missing marker turned a
+        # decision into an error message. Its presence is the real problem:
+        # that would mean a block he declined is still in the candidate.
+        if q["status"] == "skipped":
+            if k in blocks:
+                problems.append(f"{k}: skipped, but still in the file -- run `paste` to remove it")
+            continue
         if k not in blocks:
             problems.append(f"{k}: no markers in the file")
             continue
-        q = st["questions"][k]
         if q["status"] == "answered" and blocks[k] != q["text"]:
             problems.append(f"{k}: the file differs from the owner's answer -- run `paste`, never edit the block")
         if k in (st.get("required") or []) and q["status"] != "answered":
@@ -255,6 +407,25 @@ def cmd_release(args):
     print(f"released {src} -> {args.public_path} (owner said: {st['publish_quote'][:60]!r})")
 
 
+def cmd_examples(args):
+    """Every section's past cases, machine sections included -- read before drafting.
+
+    Most cuts happen in the machine sections, and those are never asked about,
+    so the packet alone would show the examples only where they matter least.
+    """
+    cfg, _ = read_config(args.config)
+    keys = [s["key"] for s in (cfg.get("sections") or []) if s.get("key")]
+    if args.key:
+        keys = [k for k in keys if k == args.key] or [args.key]
+    shown = 0
+    for k in keys:
+        ex = _fmt_examples(cfg, k)
+        if ex:
+            print(f"=== {k}"); print("\n".join(ex)); print(); shown += 1
+    if not shown:
+        print("(no examples in the config" + (f" for {args.key}" if args.key else "") + ")")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--state-dir", default=DEFAULT_STATE_DIR)
@@ -264,7 +435,10 @@ def main():
     p = sub.add_parser("init"); p.add_argument("week")
     p.add_argument("--without", action="append", metavar="KEY", help="drop a conditional block this week (repeatable)")
     p.set_defaults(fn=cmd_init)
-    p = sub.add_parser("next"); p.add_argument("week"); p.set_defaults(fn=cmd_next)
+    p = sub.add_parser("next"); p.add_argument("week")
+    p.add_argument("--bare", action="store_true",
+                   help="print just the key, not the whole question packet")
+    p.set_defaults(fn=cmd_next)
     p = sub.add_parser("answer"); p.add_argument("week"); p.add_argument("key")
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--file"); g.add_argument("--text"); g.add_argument("--keep", action="store_true"); g.add_argument("--skip", action="store_true")
@@ -272,13 +446,15 @@ def main():
     p = sub.add_parser("paste"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_paste)
     p = sub.add_parser("check"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_check)
     p = sub.add_parser("show"); p.add_argument("week"); p.set_defaults(fn=cmd_show)
+    p = sub.add_parser("examples", help="past kept/cut/rewritten cases per section, from the private config -- read before drafting")
+    p.add_argument("--key", help="one section only"); p.set_defaults(fn=cmd_examples)
     p = sub.add_parser("publish"); p.add_argument("week"); p.add_argument("--decision", choices=["publish", "hold"], required=True)
     p.add_argument("--quote", help="the owner's own words; must contain 'publish' for --decision publish")
     p.set_defaults(fn=cmd_publish)
     p = sub.add_parser("release", help="copy drafts/<W>.public.md into the public repo -- refuses without an explicit publish")
     p.add_argument("week"); p.add_argument("public_path"); p.set_defaults(fn=cmd_release)
     args = ap.parse_args()
-    if not re.match(r"^\d{4}-W\d{2}$", args.week):
+    if hasattr(args, "week") and not re.match(r"^\d{4}-W\d{2}$", args.week):
         die(f"week must look like 2026-W36, got {args.week!r}")
     args.fn(args)
 
