@@ -150,8 +150,13 @@ def _learning_counts(args):
         body = open(p).read()
     except OSError:
         return {"sources": "no sources captured", "promoted": "0"}
+    # A separator row is one whose characters are ALL pipes, dashes and spaces.
+    # This was a strict-superset test, which silently required an ASCII hyphen
+    # somewhere in every data row -- so a row whose title used an em dash and
+    # whose link carried no hyphen was counted as a separator and dropped.
     rows = [l for l in body.splitlines()
-            if l.startswith("|") and not l.startswith("| Source |") and set(l) > set("|- ")]
+            if l.startswith("|") and not l.startswith("| Source |")
+            and not set(l) <= set("|-: ")]
     yes = sum(1 for l in rows if l.rstrip("|").rsplit("|", 1)[-1].strip() == "yes")
     n = len(rows)
     return {"sources": f"{n} source{'' if n == 1 else 's'}", "promoted": str(yes)}
@@ -257,7 +262,11 @@ def cmd_paste(args):
     st = load(args)
     src = open(args.file).read()
     found = {m.group(1) for m in _MARK.finditer(src)}
-    missing = [k for k in st["order"] if k not in found]
+    # A skipped block has already been removed by an earlier paste; requiring
+    # its markers makes the second paste of a week fail on a decision that was
+    # correctly honoured. Same bug `check` had.
+    missing = [k for k in st["order"] if k not in found
+               and st["questions"][k]["status"] != "skipped"]
     if missing:
         die(f"{args.file} has no markers for: {', '.join(missing)} -- the public file must carry every block")
 
