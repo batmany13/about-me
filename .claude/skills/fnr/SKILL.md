@@ -150,14 +150,32 @@ uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 ## Step 3 — Mine the corrections for a pattern
 
 Both catchups carry `correction` entities. Read them together and name the
-shared shape — **publish the pattern, never the incident.** A correction only
-an insider can parse is trivia; the same correction seen with the week's
+shared shape for the unredacted draft and the rollup. Whether it reaches the
+public weekly is the config's call, per section, not this step's. Where it
+does: **publish the pattern, never the incident.** A correction only an insider
+can parse is trivia; the same correction seen with the week's
 twenty others is a class of mistake a stranger recognizes. Illustrate with two
 or three, abstracted of system vocabulary, and say what the fix bought.
 
 ## Step 4 — Write the pair: unredacted, scrubbed, and the delta
 
 **Three files, in one pass, before any question is asked.**
+
+**Read the past cases first**, for every section, machine ones included:
+
+```bash
+uv run .claude/skills/fnr/scripts/state.py examples
+```
+
+The private config's `examples` holds what landed, what was cut and what was
+rewritten into what, on weeks already walked, each with the owner's reason and
+the rule it generalises to. Most cuts happen in the machine sections, which are
+never asked about, so this is the only point where their cases reach the draft.
+Draft against the rules, not the texts: an example is there to teach a shape, and
+a paragraph that echoes one is as wrong as one that ignores it. The cases are
+private and named; nothing in them is quoted into the weekly. After each walk,
+add that week's kept, cut and rewritten blocks to `examples` in the private
+repo. That is how the next draft starts closer.
 
 | File | What |
 |---|---|
@@ -208,7 +226,8 @@ uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.pub
 
 **`next` prints the turn, not a key.** Position (`question 3 of 6`), the block
 as the unredacted draft has it, the block as the candidate has it, the question
-to ask verbatim, the nudge if there is one, and which replies are legal —
+to ask verbatim, the nudge if there is one, the block's past cases from the
+config's `examples`, and which replies are legal —
 `skip` is shown as refused on the required block rather than offered and then
 rejected. `--bare` gives just the key, for scripts.
 
@@ -294,7 +313,8 @@ marked block holding the machine default.
 _<N> commits · <N> PRs · <N> open · ~<N> commits/day_   ← on the build-lane section only
 
 <3–4 short paragraphs at the level of the decision, ordered by consequence.
-The corrections pattern from Step 3 belongs in the build-lane section.>
+The corrections pattern from Step 3 goes only where a section's `source` in the
+config asks for it; where none does, it stays in the private files.>
 
 **<owner block title>**  <!-- fnr:<key> -->
 <the machine default the config names>
