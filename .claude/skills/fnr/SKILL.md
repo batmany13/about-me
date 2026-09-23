@@ -129,7 +129,13 @@ uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 - **Events**: name, host, date, public link. The registry's `format`/`venue`
   describe the plan; `entities[].note` and `disposition` are judgments about
   people in a social room — never quoted, never paraphrased.
-- **The vetting queue**: the processed queue and the outbox, `public_summary`
+- **The vetting queue** — **check the registry's `intake` block first.** A
+  source marked `retired` is gone on purpose (the processed queue moved into the
+  database), and a compacted outbox reads empty after delivery. Either way, say
+  the section's source is **unavailable** and ask; never fill Interesting Tech
+  from memory, from older weeks, or by digging through archives until something
+  plausible turns up. When the registry declares an MCP source, use that. Then:
+  the processed queue and the outbox, `public_summary`
   only — never `id`, `source_uri`, or anything implying a watchlist. Prefer
   items that trace to something in this weekly; group cohorts; researching a
   conference program is not attending it.
