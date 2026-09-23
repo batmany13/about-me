@@ -403,6 +403,37 @@ Two things follow from the rule:
   where the successors, their boundaries and the items that moved between them
   are written down, and it is routinely the densest file in the week.
 
+### 3b⅞ · Say how it reached you, and what the work taught
+
+Two fields that exist because a downstream reader needs them and cannot infer
+them from anything else in the store.
+
+**`channel`** — how this week's material arrived: `meeting`, `call`,
+`written-update`, `relayed`, `lp-communication`, or `desk`. Set it on every
+`org`, `meeting` and `person` the week touched. Without it, a sit-down with a
+founder, their investor-update email, a voice note relayed secondhand, a recap
+sent to limited partners and a desk read of public filings all land as the same
+note — and a weekly that wants to lead with contact has to be told by a person
+which was which. One section needed three rewrites before anyone named that.
+
+**`confidential: true`** — when the *channel* is privileged, whatever the
+content says. A co-investor's decisions reported to its LPs are confidential by
+channel even if every company in them is public. Mark it at extraction, when
+you know where the material came from; by the time a summary is being written,
+that context is usually gone.
+
+**`lesson`** on a theme — one sentence: what the *work* taught us about our own
+work. A `concept` is barred from this, because a concept must name an outside
+subject; so a week's building had nowhere to put its lesson except prose, and a
+reader asking for "the week's learning" was served a research finding instead,
+on two consecutive weeks. Write it for the top one or two themes by
+consequence, and only when there is one — an empty `lesson` is fine; a
+restatement of `why_it_matters` is not.
+
+Every field in the store has a round-trip test in `tests/test_entity_fields.py`.
+**Add one for any new field** — the same bug has shipped three times: a field
+validated carefully in `normalize()` and then never written.
+
 ### 3c · Everything else hangs off a theme
 
 Threads, decisions and corrections carry `theme: <id>` — a directed parent edge,

@@ -105,6 +105,13 @@ STATUSES = ["active", "done", "parked", "dropped"]
 # learning the way that repo does rather than introducing a second scale nobody
 # reconciles. `measured` is the only grade that survives someone else disagreeing
 # with you, whatever the rungs below it are called.
+# HOW the week's material reached us. Without it a meeting, an investor
+# update, a relayed voice note, a recap sent to LPs and a desk read of public
+# filings all land as the same `org` note, and any reader downstream has to be
+# told by a human which of them was contact. That cost one weekly section three
+# rewrites before it was named.
+CHANNELS = ("meeting", "call", "written-update", "relayed", "lp-communication", "desk")
+
 DEFAULT_GRADES = ["asserted", "reported", "observed", "verified", "measured"]
 DEFAULT_GRADE_MARKS = {
     "asserted": "asserted",
@@ -347,6 +354,16 @@ def normalize(raw, week, grades=None):
     why = (raw.get("why_it_matters") or "").strip()
     weight = raw.get("weight") or {}
     disposition = (raw.get("disposition") or "confirmed").strip().lower()
+    # Channel / confidential / lesson are checked here, at function level and
+    # ahead of every type-specific block -- they apply to every entity type.
+    channel = (raw.get("channel") or "").strip().lower() or None
+    if channel and channel not in CHANNELS:
+        raise ValueError(f"{eid}: bad channel {channel!r} -- one of {', '.join(CHANNELS)}")
+    confidential = raw.get("confidential")
+    if confidential is not None and not isinstance(confidential, bool):
+        raise ValueError(f"{eid}: `confidential` must be true or false")
+    if etype == "concept" and (raw.get("lesson") or "").strip():
+        raise ValueError(f"{eid}: `lesson` belongs on a theme -- a concept already says what it taught, in `claim`")
     if etype == "theme":
         if disposition not in THEME_DISPOSITIONS:
             raise ValueError(f"{eid}: bad disposition {disposition!r} -- "
@@ -442,6 +459,18 @@ def normalize(raw, week, grades=None):
         # entry filter drops None, so the two stay distinguishable downstream:
         # a closed theme with no key at all is an omission, one with an empty
         # list is a decision.
+        # How this week's material arrived, and whether the channel itself was
+        # privileged. `confidential` exists because the substance can be
+        # harmless while the SOURCE is not: a co-investor's decisions reported
+        # to limited partners are confidential by channel, whatever they say.
+        "channel": channel,
+        "confidential": confidential,
+        # What the WORK taught us about our own work. A `concept` is barred from
+        # carrying this -- it must name an outside subject -- so without a slot
+        # here the lesson of a week's building had nowhere to live except prose,
+        # and a reader wanting "the week's learning" was always served a
+        # research finding instead. It happened on two consecutive weeks.
+        "lesson": (raw.get("lesson") or "").strip() or None,
         "succeeded_by": ([str(x).strip().lower() for x in (raw.get("succeeded_by") or []) if str(x).strip()]
                          if "succeeded_by" in raw else None),
         "succeeds": ([str(x).strip().lower() for x in (raw.get("succeeds") or []) if str(x).strip()]
@@ -1478,6 +1507,8 @@ def cmd_render(args, repo, cfg, sdir):
             def _name(i):
                 o = by_id.get(i)
                 return f"**{o['title']}**" if o else f"`{i}`"
+            if w.get("lesson"):
+                print(f"**Lesson:** {w['lesson'].strip()}\n")
             if t.get("status") == "done":
                 succ = w.get("succeeded_by")
                 if succ:
