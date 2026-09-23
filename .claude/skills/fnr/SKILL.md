@@ -345,13 +345,13 @@ learning, grouped by cohort, never a conclusion>
 The single most useful shape in this document, and the one a draft reliably
 misses. Bruce, 2026-09-22, on the paragraph that finally landed after three
 rewrites of a section: *"this is strong, exact kind of insight forward we
-should focus on."*
+should focus on."* The example below is invented; it has the same shape.
 
-> A company shed an entire product line and the team that ran it.  The
-> transaction isn't the interesting part; the willingness is.  A working
-> customer base can belong to the company you used to be rather than the one
-> you're becoming, and being able to let it go is a capability most teams
-> don't have.
+> A team rebuilt its onboarding flow and sign-ups fell for a month.  The dip
+> isn't the interesting part; holding the line through it is.  A change that
+> removes a shortcut people relied on looks like a regression before it looks
+> like an improvement, and deciding up front how long you'll wait is what keeps
+> a good change from being rolled back.
 
 Four moves, in this order:
 
