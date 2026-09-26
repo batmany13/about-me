@@ -284,6 +284,21 @@ unredacted draft, the candidate, the delta, the state file and the rollup
 snapshot on a branch of the private repo with a PR. Never commit or push to
 `main`; never merge.
 
+**Then, if he wants it on Substack**, copy the released weekly for pasting:
+
+```bash
+uv run .claude/skills/fnr/scripts/substack.py <W>     # body → clipboard; prints title + subtitle
+```
+
+It reads only the committed `fnr/<W>.md` — never a draft, and it refuses the
+file while it has uncommitted edits — so Substack gets exactly the public
+record. The H1 and the opening paragraph are printed for Substack's title and
+subtitle fields; the body goes on the clipboard as rich text, with owner-block
+markers dropped and relative links rewritten to GitHub. Substack has no API
+that writes posts, so nothing is posted: he pastes into a new post and presses
+Publish there himself. `--html <path> --no-copy` writes a preview page instead,
+for a machine without the macOS clipboard.
+
 ## Step 7 — Open the coming week
 
 Create `fnr/.private/drafts/<W+1>.wip.md`: **Outcomes I want this week** (his,
