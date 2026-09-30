@@ -20,35 +20,56 @@ question asked for each are declared in the PRIVATE config
 owner may write are marked in the public file:
 
     <!-- fnr:blurb -->
-    ...machine default, or the owner's words...
+    ...machine version, or the owner's words...
     <!-- /fnr:blurb -->
 
 `paste` writes every answered block back between its markers, byte for byte,
 so a re-render can never overwrite what the owner wrote. The machine never
 edits an answered block; the only way to change one is another `answer`.
 
+BLIND WRITE, THEN COMPARE. Every block keeps its MACHINE version -- captured
+from the candidate at `init` and never touched again -- but the question
+packet does not show it. He writes from the unredacted memory aid; the machine
+version is shown only on request (`reveal`, recorded as revealed-before-answer)
+or after he has answered (`compare`). Seeing the machine's prose first does the
+reflecting for him and anchors the answer.
+
+Each answer carries a verdict (kept / rewritten / skipped). Machine sections
+without a marker are snapshotted by heading at `init` and again at `release`.
+`pairs` turns all of it into JSONL: the eval dataset for the day the drafts get
+good enough to keep.
+
 Usage:
     state.py init 2026-W36 [--without <key>] [--config fnr/.private/fnr.config.json]
     state.py next 2026-W36                     # the next pending question, or "done"
+    state.py reveal 2026-W36 [blurb]           # the machine version BEFORE answering (recorded)
     state.py answer 2026-W36 blurb --file a.md # the owner's words, verbatim
-    state.py answer 2026-W36 blurb --keep      # the machine text stands
-    state.py answer 2026-W36 next --skip       # not answered; machine text stands
+    state.py answer 2026-W36 blurb --keep      # the machine version stands
+    state.py answer 2026-W36 next --skip       # the block comes out of the page
+    state.py compare 2026-W36 blurb            # after answering: his words beside the machine's
     state.py paste 2026-W36 drafts/2026-W36.public.md   # answered blocks into the PRIVATE candidate
     state.py check 2026-W36 drafts/2026-W36.public.md
     state.py show 2026-W36
     state.py publish 2026-W36 --decision hold
     state.py publish 2026-W36 --decision publish --quote "<his words, containing 'publish'>"
     state.py release 2026-W36 fnr/2026-W36.md   # the ONLY writer of the public path; refuses without the quote
+    state.py pairs 2026-W36 [2026-W37 ...] [--out evals/fnr-pairs.jsonl]
+    state.py pairs 2026-W39 --machine-from first:drafts/2026-W39.public.md   # backfill a pre-pairs state
 """
 
 import argparse
 import datetime as dt
+import difflib
+import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 
 STATUSES = ("pending", "answered", "kept", "skipped")
+VERDICT_OF = {"answered": "rewritten", "kept": "kept", "skipped": "skipped"}
+ASKED = ("owner", "pick")          # the section kinds that are walked, one question each
 DEFAULT_STATE_DIR = os.path.join("fnr", ".private", "drafts")
 DEFAULT_CONFIG = os.path.join("fnr", ".private", "fnr.config.json")
 
@@ -62,10 +83,20 @@ def read_config(path):
         die(f"no fnr config at {path} -- the blocks and questions live in the private repo")
     with open(path) as fh:
         cfg = json.load(fh)
-    blocks = [s for s in (cfg.get("sections") or []) if s.get("owner") == "owner" and s.get("key")]
+    blocks = [s for s in (cfg.get("sections") or []) if s.get("owner") in ASKED and s.get("key")]
     if not blocks:
         die(f"{path}: no owner blocks declared under `sections`")
     return cfg, blocks
+
+
+def soft_config(path):
+    """The config when it is there; {} when it is not. For commands that only
+    enrich their output with it and must still run on a machine without it."""
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except (OSError, TypeError, ValueError):
+        return {}
 
 
 def die(msg):
@@ -77,57 +108,40 @@ def now():
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
 
 
-def path_for(args):
-    return os.path.join(args.state_dir, f"{args.week}.state.json")
+def sha(text):
+    return hashlib.sha256(text.encode()).hexdigest()[:12] if text is not None else None
 
 
-def load(args):
-    p = path_for(args)
+def similarity(a, b):
+    if a is None or b is None:
+        return None
+    return round(difflib.SequenceMatcher(None, a, b, autojunk=False).ratio(), 3)
+
+
+def path_for(args, week=None):
+    return os.path.join(args.state_dir, f"{week or args.week}.state.json")
+
+
+def load(args, week=None):
+    p = path_for(args, week)
     if not os.path.isfile(p):
-        die(f"no state at {p} -- run `state.py init {args.week}` first")
+        die(f"no state at {p} -- run `state.py init {week or args.week}` first")
     with open(p) as fh:
         return json.load(fh)
 
 
 def save(args, st):
     st["updated"] = now()
-    p = path_for(args)
+    p = path_for(args, st.get("week"))
     os.makedirs(os.path.dirname(p), exist_ok=True)
     with open(p, "w") as fh:
         json.dump(st, fh, indent=2, ensure_ascii=False)
         fh.write("\n")
 
 
-def cmd_init(args):
-    p = path_for(args)
-    if os.path.isfile(p):
-        print(f"exists: {p}")
-        return
-    _, blocks = read_config(args.config)
-    without = set(args.without or [])
-    order = [b["key"] for b in blocks if b["key"] not in without]
-    required = sorted(b["key"] for b in blocks if b.get("required") and b["key"] in order)
-    st = {
-        "week": args.week,
-        "started": now(),
-        "config": args.config,
-        "order": order,
-        "required": required,
-        "questions": {k: {"status": "pending", "text": None, "at": None} for k in order},
-        "publish": "pending",
-    }
-    save(args, st)
-    print(f"wrote {p} -- {len(order)} questions, required: {', '.join(required) or 'none'}")
-    # Hand straight over to question 1. The draft is finished at this point and
-    # the next move is always the same move; printing a count and stopping is
-    # what turns a walk into something someone has to remember to start.
-    print()
-    packet(args, order[0])
-
-
-def _draft(args, suffix):
+def _draft(args, suffix, week=None):
     """A sibling draft file, by convention: <state-dir>/<week>.<suffix>.md."""
-    p = os.path.join(args.state_dir, f"{args.week}.{suffix}.md")
+    p = os.path.join(args.state_dir, f"{week or args.week}.{suffix}.md")
     try:
         with open(p) as fh:
             return p, fh.read()
@@ -140,6 +154,88 @@ def _block(body, key):
         return None
     m = re.search(rf"<!-- fnr:{key} -->\n?(.*?)\n?<!-- /fnr:{key} -->", body, re.S)
     return m.group(1).strip() if m else None
+
+
+def _section(body, title, footer=None):
+    """A machine section's text: its `## title` up to the next heading, with any
+    marked owner block (and the line introducing it) and the footer removed --
+    so the pair is the machine's prose only, never an answer nested inside it."""
+    if not body or not title:
+        return None
+    m = re.search(rf"(?m)^## {re.escape(title)}[ \t]*\n(.*?)(?=^## |\Z)", body, re.S)
+    if not m:
+        return None
+    text = re.sub(r"(?m)^[^\n]*<!-- fnr:(\w+) -->.*?<!-- /fnr:\1 -->[^\n]*\n?", "", m.group(1), flags=re.S)
+    if footer:
+        text = text.replace(footer, "")
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
+def _machine_version(cfg, unred, pub):
+    """The machine's own version of an asked block, before any answer.
+
+    A `pick` block's machine version is its candidate list, which lives on the
+    private side -- the public candidate holds only a placeholder, because
+    nothing is listed that he did not pick. A block whose config `default` is
+    null (the required one) has no machine version at all: its placeholder is
+    a prompt, not a draft, and pairing it would score him against nothing.
+    """
+    if "default" in cfg and cfg["default"] is None:
+        return None
+    return _block(unred if cfg.get("owner") == "pick" else pub, cfg["key"])
+
+
+def _machine_sections(full):
+    return [s for s in (full.get("sections") or []) if s.get("owner") == "machine" and s.get("key")]
+
+
+def cmd_init(args):
+    p = path_for(args)
+    if os.path.isfile(p):
+        print(f"exists: {p}")
+        return
+    full, blocks = read_config(args.config)
+    without = set(args.without or [])
+    order = [b["key"] for b in blocks if b["key"] not in without]
+    required = sorted(b["key"] for b in blocks if b.get("required") and b["key"] in order)
+    _, unred = _draft(args, "unredacted")
+    pub_path, pub = _draft(args, "public")
+    if pub is None:
+        print(f"warning: no candidate at {pub_path} -- machine versions not captured; "
+              "write the drafts before init", file=sys.stderr)
+    cfgs = {b["key"]: b for b in blocks}
+    questions = {}
+    for k in order:
+        m = _machine_version(cfgs[k], unred, pub)
+        questions[k] = {"status": "pending", "text": None, "at": None,
+                        "machine": m, "machine_sha": sha(m)}
+    # Machine sections are never asked, but he can still rewrite one by telling
+    # you -- snapshot them now and again at release, so that is a pair too.
+    sections = {}
+    for s in _machine_sections(full):
+        m = _section(pub, s.get("title"), full.get("footer")) if s["key"] not in without else None
+        if m is not None:
+            sections[s["key"]] = {"title": s["title"], "machine": m, "machine_sha": sha(m)}
+    st = {
+        "week": args.week,
+        "started": now(),
+        "config": args.config,
+        "order": order,
+        "required": required,
+        "pick": [k for k in order if cfgs[k].get("owner") == "pick"],
+        "questions": questions,
+        "machine_sections": sections,
+        "publish": "pending",
+    }
+    save(args, st)
+    n = sum(1 for q in questions.values() if q["machine"] is not None)
+    print(f"wrote {p} -- {len(order)} questions, required: {', '.join(required) or 'none'}; "
+          f"machine versions held for {n} block(s) and {len(sections)} machine section(s)")
+    # Hand straight over to question 1. The draft is finished at this point and
+    # the next move is always the same move; printing a count and stopping is
+    # what turns a walk into something someone has to remember to start.
+    print()
+    packet(args, order[0])
 
 
 def _learning_counts(args):
@@ -186,14 +282,25 @@ def _fmt_examples(cfg, key, indent="    "):
     return out
 
 
+def _can_keep(st, cfg, key):
+    """Keep needs something to keep: never on the required block, never on a
+    pick block (nothing is listed he did not pick), never where the config
+    declares no machine version."""
+    return not (key in (st.get("required") or []) or key in (st.get("pick") or [])
+                or cfg.get("owner") == "pick" or ("default" in cfg and cfg["default"] is None))
+
+
 def packet(args, key):
     """Everything needed to ASK one question, so asking takes no judgment.
 
     The weekly is a walk, not a set of prompts someone remembers to run. This
-    prints the whole turn -- position, both versions of the block, the question
-    and the allowed answers -- so `init`, `next` and `answer` each hand the
-    caller the next step instead of a bare key. A draft that ends with a report
-    instead of question 1 is the failure this removes.
+    prints the whole turn -- position, the memory aid, the question and the
+    allowed answers -- so `init`, `next` and `answer` each hand the caller the
+    next step instead of a bare key. A draft that ends with a report instead of
+    question 1 is the failure this removes.
+
+    The machine version is NOT in the packet. He writes from his notes; the
+    machine's prose is behind `reveal` (recorded) or `compare` (after).
     """
     st = load(args)
     full, blocks = read_config(args.config)
@@ -202,19 +309,20 @@ def packet(args, key):
     n, total = (order.index(key) + 1, len(order)) if key in order else (0, len(order))
     title = cfg.get("title") or "the opening line"
     req = key in (st.get("required") or [])
+    pick = key in (st.get("pick") or []) or cfg.get("owner") == "pick"
 
     _, unred = _draft(args, "unredacted")
-    pub_path, pub = _draft(args, "public")
+    pub_path, _ = _draft(args, "public")
 
     out = [f"=== {args.week} — question {n} of {total} — `{key}`  [{title}]"
-           + ("   REQUIRED" if req else "")]
+           + ("   REQUIRED" if req else "") + ("   PICK" if pick else "")]
 
     u = _block(unred, key)
-    out += ["", "--- in the record (unredacted, private):",
-            u if u else "    (no marked block -- open the unredacted draft and show this section by hand)"]
-    p = _block(pub, key)
-    out += ["", "--- in the candidate (what his answer would replace):",
-            p if p else "    (block not found in the candidate)"]
+    label = ("the candidates (private) -- he picks; nothing he doesn't pick is listed" if pick
+             else "his notes (unredacted, private) -- the memory aid he writes from")
+    missing = "    (no marked block -- open the unredacted draft and show this section by hand"
+    missing += f"; the config's `memory` for it: {cfg['memory']})" if cfg.get("memory") else ")"
+    out += ["", f"--- {label}:", u if u else missing]
 
     q = (cfg.get("question") or "").strip()
     if "{sources}" in q or "{promoted}" in q:
@@ -229,29 +337,73 @@ def packet(args, key):
     if ex:
         out += ["", "--- past cases for this block (private config, never quoted in the weekly):"] + ex
 
-    keep = "" if req else "  keep   -> answer %s %s --keep\n" % (args.week, key)
-    skip = ("  skip   -> REFUSED, this block is required\n" if req
-            else "  skip   -> answer %s %s --skip\n" % (args.week, key))
-    out += ["", "--- record his reply with ONE of:",
-            keep + "  words  -> answer %s %s --file <his words verbatim>\n" % (args.week, key) + skip
-            + "  then:     paste %s %s" % (args.week, pub_path)]
-    out += ["", "(his words are written in verbatim -- grammar and spelling only, never voice)"]
+    w = args.week
+    lines = [f"  {'picks' if pick else 'words'}  -> answer {w} {key} --file "
+             + ("<the items he picked, as listed>" if pick else "<his words verbatim>")]
+    if _can_keep(st, cfg, key):
+        lines.append(f"  keep   -> answer {w} {key} --keep")
+        lines.append(f"  reveal -> reveal {w} {key}   (only if he asks to see the machine version first; recorded)")
+    lines.append("  skip   -> REFUSED, this block is required" if req
+                 else f"  skip   -> answer {w} {key} --skip   (the block comes out of the page)")
+    lines.append(f"  then:     paste {w} {pub_path}")
+    out += ["", "--- record his reply with ONE of:"] + lines
+    out += ["", "(his words go in verbatim -- grammar and spelling only.  The machine version is "
+                "hidden on purpose: he writes first, `compare` shows it after.)"]
     print("\n".join(out))
 
 
-def cmd_next(args):
-    st = load(args)
+def _pending(st):
     for k in st["order"]:
         if st["questions"][k]["status"] == "pending":
-            print(k) if args.bare else packet(args, k)
-            return
+            return k
     # Every question has a status. The required ones must be ANSWERED, not
     # skipped -- skip is refused for them in `answer`, so this is a belt.
     for k in st.get("required") or []:
         if k in st["questions"] and st["questions"][k]["status"] != "answered":
-            print(k) if args.bare else packet(args, k)
-            return
+            return k
+    return None
+
+
+def cmd_next(args):
+    st = load(args)
+    k = _pending(st)
+    if k and args.reveal:
+        args.key = k
+        return cmd_reveal(args)
+    if k:
+        print(k) if args.bare else packet(args, k)
+        return
     print("done" if st["publish"] != "pending" else "publish")
+
+
+def _machine_of(args, st, key):
+    """The machine version from the state, or -- for a state written before
+    machine versions were captured -- from the candidate's marker."""
+    q = st["questions"][key]
+    if "machine" in q:
+        return q["machine"]
+    return _block(_draft(args, "public")[1], key)
+
+
+def cmd_reveal(args):
+    st = load(args)
+    k = args.key or _pending(st)
+    if not k or k not in st["questions"]:
+        die(f"nothing to reveal; this week's blocks are {', '.join(st['order'])}")
+    q = st["questions"][k]
+    if q["status"] != "pending":
+        args.key = k
+        return cmd_compare(args)
+    m = _machine_of(args, st, k)
+    if m is None:
+        die(f"{k} has no machine version -- the config declares none; this one is his to write, or skip")
+    # A kept answer after a reveal is a different signal from a blind one, so
+    # the reveal is recorded, not just printed.
+    q["revealed_at"] = q.get("revealed_at") or now()
+    save(args, st)
+    print(f"=== {args.week} — `{k}` — the machine version (revealed before his answer; recorded)\n")
+    print(m)
+    print(f"\n--- keep -> answer {args.week} {k} --keep   ·   or his words -> --file   ·   or --skip")
 
 
 def cmd_answer(args):
@@ -260,7 +412,11 @@ def cmd_answer(args):
     if k not in st["questions"]:
         die(f"unknown question {k!r}; this week's are {', '.join(st['order'])}")
     q = st["questions"][k]
+    cfg = {s.get("key"): s for s in (soft_config(args.config).get("sections") or [])}.get(k, {})
     if args.keep:
+        if not _can_keep(st, cfg, k):
+            die(f"{k} has nothing to keep -- it is required, a pick, or has no machine version. "
+                "Answer it with his words, or --skip.")
         q.update(status="kept", text=None, at=now())
     elif args.skip:
         if k in (st.get("required") or []):
@@ -272,14 +428,51 @@ def cmd_answer(args):
         if not text.strip():
             die("an answer needs text (--file or --text), or --keep / --skip")
         q.update(status="answered", text=text, at=now())
+    # `machine` is never touched here: it is the baseline the answer is scored
+    # against, and an answer that rewrote its own baseline would score 1.0.
+    q["verdict"] = VERDICT_OF[q["status"]]
+    q["revealed_before_answer"] = bool(q.get("revealed_at"))
     save(args, st)
-    print(f"{k}: {q['status']}")
+    print(f"{k}: {q['status']} ({q['verdict']}"
+          + (", after reveal" if q["revealed_before_answer"] else "") + ")")
+    if q["status"] == "answered" and _machine_of(args, st, k) is not None:
+        print(f"    optional: `compare {args.week} {k}` shows the machine version beside his")
     # ... and immediately the next question, so the loop advances on its own.
     # `paste` still has to run to put an answer into the candidate; the
     # reminder is in every packet's footer.
     print()
     args.bare = False
+    args.reveal = False
     cmd_next(args)
+
+
+def cmd_compare(args):
+    st = load(args)
+    k = args.key
+    if k in st["questions"]:
+        q = st["questions"][k]
+        if q["status"] == "pending":
+            die(f"{k} is not answered yet -- compare comes after he writes. "
+                f"`reveal {args.week} {k}` shows the machine version first, and records that it did.")
+        machine = _machine_of(args, st, k)
+        final = _final(q, machine)
+        verdict, revealed = q.get("verdict") or VERDICT_OF[q["status"]], q.get("revealed_before_answer")
+    elif k in (st.get("machine_sections") or {}):
+        s = st["machine_sections"][k]
+        machine = s["machine"]
+        final = s["final"] if "final" in s else _section(
+            _draft(args, "public")[1], s["title"], soft_config(args.config).get("footer"))
+        verdict, revealed = _section_verdict(machine, final), None
+    else:
+        die(f"unknown block {k!r}")
+    sim = similarity(machine, final)
+    print(f"=== {args.week} — `{k}` — {verdict}"
+          + ("" if revealed is None else f" · revealed before answer: {'yes' if revealed else 'no'}")
+          + ("" if sim is None else f" · similarity {sim:.2f}"))
+    print("\n--- his (final):")
+    print(final if final else "(nothing -- the block came out)")
+    print("\n--- the machine's:")
+    print(machine if machine is not None else "(no machine version)")
 
 
 _MARK = re.compile(r"<!-- fnr:(\w+) -->\n(.*?)\n<!-- /fnr:\1 -->", re.S)
@@ -363,8 +556,9 @@ def cmd_show(args):
     for k in st["order"]:
         q = st["questions"][k]
         req = " (required)" if k in (st.get("required") or []) else ""
+        rev = " (revealed)" if q.get("revealed_at") else ""
         preview = (q["text"] or "").replace("\n", " ")[:70]
-        print(f"  {k:<18} {q['status']:<9}{req}  {preview}")
+        print(f"  {k:<18} {q['status']:<9}{req}{rev}  {preview}")
 
 
 def cmd_publish(args):
@@ -387,6 +581,12 @@ def cmd_publish(args):
     print(f"{st['week']}: {args.decision}")
 
 
+def _section_verdict(machine, final):
+    if final is None or not final.strip():
+        return "skipped"
+    return "kept" if final.strip() == (machine or "").strip() else "rewritten"
+
+
 def cmd_release(args):
     """Copy the private candidate into the public repo -- the ONLY writer of that path."""
     st = load(args)
@@ -401,10 +601,133 @@ def cmd_release(args):
         q = st["questions"][k]
         if q["status"] == "answered" and blocks.get(k) != q["text"]:
             die(f"{k}: the candidate differs from the owner's answer -- run `paste` first")
+        # A pick block's candidate holds a placeholder, never the list: only
+        # what he picked is published, so an unwalked pick cannot ship.
+        if k in (st.get("pick") or []) and q["status"] == "pending":
+            die(f"{k}: a pick block with nothing picked -- ask it, or --skip to drop the section")
     os.makedirs(os.path.dirname(args.public_path) or ".", exist_ok=True)
     with open(args.public_path, "w") as fh:
         fh.write(body)
+    # The machine sections' second snapshot: what shipped, beside what was drafted.
+    footer = soft_config(args.config).get("footer")
+    for k, s in (st.get("machine_sections") or {}).items():
+        s["final"] = _section(body, s["title"], footer)
+        s["verdict"] = _section_verdict(s["machine"], s["final"])
+    save(args, st)
     print(f"released {src} -> {args.public_path} (owner said: {st['publish_quote'][:60]!r})")
+
+
+def _final(q, machine):
+    if q["status"] == "answered":
+        return q["text"]
+    if q["status"] == "kept":
+        return machine
+    if q["status"] == "skipped":
+        return ""
+    return None
+
+
+def _read_spec(args, spec, week):
+    """`path`, or `<git-rev>:<repo-path>` read from the repo holding the state
+    dir. `{week}` is substituted; the rev `first` is the earliest commit that
+    touched the path -- the machine's draft, before any answer was pasted in."""
+    spec = spec.replace("{week}", week)
+    if os.path.isfile(spec):
+        return open(spec).read(), spec
+    rev, sep, path = spec.partition(":")
+    if not sep:
+        die(f"--machine-from {spec!r}: no such file, and not <rev>:<path>")
+    # <rev>:<path> is repo-root relative, and so is the log pathspec once run from the top.
+    top = subprocess.run(["git", "-C", args.state_dir if os.path.isdir(args.state_dir) else ".",
+                          "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    if top.returncode:
+        die(f"--machine-from {spec!r}: {args.state_dir} is not in a git repo")
+    repo = top.stdout.strip()
+    if rev == "first":
+        log = subprocess.run(["git", "-C", repo, "log", "--format=%H", "--", path],
+                             capture_output=True, text=True)
+        revs = log.stdout.split()
+        if log.returncode or not revs:
+            die(f"--machine-from {spec!r}: no commit touches {path} in {repo}")
+        rev = revs[-1]
+    show = subprocess.run(["git", "-C", repo, "show", f"{rev}:{path}"], capture_output=True, text=True)
+    if show.returncode:
+        die(f"--machine-from {spec!r}: {show.stderr.strip()}")
+    return show.stdout, f"{rev[:12]}:{path}"
+
+
+def _pairs_for(args, week):
+    st = load(args, week)
+    cfg = soft_config(args.config) or soft_config(st.get("config"))
+    kinds = {s.get("key"): s.get("owner") for s in (cfg.get("sections") or [])}
+    backfill, origin = (None, None)
+    if args.machine_from:
+        backfill, origin = _read_spec(args, args.machine_from, week)
+    rows = []
+
+    def row(key, owner, machine, final, verdict, revealed, source):
+        return {"week": week, "key": key, "owner": owner, "machine": machine, "final": final,
+                "verdict": verdict, "revealed_before_answer": revealed,
+                "chars_machine": None if machine is None else len(machine),
+                "chars_final": None if final is None else len(final),
+                "similarity": similarity(machine, final), "machine_from": source}
+
+    for k in st["order"]:
+        q = st["questions"][k]
+        if q["status"] == "pending":
+            continue                       # not a pair until he has replied
+        if "machine" in q:
+            machine, source = q["machine"], "state"
+        elif backfill is not None:
+            sec = next((s for s in (cfg.get("sections") or []) if s.get("key") == k), {"key": k})
+            machine, source = _machine_version(sec, backfill, backfill), origin
+        else:
+            machine, source = None, None
+        rows.append(row(k, kinds.get(k, "owner"), machine, _final(q, machine),
+                        q.get("verdict") or VERDICT_OF[q["status"]],
+                        q.get("revealed_before_answer"), source))
+
+    # Machine sections: from the state when init captured them; otherwise
+    # backfilled by heading. `final` is what release snapshotted, or -- before
+    # release -- the candidate as it stands now.
+    secs = st.get("machine_sections")
+    if secs is None and backfill is not None:
+        secs = {s["key"]: {"title": s.get("title"), "_from": origin,
+                           "machine": _section(backfill, s.get("title"), cfg.get("footer"))}
+                for s in _machine_sections(cfg)}
+    current = None
+    for k, s in (secs or {}).items():
+        if s.get("machine") is None:
+            continue
+        if "final" in s:
+            final = s["final"]
+        else:
+            if current is None:
+                current = _draft(args, "public", week)[1] or ""
+            final = _section(current, s["title"], cfg.get("footer"))
+        rows.append(row(k, "machine", s["machine"], final or "",
+                        s.get("verdict") or _section_verdict(s["machine"], final),
+                        None, s.get("_from", "state")))
+    return rows
+
+
+def cmd_pairs(args):
+    """One JSONL row per walked block: the machine version beside what shipped.
+
+    This is the eval dataset. The number to watch over the weeks is how often
+    `kept` beats `rewritten` -- and, within `rewritten`, whether similarity
+    climbs. A kept block after `revealed_before_answer` is a weaker signal
+    than a blind one, which is why the flag rides along.
+    """
+    rows = [r for w in args.weeks for r in _pairs_for(args, w)]
+    text = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    if args.out:
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        with open(args.out, "w") as fh:
+            fh.write(text)
+        print(f"wrote {len(rows)} pair(s) to {args.out}", file=sys.stderr)
+    else:
+        sys.stdout.write(text)
 
 
 def cmd_examples(args):
@@ -426,6 +749,9 @@ def cmd_examples(args):
         print("(no examples in the config" + (f" for {args.key}" if args.key else "") + ")")
 
 
+WEEK = re.compile(r"^\d{4}-W\d{2}$")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--state-dir", default=DEFAULT_STATE_DIR)
@@ -438,11 +764,17 @@ def main():
     p = sub.add_parser("next"); p.add_argument("week")
     p.add_argument("--bare", action="store_true",
                    help="print just the key, not the whole question packet")
-    p.set_defaults(fn=cmd_next)
+    p.add_argument("--reveal", action="store_true",
+                   help="show the pending block's machine version before he answers (recorded)")
+    p.set_defaults(fn=cmd_next, key=None)
+    p = sub.add_parser("reveal", help="the machine version of a block BEFORE he answers -- recorded in the state")
+    p.add_argument("week"); p.add_argument("key", nargs="?"); p.set_defaults(fn=cmd_reveal)
     p = sub.add_parser("answer"); p.add_argument("week"); p.add_argument("key")
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--file"); g.add_argument("--text"); g.add_argument("--keep", action="store_true"); g.add_argument("--skip", action="store_true")
     p.set_defaults(fn=cmd_answer)
+    p = sub.add_parser("compare", help="after he answers: his block beside the machine's, with similarity")
+    p.add_argument("week"); p.add_argument("key"); p.set_defaults(fn=cmd_compare)
     p = sub.add_parser("paste"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_paste)
     p = sub.add_parser("check"); p.add_argument("week"); p.add_argument("file"); p.set_defaults(fn=cmd_check)
     p = sub.add_parser("show"); p.add_argument("week"); p.set_defaults(fn=cmd_show)
@@ -453,9 +785,17 @@ def main():
     p.set_defaults(fn=cmd_publish)
     p = sub.add_parser("release", help="copy drafts/<W>.public.md into the public repo -- refuses without an explicit publish")
     p.add_argument("week"); p.add_argument("public_path"); p.set_defaults(fn=cmd_release)
+    p = sub.add_parser("pairs", help="machine version vs final, one JSONL row per block -- the eval dataset")
+    p.add_argument("weeks", nargs="+")
+    p.add_argument("--out", help="write here instead of stdout (e.g. evals/fnr-pairs.jsonl in the private repo)")
+    p.add_argument("--machine-from", metavar="SPEC",
+                   help="backfill a state with no captured machine versions: a file, or <git-rev>:<path> "
+                        "in the private repo; `first` as the rev = the earliest commit of that path; {week} is substituted")
+    p.set_defaults(fn=cmd_pairs)
     args = ap.parse_args()
-    if hasattr(args, "week") and not re.match(r"^\d{4}-W\d{2}$", args.week):
-        die(f"week must look like 2026-W36, got {args.week!r}")
+    for w in ([args.week] if hasattr(args, "week") else []) + (getattr(args, "weeks", None) or []):
+        if not WEEK.match(w):
+            die(f"week must look like 2026-W36, got {w!r}")
     args.fn(args)
 
 
