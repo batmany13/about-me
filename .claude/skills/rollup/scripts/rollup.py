@@ -26,6 +26,16 @@ Usage:
     rollup.py 2026-W35 --table         # human stats table
     rollup.py --weeks 2026-W34,2026-W35
     rollup.py 2026-W35 --registry /path/to/repos.json
+    rollup.py 2026-W35 --timezone UTC      # roll up records cut in another zone
+
+One zone. Every week record says which zone cut it (`timezone`, with its
+`start`/`end` instants), and the registry declares the zone the weekly is cut
+in (top-level `timezone`). Records that disagree with each other or with the
+registry are REFUSED, not added up: a week cut in Pacific and a week cut in UTC
+are different weeks, and their sum is not a number about either. A record
+with no `timezone` predates stamping and was cut in UTC; it is flagged as
+legacy, accepted only when every record in the week is legacy. See
+week_zone.py for the rule and its history.
 """
 
 import argparse
@@ -62,6 +72,11 @@ DEFAULT_OUTPUT_DIR = "catchup"
 
 CATEGORY_ORDER = ["meeting", "technical", "other"]
 WEEK_RE = re.compile(r"^\d{4}-W\d{2}$")
+
+# A copy of the catchup skill's module, kept identical: this skill is deployed
+# on its own, and a cross-skill import would break wherever catchup is absent.
+sys.path.insert(0, _SCRIPT_DIR)
+import week_zone  # noqa: E402
 
 
 def die(msg, code=1):
@@ -216,6 +231,47 @@ def read_entities(repo_path, week, out_dir, ids):
     return found, missing
 
 
+def check_zones(week, repos, zone_name):
+    """Refuse to merge week records cut in different zones. Returns the flags.
+
+    Every reporting repo's record must name `zone_name` -- the registry's zone,
+    or `--timezone` -- and its `start`/`end` must be that zone's week bounds.
+    A record with no `timezone` is legacy UTC: flagged, and accepted only when
+    the whole week is legacy (a week rolled up the way it was cut, before
+    zones were stamped). A mix of stamped and legacy records is two clocks.
+    """
+    live = [r for r in repos if r.get("has_record")]
+    legacy = [r["name"] for r in live if not r.get("timezone")]
+    stamped = {r["name"]: r["timezone"] for r in live if r.get("timezone")}
+    problems = []
+    for name, tz in sorted(stamped.items()):
+        if tz != zone_name:
+            problems.append(f"{name}: record cut in {tz}, expected {zone_name}")
+    if stamped and legacy:
+        problems.append(f"legacy records (no `timezone`, cut in UTC) beside stamped ones: "
+                        f"{', '.join(sorted(legacy))} -- re-run catchup there")
+    if not problems and stamped:
+        want = week_zone.Week.from_label(week, zone_name)
+        for r in live:
+            if r.get("timezone") and (r.get("start"), r.get("end")) != \
+                    (want.start.isoformat(), want.end.isoformat()):
+                problems.append(f"{r['name']}: record bounds {r.get('start')} .. {r.get('end')} "
+                                f"are not {week} in {zone_name} ({want.start.isoformat()} .. "
+                                f"{want.end.isoformat()})")
+    if problems:
+        die(f"{week}: refusing to merge week records cut in different zones.\n  "
+            + "\n  ".join(problems)
+            + f"\n  One zone per rollup: declare `timezone` in the registry and "
+              f"`week.timezone` in each repo's catchup config, then re-run catchup; "
+              f"or pass --timezone to roll up records cut in another zone.")
+    if legacy:
+        print(f"rollup: {week}: legacy week records -- no `timezone`, cut in UTC: "
+              f"{', '.join(sorted(legacy))}"
+              + (f" (the registry declares {zone_name})" if zone_name != week_zone.DEFAULT_ZONE else ""),
+              file=sys.stderr)
+    return {"legacy_utc": sorted(legacy)}
+
+
 def collect(week, registry, args):
     # The reading lane lives beside the registry, not inside any repo -- it is
     # the one input that is not derived from a git history.
@@ -268,12 +324,18 @@ def collect(week, registry, args):
                 "corrections": rec.get("corrections") or [],
                 "carried_over": rec.get("carried_over") or [],
                 "partial": rec.get("partial"),
+                # The zone that cut this record, and its bounds. Absent on a
+                # legacy record, which was cut in UTC.
+                "timezone": rec.get("timezone"),
+                "start": rec.get("start"),
+                "end": rec.get("end"),
                 "summary_path": summary if os.path.isfile(summary) else None,
                 "entities": ents,
                 "missing_entity_files": missing_ents,
             })
         repos.append(entry)
 
+    zone_flags = check_zones(week, repos, args.zone_name)
     live = [r for r in repos if r.get("has_record")]
 
     def total(key):
@@ -333,6 +395,10 @@ def collect(week, registry, args):
 
     return {
         "week": week,
+        # Which zone every record in this rollup was cut in. `legacy_utc` names
+        # records from before stamping; when it is non-empty the week is UTC.
+        "timezone": week_zone.DEFAULT_ZONE if zone_flags["legacy_utc"] else args.zone_name,
+        "legacy_utc": zone_flags["legacy_utc"],
         "generated": dt.datetime.now().isoformat(timespec="seconds"),
         "repos": repos,
         "repos_reporting": len(live),
@@ -366,7 +432,10 @@ def collect(week, registry, args):
 def render_table(d):
     w = d["week"]
     out = [f"# {w} — cross-repo rollup",
-           f"  {d['repos_reporting']}/{d['repos_registered']} repos reporting"]
+           f"  {d['repos_reporting']}/{d['repos_registered']} repos reporting · "
+           f"week cut in {d.get('timezone')}"]
+    if d.get("legacy_utc"):
+        out.append(f"  LEGACY records (no timezone stamp, cut in UTC): {', '.join(d['legacy_utc'])}")
     if d["missing_records"]:
         out.append(f"  MISSING week records: {', '.join(d['missing_records'])}"
                    " — run catchup in each before trusting the totals")
@@ -462,6 +531,8 @@ def snapshot(d, out_dir, recapture=False):
         return dict(meta, sha256=h)
 
     manifest = {"week": d["week"],
+                "timezone": d.get("timezone"),
+                "legacy_utc": d.get("legacy_utc") or [],
                 "captured": (prior or {}).get("captured") or d["generated"],
                 "checked": d["generated"],
                 "repos_reporting": d["repos_reporting"],
@@ -747,6 +818,9 @@ def main():
     ap.add_argument("--snapshot", default=None,
                     help="copy every source read into this directory, with hashes")
     ap.add_argument("--today", default=None, help="override today's date (testing)")
+    ap.add_argument("--timezone", default=None,
+                    help="the zone every week record must have been cut in, overriding the "
+                         "registry's `timezone` (default: the registry's, else UTC)")
     ap.add_argument("--control", choices=["deepvista"], default=None,
                     help="run a control against the snapshot: fetch each repo's cards back "
                          "from DeepVista, and compare once its deepvista-summary.md exists")
@@ -759,14 +833,21 @@ def main():
     if args.control and not args.snapshot:
         die("--control needs --snapshot: the control's files live beside the sources")
 
-    today = dt.date.today()
+    registry = load_registry(args.registry or DEFAULT_REGISTRY)
+    try:
+        args.zone_name, _ = week_zone.choose(args.timezone, registry.get("timezone"),
+                                             where=args.registry or DEFAULT_REGISTRY,
+                                             prog="rollup")
+    except ValueError as e:
+        die(str(e))
+
+    # The last closed week, judged in the declared zone.
+    today = week_zone.today_in(week_zone.zone(args.zone_name))
     if args.today:
         try:
             today = dt.date.fromisoformat(args.today)
         except ValueError:
             die(f"cannot parse --today {args.today!r}")
-
-    registry = load_registry(args.registry or DEFAULT_REGISTRY)
 
     if args.weeks:
         weeks = [parse_week(x, today) for x in args.weeks.split(",") if x.strip()]

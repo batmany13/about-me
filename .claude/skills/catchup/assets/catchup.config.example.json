@@ -7,6 +7,10 @@
     "$comment": "Output is content, so it defaults to the top level rather than under .claude/. The bookkeeping ignore rule follows this setting.",
     "dir": "catchup"
   },
+  "week": {
+    "$comment": "The one zone this repo's weeks are cut in: Monday 00:00 to the next Monday 00:00 there. Commit author dates and PR mergedAt are both converted into it, and every week record stamps it. Every repo whose weeks are rolled up together must declare the same zone. Omit it and weeks are cut in UTC, with a notice.",
+    "timezone": "America/Los_Angeles"
+  },
   "authors": {
     "$comment": "Turn split on only for a repo with more than one real contributor. Every commit email must be listed, or it lands in unknown_authors.",
     "split": false,

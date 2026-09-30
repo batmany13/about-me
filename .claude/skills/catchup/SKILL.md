@@ -94,7 +94,9 @@ skill: the skill is portable and those specifics are not.
 ## Step 1: Resolve the arg to a set of weeks
 
 Today's date and ISO week: `date +%Y-%m-%d` and `date +%G-W%V` — note `%G`, not
-`%Y`. At year boundaries Jan 1 can be W52 of the *prior* year.
+`%Y`. At year boundaries Jan 1 can be W52 of the *prior* year. Both are read in
+the repo's **declared zone** (`week.timezone`; `TZ=<zone> date …`), because that
+zone is what the pull cuts weeks in — see *One declared zone* in Step 2.
 
 | User says | Resolves to |
 |---|---|
@@ -242,10 +244,19 @@ Two things in that output decide how much to trust it:
 - **`structure`, `modified`, `hot_files` and `biggest_commits`** are the code-mining inputs —
   see Step 2b. They are not optional colour: they are the only fields that
   describe what the week *built* rather than what it *said*.
-- **Weeks are UTC.** Git renders author dates in the author's local zone, so
-  slicing the date off `%aI` gave a local week that disagreed with GitHub's UTC
-  `mergedAt` — work done on a Sunday evening in Pacific belongs to the Monday,
-  and three PRs have been observed landing in the wrong week because of it.
+- **One declared zone cuts every week.** A week runs Monday 00:00 → next
+  Monday 00:00 in the zone the repo declares (`week.timezone` in the config;
+  `--timezone` overrides; UTC, with a stderr notice, when nothing is declared),
+  and **both clocks are converted into it** before a week is decided — the
+  commit's `%aI` and the PR's `mergedAt` alike. Slicing `%aI` read each author's
+  zone while `mergedAt` is UTC, so the two halves disagreed; cutting in UTC
+  fixed that and moved Sunday evening Pacific into the next week (W39 counted a
+  W38 PR and missed four merged that Sunday night). Bruce, 2026-09-29: one
+  zone, declared and stamped. The pull and every week record carry `timezone`,
+  `start` and `end` (exact instants, `end` exclusive); the stat line says the
+  zone; `record-week` refuses a pull cut in another zone than the config's,
+  `check-summary` fails a record that disagrees with it, and the rollup refuses
+  to add up records cut in different zones.
 - **`fetched`** — the pull runs `git fetch origin` first, because the primary
   count is measured against `origin/HEAD` and a stale remote ref silently
   *undercounts* the week. On one real 20-PR week a stale ref reported 12 commits
@@ -705,6 +716,7 @@ Open threads: <what is mid-flight going into next week>
 
 ---
 *Stats: …*
+*Week: Mon Sep 21 – Sun Sep 27, America/Los_Angeles.*
 ```
 
 **Anchors: say it once, point everywhere else.** One entity carries a
@@ -951,6 +963,9 @@ DeepVista sync, which is off by default.
 ## Common pitfalls
 
 - **Wrong ISO week-year at boundaries.** Always `%G-W%V`, never `%Y-W%V`.
+- **Deciding a week in any clock but the declared one.** A date sliced off a
+  timestamp, a naive `--since`, a machine's local `date` — each is a different
+  week on a Sunday night. Go through `week_zone.py`; never compare dates by hand.
 - **Publishing the wide commit count.** `commit_count_all_refs` spans all refs
   and differs between machines. Publish `commit_count`.
 - **Citing a sha the extractor was handed but nobody else can resolve.** Run
