@@ -1,15 +1,16 @@
 ---
 name: fnr
 description: >
-  Write Bruce's weekly Field Notes & Reflections (FNR). The machine writes the
-  whole week from the private repos' catchups — an unredacted draft and the
-  scrubbed public candidate together, with the delta between them — then asks
-  the owner one question per turn, and each answer goes straight into the
-  public file, verbatim. The sections, the owner's blocks, the one required
-  block and the questions are declared in the private config. Resumable
-  across sessions under Claude or Codex. Triggers: "/fnr", "write my weekly",
-  "field notes", "weekly reflection", "time for the weekly", and — when a
-  week is mid-conversation — any reply to the current question.
+  Bruce's weekly Field Notes & Reflections (FNR), as a reflection tool. The
+  machine writes a rich private memory aid of the week from the private repos'
+  catchups, plus a scrubbed machine version of every block as fallback and
+  eval baseline; then it asks the owner one question per turn, showing his
+  notes but not the machine's prose, and his words go straight into the public
+  file, verbatim. The sections, the owner's blocks, the pick lists, the one
+  required block and the questions are declared in the private config.
+  Resumable across sessions under Claude or Codex. Triggers: "/fnr", "write my
+  weekly", "field notes", "weekly reflection", "time for the weekly", and —
+  when a week is mid-conversation — any reply to the current question.
 ---
 
 # FNR — Field Notes & Reflections
@@ -18,32 +19,34 @@ The Monday weekly. Bruce left Netflix in August 2026 and is on a "no-break
 career break". FNR is the public record of that — and the name is a pun on
 Netflix's Freedom & Responsibility, which is the joke and also the point.
 
-**Two layers, and the distinction is the whole design:**
+**A reflection tool, not a summarizer.** Bruce, 2026-09-29: *"This is really
+more of a self blog that I want to type and reflect."* The machine's job is to
+help him **remember** the week; the writing is his, as much as he wants to do.
+Machine prose on the page is a fallback, until the evals say it has earned more.
 
-| Layer | Where | Audience | Contains |
+| Layer | Where | Audience | What it is |
 |---|---|---|---|
-| **Ground truth** | each source repo's `catchup/<W>.md`, and `fnr/.private/drafts/<W>.unredacted.md` | Bruce only | Everything. Names, numbers, decisions. |
-| **Public weekly** | `fnr/<W>.md` in about-me | The internet | What survives the scrub policy, plus his own words. |
+| **Memory aid** | `fnr/.private/drafts/<W>.unredacted.md`, over each repo's `catchup/<W>.md` | Bruce only | **The product.** Everything, unscrubbed, organized for recall — names, numbers, PRs, goals, how the plan changed. Never copy. |
+| **Public weekly** | `fnr/<W>.md` in about-me | The internet | **His writing.** Where he doesn't write, the scrubbed machine version. |
 
-**One sequence, which replaced the two-draft loop:**
+Every section has one of three kinds, declared per section in the config:
 
-> The machine writes the **whole week** first — the unredacted draft and the
-> scrubbed candidate side by side, with the delta between them. Nothing is left
-> as a prompt. Then it asks **one question per turn**, showing both versions of
-> the section, and writes the answer **directly into the public file**. His
-> words are never scrubbed: he wrote them knowing where they go. Every question
-> is optional except the one the config marks required.
+- **machine** — written from the record, scrubbed, never asked. He changes one
+  by telling you.
+- **owner** — asked. The candidate holds a machine version: a fallback he can
+  keep, and the baseline his words are measured against. Never a draft to polish.
+- **pick** — the machine's job is to surface options. The candidate list lives
+  on the private side; he picks; **nothing is listed that he did not pick.**
 
-The facts come from the record. The meaning comes from him. The machine fills
-every block with the best *machine* answer — the record's own headline, the
-top-ranked learning — and never with an invented reflection in his voice.
+**Blind write, then compare.** The question shows his notes, not the machine's
+version. Seeing the machine's prose first does the reflecting for him and
+anchors the answer; writing blind keeps the reflection his and the comparison
+honest. He can ask to see it first (`reveal`, recorded) or after (`compare`).
 
-**Nothing in this public skill names a section.** The sections, their titles,
-which blocks are his, which one is required, where each machine default comes
-from, and the question asked for each live in **`fnr/.private/fnr.config.json`**
-(`sections[]`, contract `fnr-config/v1` — the schema is in
-`reference/questions.md`). Read it before writing a line; the template below
-is rendered from it.
+**Nothing in this public skill names a section.** Titles, kinds, the required
+block, the machine defaults, the memory shapes and the questions live in
+**`fnr/.private/fnr.config.json`** (`sections[]`, contract `fnr-config/v1`;
+the schema is in `reference/questions.md`). Read it before writing a line.
 
 ### The verbatim rule (owner blocks)
 
@@ -134,72 +137,57 @@ uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 - **Events**: name, host, date, public link. The registry's `format`/`venue`
   describe the plan; `entities[].note` and `disposition` are judgments about
   people in a social room — never quoted, never paraphrased.
-- **The vetting queue** — **check the registry's `intake` block first.** A
-  source marked `retired` is gone on purpose (the processed queue moved into the
-  database), and a compacted outbox reads empty after delivery. Either way, say
-  the section's source is **unavailable** and ask; never fill Interesting Tech
-  from memory, from older weeks, or by digging through archives until something
-  plausible turns up. When the registry declares an MCP source, use that. Then:
-  the processed queue and the outbox, `public_summary`
-  only — never `id`, `source_uri`, or anything implying a watchlist. Prefer
-  items that trace to something in this weekly; group cohorts; researching a
-  conference program is not attending it.
+- **Pick candidates** — **check the registry's `intake` block first.** A
+  source marked `retired` is gone on purpose, and a compacted outbox reads
+  empty after delivery; either way say the source is **unavailable** and ask.
+  Never fill a pick list from memory or from older weeks. Otherwise the
+  `public_summary` only — never `id`, `source_uri`, or anything implying a
+  watchlist — filtered by the section's `candidates` rule.
 - **Next week's calendar** (Google Calendar MCP, the following Mon–Sun):
-  counts and shape, never names. Cross-reference against the catchups — the
-  tie usually runs build → meeting: this week's research was prep for next
-  week's conversation.
+  counts and shape for the machine version; names only in the memory aid.
 - **The forward draft** `fnr/.private/drafts/<W>.wip.md`, if it exists: its
-  stated outcomes and running notes are the highest-value input, because they
-  hold what he was *trying* to do. Open the draft by comparing intent to result.
+  stated outcomes and running notes hold what he was *trying* to do. Put
+  intent beside result at the top of the memory aid.
 
-## Step 3 — Mine the corrections for a pattern
+## Step 3 — Mine the corrections
 
 Both catchups carry `correction` entities. Read them together and name the
-shared shape for the unredacted draft and the rollup. Whether it reaches the
-public weekly is the config's call, per section, not this step's. Where it
-does: **publish the pattern, never the incident.** A correction only an insider
-can parse is trivia; the same correction seen with the week's
-twenty others is a class of mistake a stranger recognizes. Illustrate with two
-or three, abstracted of system vocabulary, and say what the fix bought.
+shared shape **in the memory aid and the rollup**. They reach the public page
+only where a section's `source` asks for them, and then as the pattern, never
+the incident.
 
-## Step 4 — Write the pair: unredacted, scrubbed, and the delta
+## Step 4 — Write the memory aid, then the machine versions
 
-**Three files, in one pass, before any question is asked.**
-
-**Read the past cases first**, for every section, machine ones included:
+**Four files, in one pass, before any question is asked** — all in the private
+repo. Read the past cases first, for every section, machine ones included:
 
 ```bash
 uv run .claude/skills/fnr/scripts/state.py examples
 ```
 
-The private config's `examples` holds what landed, what was cut and what was
-rewritten into what, on weeks already walked, each with the owner's reason and
-the rule it generalises to. Most cuts happen in the machine sections, which are
-never asked about, so this is the only point where their cases reach the draft.
-Draft against the rules, not the texts: an example is there to teach a shape, and
-a paragraph that echoes one is as wrong as one that ignores it. The cases are
-private and named; nothing in them is quoted into the weekly. After each walk,
-add that week's kept, cut and rewritten blocks to `examples` in the private
-repo. That is how the next draft starts closer.
+The config's `examples` holds what was kept, cut and rewritten on weeks
+already walked, each with his reason and the rule it generalises to. Draft
+against the rules, not the texts; nothing in them is quoted into the weekly.
+After each walk, add that week's cases to `examples`.
 
 | File | What |
 |---|---|
-| `fnr/.private/drafts/<W>.unredacted.md` | The weekly in the config's shape, **with names and numbers intact.** The memory jog. **Mark its owner blocks with the same `<!-- fnr:key -->` markers** — that is what lets `next` show both sides of a block without anyone deciding which passage to quote. |
-| `fnr/.private/drafts/<W>.public.md` | The same weekly after the scrub policy — **the candidate, and it stays in the private repo.** Every owner block wrapped in markers and filled with its machine default. It reaches `fnr/<W>.md` in about-me only through `state.py release`, only after Step 6. |
-| `fnr/.private/drafts/<W>.delta.md` | What was held back, by category, and a `## Flagged for review` list of borderline calls the policy says cut but he might want. |
-
-**No block is left empty.** Each owner block carries the machine default the
-config names for it (`default`), reading as the weekly's until he replaces
-it. The required block is the one exception: its marker holds a single
-placeholder line, and the weekly cannot publish while that line stands.
+| `drafts/<W>.unredacted.md` | **The memory aid — the product.** The config's page shape, each section written to its `memory` field: rich, unscrubbed, organized for recall, not for reading. For the build lane that is typically *outcome → step*: the goal, how the plan itself changed during the week, each step's state at week end, the PRs. For conversations, by contact. A pick section's block holds the candidate list. Owner and pick blocks carry `<!-- fnr:key -->` markers, so the packet can show exactly that block. |
+| `drafts/<W>.public.md` | **The candidate**, scrubbed: machine sections as prose; each owner block marked and filled with its machine version (`default`); a pick block marked, holding only a placeholder; a block whose `default` is null holding a single placeholder line. It reaches `fnr/<W>.md` only through `state.py release`. |
+| `drafts/<W>.delta.md` | What the candidate holds back, by category, and a `## Flagged for review` list of borderline calls on machine text. |
+| `drafts/<W>.state.json` | Written by `init` below. |
 
 Markers, exactly, keyed by the config's `key`:
 
 ```markdown
 <!-- fnr:blurb -->
-The machine default for this block.
+The machine version of this block.
 <!-- /fnr:blurb -->
 ```
+
+**The scrub is for machine text that could reach the public page — nothing
+else.** The memory aid is never scrubbed; his answers are never scrubbed. When
+unsure about a machine line, hold it in the delta's flagged list.
 
 Then start the state — `--without <key>` for a `conditional` block the week
 has no material for:
@@ -208,56 +196,51 @@ has no material for:
 uv run .claude/skills/fnr/scripts/state.py init <W> [--without <key>]
 ```
 
-**`init` prints question 1 and you ask it in the same turn.** Do not stop here
-to report that the draft is written. The draft being finished *is* the trigger
-for the walk, and a summary-instead-of-question is the one thing that reliably
-stalls a weekly: the owner reads a status update, says something that is not an
-answer, and the sequence never starts. `init`, `next` and `answer` each end by
-printing the next question packet for exactly this reason.
+`init` captures every block's machine version into the state (and snapshots
+the machine sections by heading); nothing touches those again. **It prints
+question 1 and you ask it in the same turn** — a status report instead of the
+question is what reliably stalls a weekly.
 
-The scrub happens **here, once, on machine text.** Derive the public file from
-the unredacted one under `scrub_policy.md`. When unsure, hold it in the
-delta's flagged list and ask at Step 6 rather than guessing in public.
+**Push the private files early.** Commit and push the week's branch in the
+private repo as soon as the drafts exist, and again after every answer.
+Pushing the private repo is always fine — only the public repo waits for the
+word. A walk that lives only in a working tree is one lost session from gone.
 
-## Step 5 — Ask, one question per turn
+## Step 5 — Ask for his words, one question per turn
 
 `reference/questions.md` has the mechanism; the config has the questions.
 
 ```bash
 uv run .claude/skills/fnr/scripts/state.py next <W>      # the whole question packet
 uv run .claude/skills/fnr/scripts/state.py answer <W> <key> --file /tmp/a.md   # or --keep / --skip
+uv run .claude/skills/fnr/scripts/state.py reveal <W> [<key>]    # only if he asks to see the machine's first
+uv run .claude/skills/fnr/scripts/state.py compare <W> <key>     # after he answers, if he wants to look
 uv run .claude/skills/fnr/scripts/state.py paste <W> fnr/.private/drafts/<W>.public.md
 ```
 
-**`next` prints the turn, not a key.** Position (`question 3 of 6`), the block
-as the unredacted draft has it, the block as the candidate has it, the question
-to ask verbatim, the nudge if there is one, the block's past cases from the
-config's `examples`, and which replies are legal —
-`skip` is shown as refused on the required block rather than offered and then
-rejected. `--bare` gives just the key, for scripts.
+**`next` prints the turn**: position (`question 3 of 6`), the block from the
+memory aid, the question verbatim, the nudge, the block's past cases, and the
+legal replies. **Not the machine version.** `answer` prints the next packet,
+so the walk advances on its own; `paste` is the one step it leaves to you.
 
-**`answer` prints the next packet**, so the walk advances on its own. The only
-step it cannot do for you is `paste`; every packet's footer says so.
-
-Two rules the packet cannot enforce, so hold them yourself:
-
-- **One question per turn.** The packet is the turn. Do not read ahead and ask
-  two, and do not summarise the remaining four — he answers each with that
-  section in front of him, which is the whole reason the sequence exists.
-- **The machine sections are not in the walk.** Only owner blocks are asked.
-  He changes a machine section by telling you, and you re-render and say what
-  moved; there is no question for it and inventing one wastes a turn.
-
-- **Show both versions of the section every time.** The unredacted one is
-  why he can answer; the scrubbed one is what his answer joins.
-- **Write his answer into the candidate directly**, verbatim. It is not
-  scrubbed. Mirror it into the unredacted file so the private record is whole.
-- **The required block refuses Skip.** Show its `nudge` from the unredacted
-  draft and remind him nothing in the nudge may appear by name. If he stops
-  here, the draft is saved and nothing publishes.
+- **One question per turn.** The packet is the turn. Never read ahead, batch,
+  or summarise the rest — he answers each with that block's notes in front of him.
+- **Ask for his words first.** Keep is legal wherever there is a machine
+  version, but it is the fallback, not the offer. If he wants to see the
+  machine's before deciding, `reveal` shows it and records that it did; a kept
+  answer after a reveal is a different signal from a blind one.
+- **Pick blocks**: he names items from the candidate list; write exactly those
+  items, as listed, with `--file`. Keep is refused; skip drops the section.
+- **Write his answer into the candidate directly**, verbatim, and never over
+  the memory aid. The memory aid stays the record of the week; his words live
+  in the state and the candidate.
+- **The required block refuses Skip and Keep.** Show its `nudge` from the
+  memory aid and remind him nothing in the nudge may appear by name. If he
+  stops here, the draft is saved and nothing publishes.
+- **The machine sections are not in the walk.** He changes one by telling you;
+  re-render and say what moved. `release` snapshots the result, so a machine
+  section he rewrote is still a pair.
 - **Stopping mid-way is normal.** `state.py next` on a later day resumes.
-- **Never batch the questions.** One per turn is the design: he answers each
-  with the section in front of him.
 
 ## Step 6 — Publish check, then publish — and publish is a word he says
 
@@ -298,79 +281,55 @@ Friday?"), **Carried over** (open threads from the catchups, machine),
 **Running notes** (empty), **Against the outcomes** (next Monday). It goes on
 the same private PR.
 
+## Evals — the pairs
+
+Every walked block is a pair: the machine version captured at `init`, and what
+shipped. After release, regenerate the private dataset over every walked week:
+
+```bash
+uv run .claude/skills/fnr/scripts/state.py pairs <W1> <W2> ... \
+  --machine-from 'first:drafts/{week}.public.md' --out fnr/.private/evals/fnr-pairs.jsonl
+```
+
+One JSONL row per block — `week, key, owner, machine, final, verdict
+(kept/rewritten/skipped), revealed_before_answer, chars_machine, chars_final,
+similarity` (`difflib`), `machine_from`. It names things, so it never leaves
+the private repo. **The metric to watch is how often `kept` beats `rewritten`
+over the weeks** — blind keeps count for more than keeps after a reveal — and,
+within `rewritten`, whether similarity climbs. That is the evidence for handing
+the machine more of the page, not a feeling that the drafts got better.
+`--machine-from` only backfills states written before machine versions were
+captured, from the candidate's first commit; a captured version always wins.
+
 ---
 
 ## The public template
 
-Rendered from the config, in its section order. A machine section is its
+Rendered from the config, in its section order: a machine section is its
 title and prose; an owner block is its title (or none, for the opening) and a
-marked block holding the machine default.
-
-```markdown
-# <YYYY-WNN> — <Mon D–D, YYYY>
-
-<!-- fnr:<opening key> -->
-<the machine default: the rollup's headline, scrubbed>
-<!-- /fnr:<opening key> -->
-
-## <machine section title>
-
-_<N> commits · <N> PRs · <N> open · ~<N> commits/day_   ← on the build-lane section only
-
-<3–4 short paragraphs at the level of the decision, ordered by consequence.
-The corrections pattern from Step 3 goes only where a section's `source` in the
-config asks for it; where none does, it stays in the private files.>
-
-**<owner block title>**  <!-- fnr:<key> -->
-<the machine default the config names>
-<!-- /fnr:<key> -->
-
-## <conditional section title>          ← omitted, and `--without`, on a week with none
-
-<!-- fnr:<key> -->
-<facts from the registry>
-<!-- /fnr:<key> -->
-
-## <required section title>
-
-<!-- fnr:<key> -->
-_(his — asked below)_
-<!-- /fnr:<key> -->
-
-## <machine section title>
-
-<bullets from the vetting queue: what it is and why it's queued, framed as
-learning, grouped by cohort, never a conclusion>
-
-## <owner section title>
-
-<!-- fnr:<key> -->
-<the calendar's shape for the following week>
-<!-- /fnr:<key> -->
-
-<the config's footer line>
-```
+marked block; a pick section is its title and a marked block holding only what
+he picked; a `conditional` section is omitted on a week without its material.
+The build-lane section carries the stat line
+(`_<N> commits · <N> PRs · <N> open · ~<N> commits/day_`); the config's footer
+closes the page.
 
 ### Section rules
 
 - The build-lane section and the required block are the spine; always present.
 - A section that draws on the same material as another says its part once.
-  The relationship lane is the lane, not the repo: its plumbing belongs in the
-  build-lane section.
 - Stats: figures only, work lanes only, mainline commits.
-- The vetting-queue section runs as long as the intake earns; framing decides
-  whether it reads as curiosity or a leaked pipeline.
 - The required block is **one** item, his, hand-written.
-- Never name what he's building. Research subjects are a per-mention
-  allowance, kept sparse; the policy's standing exceptions are the only names
-  cleared by default.
+- Never name what he's building in machine text. Research subjects are a
+  per-mention allowance, kept sparse; the policy's standing exceptions are the
+  only names cleared by default.
 
-### Insight-forward — the event is one clause, the insight is the paragraph
+### Insight-forward — for the fallback, and for judging it
 
-The single most useful shape in this document, and the one a draft reliably
-misses. Bruce, 2026-09-22, on the paragraph that finally landed after three
-rewrites of a section: *"this is strong, exact kind of insight forward we
-should focus on."* The example below is invented; it has the same shape.
+The shape the machine's versions aim for, and the yardstick when a pair is
+reviewed. It is never a template for his words. Bruce, 2026-09-22, on the
+paragraph that finally landed after three rewrites: *"this is strong, exact
+kind of insight forward we should focus on."* The example below is invented;
+it has the same shape.
 
 > A team rebuilt its onboarding flow and sign-ups fell for a month.  The dip
 > isn't the interesting part; holding the line through it is.  A change that
@@ -389,32 +348,17 @@ Four moves, in this order:
 
 **The test: cover the first clause.** If what remains still teaches, the
 paragraph is insight-forward. If what remains is nothing, it was news wearing a
-lesson's clothes — and anonymising it does not fix that, it just makes the news
-harder to read.
+lesson's clothes — and anonymising it does not fix that. Paragraphs in this
+shape are the easiest to scrub, which is the tell that they are the right
+ones. A rough signal: **if a paragraph's first sentence is its longest, it is
+probably event-forward.**
 
-Note what the shape costs: nothing. No name, no number, no decision, no date —
-because an insight that depended on identity was never an insight. **Paragraphs
-in this shape are the easiest in the weekly to scrub**, which is the tell that
-they are the right ones. When a paragraph is fighting the scrub policy, the
-usual cause is that it is event-forward and the event is the only content.
-
-A rough signal while drafting: **if a paragraph's first sentence is its
-longest, it is probably event-forward.**
-
-### Voice
+### Voice (machine text)
 
 Direct, first person, past tense, active. Two spaces after a period. Keep his
-insider vocabulary — his word beats your clearer word. No LinkedIn cadence.
-The update is short; the learning is the point. Length is a rule of thumb
-(700–1100 words), never a reason to cut good content.
-
-### Read it back before the questions
-
-Balance tracks the stat line — a section a third the size of another that did
-comparable work is under-reported. Each learning grows out of the paragraphs
-above it. Strip `significantly`, `a lot`, `much better`. Two or three
-aphorisms, not five. Say a thing once. A trailing paragraph belongs to its
-item. Cut vague-and-pointless lines rather than shipping them hollow.
+insider vocabulary. No LinkedIn cadence. Strip `significantly`, `a lot`,
+`much better`; say a thing once; cut a vague line rather than ship it hollow.
+Keep each section inside its config `budget`.
 
 ---
 
@@ -427,25 +371,18 @@ item. Cut vague-and-pointless lines rather than shipping them hollow.
 ## Common pitfalls
 
 - **Inferring publish.** Only the word, from him, quoted into the state.
-  Everything before that is hold, and the public repo is not touched.
-- **Asking a question before the whole draft exists.** The draft is the thing
-  he reacts to; a prompt in an empty slot is not.
-- **Finishing the draft and reporting instead of asking.** `init` ends with
-  question 1 precisely so that the handover is a question. A status update
-  invites a reply that is not an answer, and then nobody is in the sequence.
-- **Event-forward paragraphs.** Reporting a thing that happened, accurately and
-  anonymised, and leaving the reader nothing to do with it. See *Insight-forward*
-  above; the fix is never more careful anonymisation, it is a different paragraph.
-- **Writing a reflection he didn't write.** The default is the machine's own
-  best answer, from where the config says — never an invented feeling in his
-  voice.
+- **Showing the machine's version with the question.** It anchors him and
+  poisons the pair. His notes, the question — and the machine's only on request.
+- **Polishing the machine version toward his voice.** It is a fallback and a
+  baseline; a draft that imitates him is scored against itself.
+- **A thin memory aid.** A scrubbed summary in the private file is the failure
+  that started this redesign; the private side keeps every detail.
+- **Overwriting the memory aid with his answer.** It stays the record.
+- **Listing a pick item he didn't pick**, or filling a pick list from memory.
+- **Asking before the whole draft exists**, or reporting instead of asking.
+- **Holding private work unpushed.** Push the private branch after every answer.
 - **Naming a section, a question, or a lane's repo in this public skill.**
-  They live in the private config and registry.
-- **Scrubbing his answer.** He wrote it for the public file. Grammar only.
-- **Editing an answered block by hand.** `state.py paste` is the only writer.
-- **Publishing the raw pull.** The public file derives from the catchups and
-  the rollup; skipping the middle is how names leak.
-- **Trusting commits over his correction.** He's right; the commits are
-  missing context.
-- **Counting the hidden lane, or naming a repo.** `public_stats` and
-  `disclosure` are two different questions.
+- **Scrubbing his answer, or editing an answered block by hand.** `paste` is
+  the only writer.
+- **Publishing the raw pull**, **counting the hidden lane**, or **trusting
+  commits over his correction** — he's right; the commits are missing context.
