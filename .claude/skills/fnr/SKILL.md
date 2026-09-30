@@ -122,6 +122,11 @@ Pull the rest of the raw material:
 uv run .claude/skills/fnr/scripts/pull_week.py <W> > /tmp/fnr_week.json
 ```
 
+- **The week is cut in the registry's `timezone`** (top-level key, e.g.
+  `America/Los_Angeles`; `--timezone` overrides, UTC with a notice when absent)
+  — the same zone every repo's catchup declares, so this pull and the rollup
+  count the same week. The output carries `timezone` and the exact
+  `start`/`end` instants; `first_day`/`last_day` and `span` are for display.
 - **Stats** for the line: `commits_publishable_primary` (work lanes only),
   `prs_merged_publishable`, `prs_open_now_publishable`, per-day ÷ 7.
   `public_stats: false` repos never feed it; `disclosure` decides naming, not

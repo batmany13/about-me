@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 FNR week pull — gather one ISO week of raw material for the weekly reflection.
 
@@ -14,6 +18,13 @@ Two things about the counts, because they decide what gets published:
   * The week is decided by AUTHOR date, not committer date. Squash merges rewrite
     committer dates, and git's own --since/--until filter on those, so the raw
     filter cuts the week in the wrong place.
+  * The week is cut in ONE DECLARED ZONE -- the registry's top-level
+    `timezone`, `--timezone` to override, UTC (with a notice) when neither
+    says -- the same zone every repo's catchup declares. Commit `%aI` and PR
+    `mergedAt` are both converted into it before a week is decided, and git's
+    window is passed as explicit-offset instants: naive dates are read in the
+    MACHINE's zone, which is how this pull used to disagree with the catchup.
+    See week_zone.py.
   * Every commit count comes in two flavours. `commit_count` spans all refs and
     includes pre-squash worktree branches, so it is inflated and differs between
     machines depending on which local branches exist. `commit_count_primary`
@@ -25,6 +36,7 @@ Usage:
     pull_week.py 2026-W34
     pull_week.py --this-week
     pull_week.py 2026-W34 --repos-json /path/to/repos.json
+    pull_week.py 2026-W39 --timezone America/Los_Angeles   # override the registry
 """
 
 import argparse
@@ -35,6 +47,11 @@ import re
 import subprocess
 import sys
 from collections import Counter
+
+# The one place a week boundary is decided -- a copy of the catchup skill's
+# module, kept identical, so this skill runs without the other deployed.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import week_zone  # noqa: E402
 
 # Anchor the default registry to the repo this script lives in, not to the caller's
 # cwd -- the workflow walks through several repos and the path must not follow it.
@@ -72,13 +89,12 @@ def resolve_path(p):
     return p if os.path.isabs(p) else os.path.normpath(os.path.join(REPO_ROOT, p))
 
 
-def iso_week_bounds(year, week):
-    """Monday and Sunday dates for an ISO week."""
+def week_window(year, week, tz_name):
+    """The ISO week as instants in the declared zone: [Mon 00:00, next Mon 00:00)."""
     try:
-        monday = dt.date.fromisocalendar(year, week, 1)
-    except ValueError:
-        die(f"no such ISO week: {year}-W{week:02d} (that year has 52 weeks, not 53)")
-    return monday, monday + dt.timedelta(days=6)
+        return week_zone.Week(year, week, tz_name)
+    except ValueError as e:
+        die(f"{year}-W{week:02d}: {e} (a year has 52 or 53 ISO weeks)")
 
 
 def parse_week(arg, today):
@@ -114,7 +130,7 @@ def primary_ref(path):
     return "HEAD"
 
 
-def gh_pr_counts(path, start, end):
+def gh_pr_counts(path, win):
     """Merged-in-week and currently-open PR counts, straight from GitHub.
 
     The subject-parsed `prs` list below is unreliable as a count: it scrapes #NN
@@ -126,20 +142,32 @@ def gh_pr_counts(path, start, end):
 
     Returns (merged, open) or (None, None) when gh is unavailable; never raises,
     because a missing gh must degrade the stat line, not break the week.
+
+    `mergedAt` is decided in the declared zone, through the same conversion as
+    the commits (`win.contains`), not by string-comparing a UTC stamp to a date.
     """
-    merged = run(["gh", "pr", "list", "--state", "merged", "--limit", "200",
-                  "--json", "number,mergedAt",
-                  "--jq", f'[.[] | select(.mergedAt >= "{start}" and .mergedAt < "{end}")] | length'],
-                 cwd=path, timeout=45).strip()
+    raw = run(["gh", "pr", "list", "--state", "merged", "--limit", "200",
+               "--json", "number,mergedAt"], cwd=path, timeout=45).strip()
     opened = run(["gh", "pr", "list", "--state", "open", "--limit", "200",
                   "--json", "number", "--jq", "length"], cwd=path, timeout=45).strip()
     try:
-        return int(merged), int(opened)
-    except ValueError:
+        merged = sum(1 for p in json.loads(raw) if win.contains(p.get("mergedAt")))
+        return merged, int(opened)
+    except (ValueError, TypeError, AttributeError):
         return None, None
 
 
-def collect_repo(repo, start, end, emails):
+def repo_zone(path):
+    """The zone a repo's own catchup config declares, or None."""
+    cfg = os.path.join(path, ".claude", "catchup.config.json")
+    try:
+        with open(cfg) as fh:
+            return ((json.load(fh).get("week") or {}).get("timezone")) or None
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return None
+
+
+def collect_repo(repo, win, emails):
     """Walk one repo's git log for the week."""
     path = resolve_path(repo["path"])
     out = {
@@ -180,10 +208,19 @@ def collect_repo(repo, start, end, emails):
         return out
     out["available"] = True
 
-    # Query a padded window on committer date, then decide the week on author date.
-    pad = dt.timedelta(days=DATE_PAD_DAYS)
-    since, until = f"{start - pad} 00:00", f"{end + pad} 23:59:59"
-    lo, hi = str(start), str(end)
+    # One repo, one zone: a repo whose catchup cuts its weeks in another zone
+    # than the registry's produces records the rollup will refuse to add up.
+    # Said here too, because this pull is often the first thing run.
+    declared = repo_zone(path)
+    out["declared_timezone"] = declared
+    if declared and declared != win.name:
+        print(f"pull_week: {repo['name']}: its catchup declares {declared}, the "
+              f"registry {win.name} -- the rollup will refuse this repo's week "
+              f"record until they agree", file=sys.stderr)
+
+    # Query a padded window on committer date, then decide the week on author
+    # date. Explicit-offset instants: git reads a naive date in the machine's zone.
+    since, until = win.git_window(dt.timedelta(days=DATE_PAD_DAYS))
 
     ref = primary_ref(path)
     out["primary_ref"] = ref
@@ -209,7 +246,7 @@ def collect_repo(repo, start, end, emails):
         if len(parts) != 4:
             continue
         sha, when, email, subject = parts
-        if not (lo <= when[:10] <= hi):
+        if not win.contains(when):
             continue
         if sha in seen:
             continue
@@ -221,8 +258,8 @@ def collect_repo(repo, start, end, emails):
 
     rows.sort()  # author-date order, oldest first
     out["commits"] = [
-        {"sha": sha[:9], "date": when[:10], "email": email, "subject": subject,
-         "on_primary": sha in on_primary}
+        {"sha": sha[:9], "date": week_zone.local_date(when, win.tz).isoformat(),
+         "email": email, "subject": subject, "on_primary": sha in on_primary}
         for when, sha, email, subject in rows
     ]
     out["commit_count"] = len(out["commits"])
@@ -237,7 +274,7 @@ def collect_repo(repo, start, end, emails):
     )
     for line in merges.splitlines():
         when, _, subject = line.partition("\x1f")
-        if not (lo <= when[:10] <= hi):
+        if not win.contains(when):
             continue
         m = MERGE_RE.match(subject)
         if m:
@@ -245,8 +282,7 @@ def collect_repo(repo, start, end, emails):
     out["prs"] = sorted(prs)
     # Authoritative counts, when gh can answer. `prs` above stays as a list of
     # referenced numbers -- useful for naming PRs in a catchup, not for counting.
-    end_excl = (dt.date.fromisoformat(str(end)) + dt.timedelta(days=1)).isoformat()
-    merged, opened = gh_pr_counts(path, str(start), end_excl)
+    merged, opened = gh_pr_counts(path, win)
     out["prs_merged"] = merged
     out["prs_open_now"] = opened
 
@@ -266,6 +302,8 @@ def collect_repo(repo, start, end, emails):
 
 
 def collect_events(cfg, repos_by_name, start, end):
+    # `start`/`end` are the Monday and Sunday DATES: an event's `date` is a
+    # calendar date, not an instant, so there is nothing to convert.
     """Attended calendar events for the week, from the fund repo's registry."""
     src = repos_by_name.get(cfg.get("source_repo", ""))
     if not src:
@@ -327,30 +365,14 @@ def main():
     when.add_argument("--last-week", action="store_true", help="explicit alias for the default")
     when.add_argument("--this-week", action="store_true", help="current (incomplete) week")
     ap.add_argument("--repos-json", default=None, help=f"registry path (default {DEFAULT_REGISTRY})")
+    ap.add_argument("--timezone", default=None,
+                    help="IANA zone to cut the week in, overriding the registry's "
+                         "`timezone` (default: the registry's, else UTC)")
     ap.add_argument("--today", default=None, help="override today's date, YYYY-MM-DD (testing)")
     args = ap.parse_args()
 
     if args.week and (args.this_week or args.last_week):
         die("pass a week or --this-week/--last-week, not both")
-
-    if args.today:
-        try:
-            today = dt.date.fromisoformat(args.today)
-        except ValueError:
-            die(f"cannot parse --today {args.today!r} -- expected YYYY-MM-DD")
-    else:
-        today = dt.date.today()
-
-    if args.week:
-        year, week = parse_week(args.week, today)
-    elif args.this_week:
-        year, week = today.isocalendar()[:2]
-    else:
-        # no flag and --last-week resolve identically; the flag just says so out loud
-        year, week = default_week(today)
-
-    start, end = iso_week_bounds(year, week)
-    partial = end >= today
 
     registry_path = args.repos_json or DEFAULT_REGISTRY
     if not os.path.isfile(registry_path) and not args.repos_json \
@@ -366,11 +388,40 @@ def main():
     except (json.JSONDecodeError, OSError) as e:
         die(f"cannot read registry {registry_path}: {e}")
 
+    # The zone comes from the registry, so it is read before "today" means
+    # anything: the last closed week is judged in the declared zone.
+    try:
+        tz_name, tz_source = week_zone.choose(args.timezone, registry.get("timezone"),
+                                              where=registry_path, prog="pull_week")
+    except ValueError as e:
+        die(str(e))
+    tz = week_zone.zone(tz_name)
+
+    if args.today:
+        try:
+            today = dt.date.fromisoformat(args.today)
+        except ValueError:
+            die(f"cannot parse --today {args.today!r} -- expected YYYY-MM-DD")
+    else:
+        today = week_zone.today_in(tz)
+
+    if args.week:
+        year, week = parse_week(args.week, today)
+    elif args.this_week:
+        year, week = today.isocalendar()[:2]
+    else:
+        # no flag and --last-week resolve identically; the flag just says so out loud
+        year, week = default_week(today)
+
+    win = week_window(year, week, tz_name)
+    start, end = win.first_day, win.last_day
+    partial = end >= today
+
     emails = set(registry.get("author_emails", []))
     repos = registry.get("repos", [])
     by_name = {r["name"]: r for r in repos}
 
-    collected = [collect_repo(r, start, end, emails) for r in repos]
+    collected = [collect_repo(r, win, emails) for r in repos]
     events = collect_events(registry.get("events", {}), by_name, start, end)
 
     publishable = [r for r in collected if r["public_stats"]]
@@ -380,9 +431,11 @@ def main():
         lanes_primary[r["lane"] or "other"] += r["commit_count_primary"]
 
     print(json.dumps({
-        "week": f"{year}-W{week:02d}",
-        "start": str(start),
-        "end": str(end),
+        "week": win.label,
+        # The zone that cut the week and the instants it ran between (`end`
+        # exclusive); `first_day`/`last_day` are the Monday and the Sunday.
+        **win.stamp(),
+        "timezone_source": tz_source,
         "span": f"{start:%b %-d}–{end:%-d}, {end:%Y}" if start.month == end.month
                 else f"{start:%b %-d}–{end:%b %-d}, {end:%Y}",
         "partial": partial,

@@ -48,6 +48,11 @@ CONFIG_RELPATH = os.path.join(".claude", "catchup.config.json")
 # the agent-configuration directory. `output.dir` overrides.
 DEFAULT_OUTPUT_DIR = "catchup"
 
+# Week boundaries are decided in ONE declared zone (`week.timezone`), by the
+# sibling module the pull uses too. See week_zone.py for the rule and its history.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import week_zone  # noqa: E402
+
 CATEGORY_ORDER = ["meeting", "technical", "other"]
 DEFAULT_TITLES = {
     "meeting": "Meeting / Partner Notes",
@@ -162,11 +167,28 @@ def die(msg, code=1):
 def utc_now():
     """Timestamps written into the store are UTC, and say so.
 
-    Same reason the week boundary is UTC: a naive local timestamp means a
-    different instant on every machine, and this project dates its artifacts by
-    UTC — evening-Pacific work belongs to the next UTC day.
+    These are INSTANTS -- when an entity was updated, when a record was
+    generated -- not week decisions, so they are not cut by the declared zone:
+    an ISO stamp with an explicit offset is the same instant on every machine,
+    which is all a stamp has to be. Which WEEK something belongs to is decided
+    only through week_zone, in the zone the repo declares.
     """
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+
+
+def config_zone(cfg, notice=True):
+    """The zone this repo cuts weeks in: `week.timezone`, else UTC.
+
+    UTC is the documented default for a repo that declares nothing; `notice`
+    says so on stderr, once per call.
+    """
+    declared = ((cfg.get("week") or {}).get("timezone")) or None
+    if declared or notice:
+        try:
+            return week_zone.choose(None, declared, where=CONFIG_RELPATH, prog="entities")[0]
+        except ValueError as e:
+            die(f"config week.timezone: {e}")
+    return week_zone.DEFAULT_ZONE
 
 
 def slugify(text):
@@ -789,14 +811,35 @@ def cmd_record_week(args, repo, cfg, sdir):
             die(f"{args.week} not in the pull, which covers "
                 f"{', '.join(x.get('week', '?') for x in weeks)}")
 
+    # The record is only as comparable as the zone that cut it. A pull cut in
+    # another zone than the one this repo declares is refused rather than
+    # stored: a record says which clock it was cut by, and a rollup adds up
+    # only records that agree. A pull from before zones were stamped is kept,
+    # and stays unstamped -- legacy UTC, which the rollup flags.
+    pulled_tz = w.get("timezone") or blob.get("timezone")
+    want_tz = config_zone(cfg, notice=False)
+    if pulled_tz and pulled_tz != want_tz:
+        die(f"the pull was cut in {pulled_tz} and this repo declares {want_tz} "
+            f"(`week.timezone`, UTC when absent) -- re-pull without --timezone, "
+            f"or fix the config; one repo, one zone")
+    if not pulled_tz:
+        print(f"entities: the pull carries no timezone -- recording {args.week} "
+              f"unstamped (legacy UTC). Re-pull with the current pull_week.py.",
+              file=sys.stderr)
+
     ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
     by_cat = {k: sorted(e["id"] for e in ents if e.get("category") == k)
               for k in CATEGORY_ORDER}
 
     rec = {
         "week": args.week,
+        # Which zone cut the week, and the exact instants it ran between
+        # (`end` exclusive, both with their offsets). Absent on legacy records.
+        **({"timezone": pulled_tz} if pulled_tz else {}),
         "start": w.get("start"),
         "end": w.get("end"),
+        **({"first_day": w.get("first_day"), "last_day": w.get("last_day")}
+           if w.get("first_day") else {}),
         "partial": w.get("partial"),
         "repo": w.get("repo_label"),
         "generated": utc_now(),
@@ -915,10 +958,12 @@ def mainline_shas(repo):
     return ref, set(git(repo, ["rev-list", ref]).split())
 
 
-def merged_pr_weeks(repo):
-    """{pr_number: 'YYYY-Www'} by UTC merge date, or None without gh.
+def merged_pr_weeks(repo, tz):
+    """{pr_number: 'YYYY-Www'} by merge date in the declared zone, or None without gh.
 
-    `mergedAt` is UTC and is the only authority on which week a PR landed in. A
+    `mergedAt` is the only authority on which week a PR landed in -- converted
+    into the repo's declared zone first, exactly as the pull converts commits,
+    so the week a PR is checked against is the week it was counted in. A
     scraped `#NN` says a commit mentioned a PR, not that the PR belongs to the
     week -- `align-block4` cited #64 in W35, and #64 merged on 2026-08-31, W36.
     """
@@ -934,13 +979,9 @@ def merged_pr_weeks(repo):
         return None
     out = {}
     for pr in items:
-        when = (pr.get("mergedAt") or "").replace("Z", "+00:00")
-        try:
-            d = dt.datetime.fromisoformat(when).astimezone(dt.timezone.utc).date()
-        except (ValueError, TypeError):
-            continue
-        y, w, _ = d.isocalendar()
-        out[pr["number"]] = f"{y}-W{w:02d}"
+        label = week_zone.week_of(pr.get("mergedAt"), tz)
+        if label:
+            out[pr["number"]] = label
     return out
 
 
@@ -963,6 +1004,8 @@ def events_in_week(repo, cfg, weeks):
     except (json.JSONDecodeError, OSError):
         return
     for ev in (blob.get("events") or []):
+        # A calendar DATE, already local to wherever the event happened -- not
+        # an instant, so there is nothing to convert into the declared zone.
         d = (ev.get("date") or "")[:10]
         try:
             y, w, _ = dt.date.fromisoformat(d).isocalendar()
@@ -981,7 +1024,8 @@ def cmd_validate(args, repo, cfg, sdir):
     ref, reachable = mainline_shas(repo)
     if reachable is None:
         notes.append("no mainline ref found — commit provenance NOT checked")
-    pr_weeks = None if args.no_gh else merged_pr_weeks(repo)
+    pr_weeks = None if args.no_gh else merged_pr_weeks(
+        repo, week_zone.zone(config_zone(cfg, notice=False)))
     if pr_weeks is None:
         notes.append("gh unavailable or skipped — PR weeks NOT checked")
 
@@ -2157,7 +2201,27 @@ def stat_line(cfg, record, ents, week):
             label = item["singular"]
         val = f"{val:,}" if isinstance(val, int) else str(val)
         parts.append(f"{val} {label}")
-    return "*Stats: " + " · ".join(parts) + ".*" if parts else ""
+    if not parts:
+        return ""
+    line = "*Stats: " + " · ".join(parts) + ".*"
+    footer = week_footer(record, week)
+    return line + ("\n*" + footer + ".*" if footer else "")
+
+
+def week_footer(record, week):
+    """'Week: Mon Sep 21 – Sun Sep 27, America/Los_Angeles' -- or '' on a legacy record.
+
+    A summary's numbers mean nothing without the clock that cut the week, so the
+    zone rides on the stat line rather than being implied. A record from before
+    zones were stamped says nothing, and the footer does not guess.
+    """
+    tz = (record or {}).get("timezone")
+    if not tz:
+        return ""
+    try:
+        return week_zone.Week.from_label(week, tz).footer()
+    except ValueError:
+        return ""
 
 
 def cmd_stat_line(args, repo, cfg, sdir):
@@ -2231,6 +2295,20 @@ def cmd_check_summary(args, repo, cfg, sdir):
             rec = json.load(fh)
     merged = {int(n) for n in ((rec.get("stats") or {}).get("pr_numbers") or [])}
     shipped = {int(x["number"]): x for x in ((rec.get("stats") or {}).get("prs_shipped") or [])}
+    # ZONE. The week record must have been cut in the zone this repo declares
+    # -- otherwise the PRs and commits the prose is held to belong to a
+    # different week than the one the summary is titled. A record with no
+    # `timezone` predates stamping and was cut in UTC.
+    zone_problem = None
+    if rec:
+        want_tz = config_zone(cfg, notice=False)
+        rec_tz = rec.get("timezone") or week_zone.DEFAULT_ZONE
+        if rec_tz != want_tz:
+            zone_problem = (
+                f"the week record was cut in {rec_tz}"
+                + ("" if rec.get("timezone") else " (legacy: no `timezone` stamp)")
+                + f" and this repo declares {want_tz} (`week.timezone`) -- re-pull "
+                f"and re-run record-week so the summary covers the declared week")
 
     ledger = {int(r["number"]): r for r in (rec.get("pr_ledger") or []) if r.get("number") is not None}
     # A learning that restates a company or meeting entry is news filed twice.
@@ -2251,7 +2329,7 @@ def cmd_check_summary(args, repo, cfg, sdir):
             if ow and len(cw & ow) / len(cw) >= 0.6:
                 restated.append((c["id"], o["id"], len(cw & ow) / len(cw)))
                 break
-    problems = []
+    problems = [zone_problem] if zone_problem else []
     if ledger:
         for n in sorted(n for n, r in ledger.items() if r.get("consequence") == "major" and n not in prose_prs):
             problems.append(f"PR #{n} is judged major in the ledger and the prose never cites it: {ledger[n].get('what')}")

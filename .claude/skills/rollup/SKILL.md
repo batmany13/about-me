@@ -91,6 +91,18 @@ repo moves its output. When they disagree the rollup says so and uses the repo's
 a stale hint makes a reporting repo look silent, which is the worst answer an
 aggregator can give.
 
+**`timezone` — the one zone the weeks are cut in.** A top-level key in the
+registry (`"timezone": "America/Los_Angeles"`), matching `week.timezone` in
+every source repo's catchup config. Every week record names the zone that cut
+it, with its exact `start`/`end`, and the rollup **refuses** to merge records
+whose zone differs from each other or from the registry's — a week cut in
+Pacific and a week cut in UTC are different weeks, and their sum describes
+neither. A record with no `timezone` predates the stamp and was cut in UTC: it
+is flagged as legacy, accepted only when every record that week is legacy
+(`legacy_utc` in the output). `--timezone` overrides the registry for one run.
+Undeclared, the zone is UTC and a notice says so. The rule and its history
+(W39; Bruce, 2026-09-29) are in `scripts/week_zone.py`.
+
 `disclosure` governs *naming*; `public_stats` governs whether a repo's volume
 feeds a published count. They are separate decisions and the script keeps the
 two populations apart — `totals` covers every reporting repo, `public_totals`

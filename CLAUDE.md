@@ -252,6 +252,8 @@ Use the **fnr** skill (`.claude/skills/fnr/SKILL.md`) or `/fnr`. Don't hand-writ
 
 Default week is the **last closed week**, not the current one.
 
+**One timezone cuts every week: America/Los_Angeles** (Bruce, 2026-09-29). Declared as `week.timezone` in each repo's `.claude/catchup.config.json` and as top-level `timezone` in `fnr/.private/repos.json`; commit and PR timestamps are both converted into it (`week_zone.py`), every week record stamps it, and the rollup refuses records cut in different zones.
+
 ### Touching past/netflix/
 Don't update it as if it were live. It's a record of 2020–2026. Fix broken links and typos; don't refresh org structure, and don't convert its prose to past tense — the historical banners at the top of each file carry that job.
 

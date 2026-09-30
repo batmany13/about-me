@@ -19,10 +19,14 @@ Three things about the week, because they decide what gets written:
   * The week is decided by AUTHOR date, not committer date. Squash merges rewrite
     committer dates, and git's --since/--until filter on those, so the raw filter
     cuts the week in the wrong place. We query a padded window and re-filter.
-  * That date is read in UTC. Git renders author dates in the author's own zone,
-    so slicing `%aI` gave a LOCAL week -- while GitHub's `mergedAt` is UTC, so the
-    commit half and the PR half of the same pull disagreed about where the week
-    ended and the answer changed with the caller's timezone.
+  * The week is cut in ONE DECLARED ZONE -- `week.timezone` in the config,
+    `--timezone` to override, UTC (with a notice) when neither says -- and both
+    clocks are converted into it before anything decides a week: the commit's
+    `%aI` and the PR's `mergedAt` alike. Slicing `%aI` read each AUTHOR's zone
+    while `mergedAt` is UTC, so the two halves of one pull disagreed; cutting
+    in UTC fixed that and put Sunday evening Pacific in the next week (W39
+    counted a W38 PR and missed four). Bruce, 2026-09-29: one zone, declared,
+    stamped on every record. See week_zone.py.
   * `commits` carries only what is reachable from the mainline ref. A pre-squash
     branch commit and the mainline commit it became share a subject but not a
     sha, and the branch copy is reachable from nothing once the PR merges -- it
@@ -37,6 +41,7 @@ Usage:
     pull_week.py 2026-W35 --repo /path/to/repo
     pull_week.py --weeks 2026-W33,2026-W34
     pull_week.py --list-weeks         # every week with commits (for backfill)
+    pull_week.py 2026-W39 --timezone America/Los_Angeles   # override the config
 """
 
 import argparse
@@ -72,6 +77,11 @@ PATH_COUNT_MIN = 3
 
 PR_RE = re.compile(r"#(\d+)")
 MERGE_RE = re.compile(r"^Merge pull request #(\d+)")
+
+# The one place a week boundary is decided. A sibling module, not a cross-skill
+# import: the skill is deployed on its own, and week_zone.py travels with it.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import week_zone  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Categories. Three, fixed -- the vocabulary is the point of the format, so a
@@ -169,33 +179,17 @@ def run(args, cwd=None, timeout=60):
 # Week math
 # ---------------------------------------------------------------------------
 
-def iso_week_bounds(year, week):
-    """Monday and Sunday dates for an ISO week."""
+def week_window(year, week, tz_name):
+    """The ISO week as instants in the declared zone: [Mon 00:00, next Mon 00:00)."""
     try:
-        monday = dt.date.fromisocalendar(year, week, 1)
-    except ValueError:
-        die(f"no such ISO week: {year}-W{week:02d} (that year has 52 weeks, not 53)")
-    return monday, monday + dt.timedelta(days=6)
+        return week_zone.Week(year, week, tz_name)
+    except ValueError as e:
+        die(f"{year}-W{week:02d}: {e} (a year has 52 or 53 ISO weeks)")
 
 
-def utc_date(iso):
-    """The UTC calendar date of a git `%aI` timestamp.
-
-    Git renders author dates in the AUTHOR's local zone (`2026-08-30T21:46:13-07:00`),
-    so slicing the first ten characters yields a LOCAL date. That silently moves
-    work across the week boundary: three PRs merged early on a Monday in UTC were
-    all counted into the previous week because Pacific time still read Sunday.
-    GitHub's own `mergedAt` is UTC, so the two halves of the same pull disagreed
-    about which week a PR belonged to, and the answer changed with the timezone of
-    whoever ran it.
-
-    Deciding the week in UTC makes it the same number for every caller, whatever
-    zone they are in.
-    """
-    try:
-        return dt.datetime.fromisoformat(iso).astimezone(dt.timezone.utc).date().isoformat()
-    except (ValueError, TypeError):
-        return (iso or "")[:10]
+def declared_zone(cfg):
+    """The zone this repo cuts weeks in, from `week.timezone`, or None."""
+    return ((cfg.get("week") or {}).get("timezone") or None)
 
 
 def parse_week(arg, today):
@@ -482,7 +476,7 @@ def primary_ref(path):
     return "HEAD"
 
 
-def gh_pr_details(path, start, end_exclusive, body_limit):
+def gh_pr_details(path, win, body_limit):
     """Merged-in-week PRs with their titles and bodies.
 
     The single richest source in the pull, and the one a commit log cannot
@@ -503,7 +497,7 @@ def gh_pr_details(path, start, end_exclusive, body_limit):
     out = []
     for pr in items:
         merged = pr.get("mergedAt") or ""
-        if not (start <= merged < end_exclusive):
+        if not win.contains(merged):
             continue
         body = (pr.get("body") or "").strip()
         truncated = body_limit > 0 and len(body) > body_limit
@@ -537,31 +531,30 @@ def gh_pr_details(path, start, end_exclusive, body_limit):
     return out
 
 
-def gh_merged_numbers(path, start, end_exclusive):
+def gh_merged_numbers(path, win):
     """The set of PR numbers actually merged inside the week, or None without gh.
 
-    The authority for which week a PR belongs to. `mergedAt` is UTC, which is why
-    the commit side of the pull converts to UTC before deciding a week -- when the
-    two used different clocks they disagreed, and a PR merged at 02:43 UTC on the
-    Monday was filed under the Sunday that had just ended in Pacific time.
+    The authority for which week a PR belongs to. `mergedAt` is UTC, and it goes
+    through the SAME conversion as a commit's author date -- into the declared
+    zone, via `win.contains` -- rather than a string compare against a date. When
+    the two sides used different clocks they disagreed about where the week
+    ended; when both used UTC, a PR merged Sunday evening Pacific landed in the
+    next week.
 
     None means "no authority available", which is different from "nothing merged"
     and must not be read as an empty week.
     """
     raw = run(["gh", "pr", "list", "--state", "merged", "--limit", "300",
-               "--json", "number,mergedAt", "--jq",
-               f'[.[] | select(.mergedAt >= "{start}" and .mergedAt < "{end_exclusive}") '
-               f'| .number] | @json'],
-              cwd=path, timeout=45).strip()
+               "--json", "number,mergedAt"], cwd=path, timeout=45).strip()
     if not raw:
         return None
     try:
-        return {int(n) for n in json.loads(raw)}
-    except (json.JSONDecodeError, TypeError, ValueError):
+        return {int(p["number"]) for p in json.loads(raw) if win.contains(p.get("mergedAt"))}
+    except (json.JSONDecodeError, TypeError, ValueError, KeyError):
         return None
 
 
-def gh_pr_counts(path, start, end_exclusive):
+def gh_pr_counts(path, win):
     """Merged-in-week and currently-open PR counts, straight from GitHub.
 
     The subject-parsed `prs` list is unreliable as a count: it scrapes #NN out of
@@ -570,14 +563,11 @@ def gh_pr_counts(path, start, end_exclusive):
     these are the figures worth publishing. Never raises -- a missing gh must
     degrade the stat line, not break the week.
     """
-    merged = run(["gh", "pr", "list", "--state", "merged", "--limit", "300",
-                  "--json", "number,mergedAt", "--jq",
-                  f'[.[] | select(.mergedAt >= "{start}" and .mergedAt < "{end_exclusive}")] | length'],
-                 cwd=path, timeout=45).strip()
+    merged = gh_merged_numbers(path, win)
     opened = run(["gh", "pr", "list", "--state", "open", "--limit", "300",
                   "--json", "number", "--jq", "length"], cwd=path, timeout=45).strip()
     try:
-        return int(merged), int(opened)
+        return (None if merged is None else len(merged)), int(opened)
     except ValueError:
         return None, None
 
@@ -690,7 +680,7 @@ def pr_commit_map(path, ref, since, until):
     return out
 
 
-def read_structure(path, ref, since, until, lo, hi):
+def read_structure(path, ref, since, until, win):
     """What the week ADDED, DELETED and RENAMED on the mainline ref.
 
     "What did we build" is not answerable from subject lines, and it is the
@@ -714,7 +704,7 @@ def read_structure(path, ref, since, until, lo, hi):
                 continue
             head, _, rest = rec.partition("\n")
             bits = head.split("\x1f")
-            if len(bits) != 2 or not (lo <= utc_date(bits[1]) <= hi):
+            if len(bits) != 2 or not win.contains(bits[1]):
                 continue
             for ln in rest.splitlines():
                 f = ln.strip()
@@ -728,8 +718,8 @@ def read_structure(path, ref, since, until, lo, hi):
     return out
 
 
-def list_weeks(path):
-    """Every ISO week that has at least one commit, oldest first."""
+def list_weeks(path, tz):
+    """Every ISO week that has at least one commit, oldest first, cut in `tz`."""
     log = run(["git", "log", "--all", "--no-merges", "--format=%aI"], cwd=path,
               timeout=120)
     weeks = Counter()
@@ -737,27 +727,27 @@ def list_weeks(path):
         line = line.strip()
         if not line:
             continue
-        try:
-            d = dt.date.fromisoformat(utc_date(line))
-        except ValueError:
-            continue
-        y, w, _ = d.isocalendar()
-        weeks[week_label(y, w)] += 1
+        label = week_zone.week_of(line, tz)
+        if label:
+            weeks[label] += 1
     return [{"week": w, "commits": n} for w, n in sorted(weeks.items())]
 
 
 def collect(path, year, week, cfg, matchers, keep_ignored=False,
-            pr_bodies=True, pr_body_limit=6000, fetch=True):
+            pr_bodies=True, pr_body_limit=6000, fetch=True,
+            tz_name=week_zone.DEFAULT_ZONE, today=None):
     """Walk one repo's git log for one week and classify it."""
-    start, end = iso_week_bounds(year, week)
-    label = week_label(year, week)
-    today = dt.date.today()
+    win = week_window(year, week, tz_name)
+    label = win.label
+    today = today or week_zone.today_in(win.tz)
 
     out = {
         "week": label,
-        "start": str(start),
-        "end": str(end),
-        "partial": start <= today <= end,
+        # The zone that cut this week, and the exact instants it ran between
+        # (`end` exclusive). A week record without them cannot be checked
+        # against another -- see week_zone.py.
+        **win.stamp(),
+        "partial": win.is_partial(today),
         "repo_path": os.path.abspath(path),
         "repo_label": (cfg.get("repo") or {}).get("label") or os.path.basename(os.path.abspath(path)),
         "config_source": cfg.get("_source"),
@@ -781,9 +771,9 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
             return out
     out["available"] = True
 
-    pad = dt.timedelta(days=DATE_PAD_DAYS)
-    since, until = f"{start - pad} 00:00", f"{end + pad} 23:59:59"
-    lo, hi = str(start), str(end)
+    # Explicit-offset instants, never naive dates: git reads a naive date in
+    # the machine's zone. Padded, then filtered exactly with `win.contains`.
+    since, until = win.git_window(dt.timedelta(days=DATE_PAD_DAYS))
 
     out["fetched"] = refresh_remote(path) if fetch else None
     ref = primary_ref(path)
@@ -797,9 +787,9 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     ign = build_ignore(cfg)
     seen, rows = set(), []
     for sha, when, email, subject, files, adds, dels, per_file in read_log(path, since, until):
-        day = utc_date(when)
-        if not (lo <= day <= hi):
+        if not win.contains(when):
             continue
+        day = week_zone.local_date(when, win.tz).isoformat()
         if sha in seen:
             continue
         seen.add(sha)
@@ -919,7 +909,7 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
 
     # "What did we build" and "what moved" -- neither is answerable from subject
     # lines, and both are what a reader actually wants from a week.
-    out["structure"] = read_structure(path, ref, since, until, lo, hi)
+    out["structure"] = read_structure(path, ref, since, until, win)
     out["structure_counts"] = {k: len(v) for k, v in out["structure"].items()}
     # The files the week kept coming back to. A file touched by nine commits is
     # where the week's argument actually happened; open that, not the biggest diff.
@@ -941,18 +931,17 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
                   f"--since={since}", f"--until={until}"], cwd=path, timeout=120)
     for line in merges.splitlines():
         when, _, subject = line.partition("\x1f")
-        if not (lo <= utc_date(when) <= hi):
+        if not win.contains(when):
             continue
         m = MERGE_RE.match(subject)
         if m:
             scraped.add(int(m.group(1)))
 
-    end_excl = (end + dt.timedelta(days=1)).isoformat()
-    merged, opened = gh_pr_counts(path, str(start), end_excl)
+    merged, opened = gh_pr_counts(path, win)
     out["prs_merged"] = merged
     out["prs_open_now"] = opened
 
-    out["pr_details"] = (gh_pr_details(path, str(start), end_excl, pr_body_limit)
+    out["pr_details"] = (gh_pr_details(path, win, pr_body_limit)
                          if pr_bodies else [])
     out["pr_body_chars_total"] = sum(p["body_chars"] for p in out["pr_details"])
 
@@ -962,7 +951,7 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     # authority on which week a PR landed in, so `prs` is now that set and the
     # rest is reported separately rather than blended in. Without gh there is no
     # authority to bound against, so the scraped set stands and says so.
-    in_week = gh_merged_numbers(path, str(start), end_excl)
+    in_week = gh_merged_numbers(path, win)
     if in_week is None:
         out["prs"] = sorted(scraped)
         out["prs_source"] = "commit-subjects (gh unavailable -- NOT week-bounded)"
@@ -998,6 +987,9 @@ def main():
                     help="truncate each PR body to N chars; 0 for no limit (default 6000)")
     ap.add_argument("--show-ignored", action="store_true",
                     help="include the bookkeeping commits themselves, not just their count")
+    ap.add_argument("--timezone", default=None,
+                    help="IANA zone to cut weeks in, overriding `week.timezone` "
+                         "(default: the config's, else UTC)")
     ap.add_argument("--today", default=None, help="override today's date, YYYY-MM-DD (testing)")
     args = ap.parse_args()
 
@@ -1005,8 +997,18 @@ def main():
     if not os.path.isdir(path):
         die(f"no such directory: {path}")
 
+    cfg = load_config(path, args.config)
+    try:
+        tz_name, tz_source = week_zone.choose(
+            args.timezone, declared_zone(cfg),
+            where=cfg.get("_source") or f"{CONFIG_RELPATH} (absent)", prog="pull_week")
+    except ValueError as e:
+        die(str(e))
+    tz = week_zone.zone(tz_name)
+
     if args.list_weeks:
-        print(json.dumps({"repo_path": path, "weeks": list_weeks(path)}, indent=2))
+        print(json.dumps({"repo_path": path, "timezone": tz_name,
+                          "weeks": list_weeks(path, tz)}, indent=2))
         return
 
     if args.today:
@@ -1015,9 +1017,10 @@ def main():
         except ValueError:
             die(f"cannot parse --today {args.today!r} -- expected YYYY-MM-DD")
     else:
-        today = dt.date.today()
+        # "Today" in the declared zone, so "the last closed week" means the
+        # same thing on every machine.
+        today = week_zone.today_in(tz)
 
-    cfg = load_config(path, args.config)
     matchers = build_matchers(cfg)
 
     if args.weeks:
@@ -1031,11 +1034,14 @@ def main():
 
     weeks = [collect(path, y, w, cfg, matchers, args.show_ignored,
                      pr_bodies=not args.no_prs, pr_body_limit=args.pr_body_limit,
-                     fetch=not args.no_fetch)
+                     fetch=not args.no_fetch, tz_name=tz_name, today=today)
              for y, w in targets]
     print(json.dumps({
-        "generated": dt.datetime.now().isoformat(timespec="seconds"),
+        # An instant, not a week decision: UTC with its offset.
+        "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "today": str(today),
+        "timezone": tz_name,
+        "timezone_source": tz_source,
         "category_order": CATEGORY_ORDER,
         "category_titles": {k: cfg["categories"][k]["title"] for k in CATEGORY_ORDER},
         "weeks": weeks,

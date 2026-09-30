@@ -28,6 +28,35 @@ repo already has a home for this kind of thing.
 The bookkeeping ignore rule **follows this setting** — writing a summary is not
 work the summary should count — so moving `dir` moves the exclusion with it.
 
+## `week` — the zone this repo's weeks are cut in
+
+| Key | Default | Meaning |
+|---|---|---|
+| `timezone` | `UTC`, with a stderr notice | IANA zone name (`America/Los_Angeles`). A week is Monday 00:00 → next Monday 00:00 **in this zone** |
+
+```json
+"week": { "timezone": "America/Los_Angeles" }
+```
+
+**One declared zone, both clocks converted into it.** Every timestamp that
+decides a week — a commit's author date (`%aI`), a PR's `mergedAt` — is
+converted into this zone first, and git's `--since/--until` are passed as
+explicit-offset instants, never naive dates (git reads those in the machine's
+zone). So the answer is the same on every machine, and a Sunday-night merge
+lands in the week its author was living in.
+
+Declare it in every repo whose weeks are added up together, and declare the
+same zone: the pull and each `weeks/<W>.json` record `timezone` with the week's
+exact `start`/`end`; `record-week` refuses a pull cut in another zone,
+`check-summary` fails a record that disagrees with this key, and the rollup
+refuses to merge records from different zones. `--timezone` on `pull_week.py`
+overrides for one run. Records written before this key existed carry no
+`timezone` and were cut in UTC — the rollup flags them as legacy.
+
+Why: UTC was once the rule, and in W39 it counted a PR merged Sunday 20:47
+Pacific into the following week and missed four merged the next Sunday
+evening. Bruce, 2026-09-29: one timezone, declared, made clear on every record.
+
 ## `authors`
 
 | Key | Default | Meaning |
@@ -170,6 +199,9 @@ an "s" would turn "bookkeeping commits excluded" into nonsense.
 Omit `stats` entirely and the line reports mechanical facts only — commits, PRs,
 entities, bookkeeping — because those are the ones true of every repo.
 
+The line is followed by the week's zone —
+`*Week: Mon Sep 21 – Sun Sep 27, America/Los_Angeles.*` — whenever the week
+record is stamped (see [`week`](#week--the-zone-this-repos-weeks-are-cut-in)).
 Regenerate with `entities.py stat-line <week>`; `render` appends it
 automatically.
 
