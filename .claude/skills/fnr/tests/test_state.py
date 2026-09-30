@@ -29,8 +29,8 @@ CONFIG = {
     "sections": [
         {"key": "opening", "title": None, "owner": "owner", "default": "the record's headline",
          "memory": "the week in one line", "question": "How did it feel?"},
-        {"key": "alpha", "title": "Alpha", "owner": "machine", "source": "the lane"},
-        {"key": "alpha_note", "title": "Note.", "under": "alpha", "owner": "owner",
+        {"key": "lane_a", "title": "Lane A", "owner": "machine", "source": "the lane"},
+        {"key": "lane_a_note", "title": "Note.", "under": "lane_a", "owner": "owner",
          "default": "the lesson", "question": "Is that the lesson?"},
         {"key": "the_one", "title": "The One", "owner": "owner", "required": True,
          "default": None, "question": "One thing?"},
@@ -46,13 +46,13 @@ UNREDACTED = f"""# {W} · UNREDACTED
 NOTES-OPENING: every name and number, by outcome and step.
 <!-- /fnr:opening -->
 
-## Alpha
+## Lane A
 
-Private detail about alpha.
+Private detail about lane a.
 
-**Note.**  <!-- fnr:alpha_note -->
+**Note.**  <!-- fnr:lane_a_note -->
 NOTES-NOTE: what the lane taught.
-<!-- /fnr:alpha_note -->
+<!-- /fnr:lane_a_note -->
 
 ## The One
 
@@ -75,13 +75,13 @@ CANDIDATE = f"""# {W}
 MACHINE-OPENING: a week of three outcomes.
 <!-- /fnr:opening -->
 
-## Alpha
+## Lane A
 
-Machine prose about alpha.
+Machine prose about lane a.
 
-**Note.**  <!-- fnr:alpha_note -->
+**Note.**  <!-- fnr:lane_a_note -->
 MACHINE-NOTE: the lesson, scrubbed.
-<!-- /fnr:alpha_note -->
+<!-- /fnr:lane_a_note -->
 
 ## The One
 
@@ -153,7 +153,7 @@ class Init(Base):
         q = self.state()["questions"]
         self.assertEqual(q["opening"]["machine"], "MACHINE-OPENING: a week of three outcomes.")
         self.assertEqual(len(q["opening"]["machine_sha"]), 12)
-        self.assertEqual(q["alpha_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
+        self.assertEqual(q["lane_a_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
         # default null -> no machine version; the placeholder is a prompt, not a draft
         self.assertIsNone(q["the_one"]["machine"])
         # a pick block's machine version is the candidate list, from the private side
@@ -163,8 +163,8 @@ class Init(Base):
     def test_machine_section_snapshot_excludes_nested_owner_block(self):
         self.run_state("init", W)
         sec = self.state()["machine_sections"]
-        self.assertEqual(list(sec), ["alpha"])
-        self.assertEqual(sec["alpha"]["machine"], "Machine prose about alpha.")
+        self.assertEqual(list(sec), ["lane_a"])
+        self.assertEqual(sec["lane_a"]["machine"], "Machine prose about lane a.")
 
 
 class Blind(Base):
@@ -216,7 +216,7 @@ class Verdicts(Base):
     def walk(self):
         self.run_state("init", W)
         self.run_state("answer", W, "opening", "--keep")
-        self.run_state("answer", W, "alpha_note", "--file", self.answer_file("What I actually learned."))
+        self.run_state("answer", W, "lane_a_note", "--file", self.answer_file("What I actually learned."))
         self.run_state("answer", W, "the_one", "--file", self.answer_file("The one thing."))
         self.run_state("answer", W, "finds", "--skip")
 
@@ -224,12 +224,12 @@ class Verdicts(Base):
         self.walk()
         q = self.state()["questions"]
         self.assertEqual({k: v["verdict"] for k, v in q.items()},
-                         {"opening": "kept", "alpha_note": "rewritten", "the_one": "rewritten", "finds": "skipped"})
+                         {"opening": "kept", "lane_a_note": "rewritten", "the_one": "rewritten", "finds": "skipped"})
 
     def test_pairs_rows(self):
         self.walk()
         rows = self.pairs(W)
-        self.assertEqual(set(rows), {"opening", "alpha_note", "the_one", "finds", "alpha"})
+        self.assertEqual(set(rows), {"opening", "lane_a_note", "the_one", "finds", "lane_a"})
         o = rows["opening"]
         self.assertEqual(o["final"], o["machine"])
         self.assertEqual(o["similarity"], 1.0)
@@ -237,13 +237,13 @@ class Verdicts(Base):
         self.assertEqual(o["owner"], "owner")
         self.assertIs(o["revealed_before_answer"], False)
         self.assertEqual(o["machine_from"], "state")
-        self.assertLess(rows["alpha_note"]["similarity"], 0.6)
+        self.assertLess(rows["lane_a_note"]["similarity"], 0.6)
         self.assertIsNone(rows["the_one"]["machine"])
         self.assertIsNone(rows["the_one"]["similarity"])
         self.assertEqual(rows["finds"]["owner"], "pick")
         self.assertEqual(rows["finds"]["final"], "")
-        self.assertEqual(rows["alpha"]["owner"], "machine")
-        self.assertEqual(rows["alpha"]["verdict"], "kept")   # candidate unchanged so far
+        self.assertEqual(rows["lane_a"]["owner"], "machine")
+        self.assertEqual(rows["lane_a"]["verdict"], "kept")   # candidate unchanged so far
         for r in rows.values():
             self.assertEqual(set(r), {"week", "key", "owner", "machine", "final", "verdict",
                                       "revealed_before_answer", "chars_machine", "chars_final",
@@ -252,23 +252,23 @@ class Verdicts(Base):
     def test_pending_blocks_are_not_pairs(self):
         self.run_state("init", W)
         self.run_state("answer", W, "opening", "--keep")
-        self.assertEqual(set(self.pairs(W)), {"opening", "alpha"})
+        self.assertEqual(set(self.pairs(W)), {"opening", "lane_a"})
 
     def test_release_snapshots_a_rewritten_machine_section(self):
         self.walk()
         self.run_state("paste", W, os.path.join(self.dir, f"{W}.public.md"))
         body = get(os.path.join(self.dir, f"{W}.public.md"))
-        self.write("public", body.replace("Machine prose about alpha.", "He dictated this instead."))
+        self.write("public", body.replace("Machine prose about lane a.", "He dictated this instead."))
         self.run_state("publish", W, "--decision", "publish", "--quote", "publish it")
         self.run_state("release", W, os.path.join(self.tmp.name, "out", f"{W}.md"))
-        s = self.state()["machine_sections"]["alpha"]
+        s = self.state()["machine_sections"]["lane_a"]
         self.assertEqual(s["final"], "He dictated this instead.")
         self.assertEqual(s["verdict"], "rewritten")
-        self.assertEqual(self.pairs(W)["alpha"]["verdict"], "rewritten")
+        self.assertEqual(self.pairs(W)["lane_a"]["verdict"], "rewritten")
 
     def test_release_refuses_an_unwalked_pick(self):
         self.run_state("init", W)
-        for k in ("opening", "alpha_note"):
+        for k in ("opening", "lane_a_note"):
             self.run_state("answer", W, k, "--keep")
         self.run_state("answer", W, "the_one", "--file", self.answer_file("x"))
         self.run_state("paste", W, os.path.join(self.dir, f"{W}.public.md"))
@@ -278,11 +278,11 @@ class Verdicts(Base):
 
 
 LEGACY = {
-    "week": W, "started": "2031-02-03T00:00:00+00:00", "config": "x", "order": ["opening", "alpha_note", "the_one"],
+    "week": W, "started": "2031-02-03T00:00:00+00:00", "config": "x", "order": ["opening", "lane_a_note", "the_one"],
     "required": ["the_one"],
     "questions": {
         "opening": {"status": "kept", "text": None, "at": "t"},
-        "alpha_note": {"status": "answered", "text": "His note.", "at": "t"},
+        "lane_a_note": {"status": "answered", "text": "His note.", "at": "t"},
         "the_one": {"status": "answered", "text": "His one.", "at": "t"},
     },
     "publish": "pending",
@@ -300,23 +300,23 @@ class Legacy(Base):
         self.run_state("paste", W, os.path.join(self.dir, f"{W}.public.md"))
         self.run_state("check", W, os.path.join(self.dir, f"{W}.public.md"))
         rows = self.pairs(W)
-        self.assertIsNone(rows["alpha_note"]["machine"])
-        self.assertEqual(rows["alpha_note"]["verdict"], "rewritten")
-        self.assertIsNone(rows["alpha_note"]["revealed_before_answer"])
-        self.assertNotIn("alpha", rows)      # no snapshot, no backfill: no machine-section pair
+        self.assertIsNone(rows["lane_a_note"]["machine"])
+        self.assertEqual(rows["lane_a_note"]["verdict"], "rewritten")
+        self.assertIsNone(rows["lane_a_note"]["revealed_before_answer"])
+        self.assertNotIn("lane_a", rows)      # no snapshot, no backfill: no machine-section pair
 
     def test_backfill_from_a_file(self):
         first = os.path.join(self.tmp.name, "first.md")
         put(first, CANDIDATE)
         self.run_state("paste", W, os.path.join(self.dir, f"{W}.public.md"))
         rows = self.pairs(W, "--machine-from", first)
-        self.assertEqual(rows["alpha_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
-        self.assertEqual(rows["alpha_note"]["final"], "His note.")
-        self.assertEqual(rows["alpha_note"]["machine_from"], first)
+        self.assertEqual(rows["lane_a_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
+        self.assertEqual(rows["lane_a_note"]["final"], "His note.")
+        self.assertEqual(rows["lane_a_note"]["machine_from"], first)
         self.assertEqual(rows["opening"]["final"], rows["opening"]["machine"])
         self.assertIsNone(rows["the_one"]["machine"])     # default null: its placeholder is no baseline
-        self.assertEqual(rows["alpha"]["machine"], "Machine prose about alpha.")
-        self.assertEqual(rows["alpha"]["verdict"], "kept")
+        self.assertEqual(rows["lane_a"]["machine"], "Machine prose about lane a.")
+        self.assertEqual(rows["lane_a"]["verdict"], "kept")
 
     def test_backfill_from_first_git_revision(self):
         def git(*a):
@@ -326,8 +326,8 @@ class Legacy(Base):
         self.run_state("paste", W, os.path.join(self.dir, f"{W}.public.md"))
         git("commit", "-qam", "his answers")
         rows = self.pairs(W, "--machine-from", "first:drafts/{week}.public.md")
-        self.assertEqual(rows["alpha_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
-        self.assertTrue(rows["alpha_note"]["machine_from"].endswith(f":drafts/{W}.public.md"))
+        self.assertEqual(rows["lane_a_note"]["machine"], "MACHINE-NOTE: the lesson, scrubbed.")
+        self.assertTrue(rows["lane_a_note"]["machine_from"].endswith(f":drafts/{W}.public.md"))
 
 
 if __name__ == "__main__":
