@@ -148,6 +148,16 @@ against the subject artifacts it touched** — which is what the `NEW` rows in
 `propose` are for. `--pr-body-limit N` truncates, `0` disables the
 cap, `--no-prs` skips them entirely when you only need counts.
 
+**The pull's `commits` are the mainline; `open_prs_in_week` is the rest.** A
+thread whose week lives on a PR that has not merged has no mainline commits,
+and reads as idle — one outcome with 26 commits authored on a draft and 6 on
+main was first rendered "no commits". So the pull also lists every **open PR
+with commits authored inside the week** (by `authoredDate`, in the declared
+zone; merge-from-base commits counted apart), and `propose` prints them. Carry
+each under the owning entity's `open_prs`, and never call a thread idle before
+checking this list. They are not added to `commits` — that number stays the
+mainline. `null` means gh was unavailable, which is not the same as none.
+
 ## Step 2b: Read the code — mandatory, not optional
 
 **A commit subject is what someone said they did. A PR body is what they meant.
@@ -263,7 +273,43 @@ Two things in that output decide how much to trust it:
   instead of 55, and nothing in the output looked wrong. If `fetched` is `false`
   the fetch failed and the primary number is suspect; `null` means `--no-fetch`.
 
-If the week has 0 commits, say so and stop. Don't write an empty file.
+If the week has 0 commits — none on the mainline and no open PR with commits
+authored in it (`open_prs_in_week`) — say so and stop. Don't write an empty
+file.
+
+## Step 2c (optional): Correlate the calendar
+
+Only when config declares `calendar.correlate: true` (see
+[`reference/config.md`](reference/config.md)). A repo that keeps no meeting
+notes never reads a calendar. When one meeting touches another repo's work,
+record it there as context and leave the meeting itself to the repo whose
+notes hold it.
+
+A calendar entry is evidence that a slot was booked, not that anyone was in the
+room. So this pass **correlates; it does not list.**
+
+1. **Read the week by explicit calendar id** (`calendar.source`), cut in the
+   declared zone. Never rely on a connector's default calendar.
+2. **Drop what is not this repo's lane**: events whose title matches
+   `calendar.drop_keywords`, and declined or cancelled entries.
+3. **Match each remaining event to a record**: a note under `calendar.notes`,
+   the event registry, an existing entity, or, when `match_open_prs` is on, a
+   note on one of the week's `open_prs_in_week`. Notes written in the week
+   often sit on a PR that has not merged yet. Check those before declaring a
+   gap, and cite that work under `open_prs`.
+4. **A match makes the note the meeting's evidence.** The calendar may fill a
+   date the note left open, and never anything else.
+5. **A miss becomes a manual check-in question, asked once at the end of the
+   run.** It is never recorded as a `meeting` and never left as a silent gap.
+   The list lives on the `calendar.gap_entity` entity until each item is
+   answered, and it carries forward week to week. Old misses close, and are
+   not chased.
+6. **What the owner answers is theirs.** A confirmed conversation becomes a
+   short `meeting` entity (who, the nugget, what is owed). A confirmed miss
+   that turns out personal is closed on the gap entity with no other record.
+
+Report the match rate in the run (matched / work events). It is the measure of
+how much of the week's contact the repo actually holds.
 
 ## Step 3 (pass 1): Themes first — hypothesise, then weigh
 
@@ -646,8 +692,11 @@ authority than it documents, a dependency that turns out to be someone else's.
 validator holds `prs` to PRs that actually merged in that week, because a
 catchup reports what shipped. Work that happened but is still on a branch is
 still the week's work — put its PR in `open_prs` and it stays checkable while
-open. Never cite a branch commit: it is reachable from nothing once the PR
-merges, so it becomes a reference no other clone can resolve.
+open. `validate` judges an `open_prs` entry against **its own week's end** (the
+record's stamped `end`), never today: a PR open when W40 closed and merged in
+W41 was open, and the W40 record stays right. Only a PR that had already merged
+before its week closed fails. Never cite a branch commit: it is reachable from
+nothing once the PR merges, so it becomes a reference no other clone can resolve.
 
 **Reuse ids.** Check the store before creating anything; themes especially
 accumulate across weeks, and a new id for continuing work silently forks the
@@ -746,7 +795,20 @@ Check it before committing:
 uv run $SKILL/entities.py check-summary 2026-W35 --repo .
 ```
 
-It fails on any `#NN` the prose cites that no entity carries.
+It fails on any `#NN` the prose cites that no entity carries — under `prs`
+or `open_prs`. A PR the store carries as open is an open-work citation, so
+"(draft #90)" passes, and an open PR on the `PRs merged:` line fails. A hex
+run counts as a commit citation only when it stands alone (7–40 hex with a
+digit, bare or as its own `` `code span` ``): not glued to a path or a
+hyphenated id, not inside quotes, and not introduced as a hash, id, run or
+digest — so a quoted research hash is not read as an uncarried commit. It
+also fails a **theme child whose note is past the 260-character cap**, by
+entity id: the render prints the note whole, so write it to fit and keep the
+long form in `evidence` as `detail:`. It warns (does not fail) on any open PR
+with in-week commits that no entity carries.
+
+The render does not repeat a citation the text already ends with: a note
+that closes on "(#12)" gets no second `(#12)` appended.
 
 **Length:** the repo's `summary` budget, which is **per section** — one total
 number cannot govern three sections doing three different jobs, because trimming
@@ -838,6 +900,14 @@ never read into the transcript.
 
 The push records each returned card id immediately. `record` remains only as a
 manual recovery command for a card created before local write-back completed.
+
+Graph edges go in the same call as the card, as `relations:
+[{card_id, rel_type}]` — the server rejected the older
+`related_context_card_ids` argument. **An entity marked `confidential: true`
+(in any week) is held back** — counted and listed under
+`confidential_held_back`, never pushed — unless `--include-confidential` names
+it as deliberate. `fetch` reports such entities apart from `unpushed`, so the
+control does not flag a deliberate hold as a fidelity gap.
 
 `skip` means the entity has not changed since its last push — **let it skip.**
 The free tier is 100 credits a month, and re-pushing an unchanged card spends
