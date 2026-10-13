@@ -858,6 +858,13 @@ def cmd_record_week(args, repo, cfg, sdir):
             "off_primary_reasons": w.get("off_primary_reasons"),
             "prs_merged": w.get("prs_merged"),
             "prs_open_now": w.get("prs_open_now"),
+            # Open PRs with commits authored in the week -- off the mainline,
+            # so outside `commits`, and still the week's work. None when the
+            # pull could not look. check-summary warns on any no entity carries.
+            "open_prs_in_week": (None if w.get("open_prs_in_week") is None else
+                                 [{"number": p["number"], "commits": p["commits_in_week"],
+                                   "draft": p.get("draft", False)}
+                                  for p in w["open_prs_in_week"]]),
             "pr_numbers": [p["number"] for p in (w.get("pr_details") or [])] or w.get("prs"),
             "pr_body_chars": w.get("pr_body_chars_total"),
             "authors": w.get("authors"),
@@ -958,8 +965,26 @@ def mainline_shas(repo):
     return ref, set(git(repo, ["rev-list", ref]).split())
 
 
-def merged_pr_weeks(repo, tz):
-    """{pr_number: 'YYYY-Www'} by merge date in the declared zone, or None without gh.
+def merged_pr_times(repo):
+    """{pr_number: mergedAt} for every merged PR, or None without gh."""
+    try:
+        raw = subprocess.run(
+            ["gh", "pr", "list", "--state", "merged", "--limit", "500",
+             "--json", "number,mergedAt"],
+            cwd=repo, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if raw.returncode != 0 or not raw.stdout.strip():
+        return None
+    try:
+        items = json.loads(raw.stdout)
+    except json.JSONDecodeError:
+        return None
+    return {int(pr["number"]): pr.get("mergedAt") for pr in items if pr.get("mergedAt")}
+
+
+def merged_pr_weeks(times, tz):
+    """{pr_number: 'YYYY-Www'} by merge date in the declared zone.
 
     `mergedAt` is the only authority on which week a PR landed in -- converted
     into the repo's declared zone first, exactly as the pull converts commits,
@@ -967,22 +992,52 @@ def merged_pr_weeks(repo, tz):
     scraped `#NN` says a commit mentioned a PR, not that the PR belongs to the
     week -- `align-block4` cited #64 in W35, and #64 merged on 2026-08-31, W36.
     """
-    raw = subprocess.run(
-        ["gh", "pr", "list", "--state", "merged", "--limit", "500",
-         "--json", "number,mergedAt"],
-        cwd=repo, capture_output=True, text=True, timeout=60)
-    if raw.returncode != 0 or not raw.stdout.strip():
-        return None
-    try:
-        items = json.loads(raw.stdout)
-    except json.JSONDecodeError:
-        return None
     out = {}
-    for pr in items:
-        label = week_zone.week_of(pr.get("mergedAt"), tz)
+    for n, when in (times or {}).items():
+        label = week_zone.week_of(when, tz)
         if label:
-            out[pr["number"]] = label
+            out[n] = label
     return out
+
+
+def week_end(repo, cfg, week):
+    """The instant a week closed: its record's stamped `end`, else computed.
+
+    A record carries the cut it was made with, so that is the authority. A week
+    with no record, or a legacy record with no stamp, is cut in the zone the
+    record says (UTC when it says nothing) or, with no record at all, the zone
+    the repo declares.
+    """
+    rec = {}
+    path = os.path.join(weeks_dir(repo, cfg), f"{week}.json")
+    if os.path.isfile(path):
+        try:
+            with open(path) as fh:
+                rec = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            rec = {}
+    end = week_zone.parse(rec.get("end"))
+    if end is not None:
+        return end
+    tz = rec.get("timezone") or (week_zone.DEFAULT_ZONE if rec else config_zone(cfg, notice=False))
+    try:
+        return week_zone.Week.from_label(week, tz).end
+    except ValueError:
+        return None
+
+
+def open_pr_problem(eid, wk, n, merged_at, end):
+    """A problem line when an `open_prs` entry had already merged by its week's close.
+
+    Judged against the week the entry describes, never today: a PR open at the
+    close of W40 and merged in W41 was open, and the W40 record is right. The
+    old rule failed every past week whose drafts later landed.
+    """
+    merged = week_zone.parse(merged_at)
+    if merged is None or end is None or merged >= end:
+        return None
+    return (f"{eid} [{wk}]: PR #{n} is listed as open but merged {merged_at} — "
+            f"before the week closed; move it to `prs`")
 
 
 def events_in_week(repo, cfg, weeks):
@@ -1024,8 +1079,10 @@ def cmd_validate(args, repo, cfg, sdir):
     ref, reachable = mainline_shas(repo)
     if reachable is None:
         notes.append("no mainline ref found — commit provenance NOT checked")
-    pr_weeks = None if args.no_gh else merged_pr_weeks(
-        repo, week_zone.zone(config_zone(cfg, notice=False)))
+    pr_times = None if args.no_gh else merged_pr_times(repo)
+    pr_weeks = None if pr_times is None else merged_pr_weeks(
+        pr_times, week_zone.zone(config_zone(cfg, notice=False)))
+    ends = {}
     if pr_weeks is None:
         notes.append("gh unavailable or skipped — PR weeks NOT checked")
 
@@ -1054,12 +1111,13 @@ def cmd_validate(args, repo, cfg, sdir):
                         f"{eid} [{wk}]: commit {sha} is not reachable from {ref} — "
                         f"a citation nobody else can resolve")
             for n in (entry.get("open_prs") or []):
-                if pr_weeks is None:
+                if pr_times is None:
                     break
-                if pr_weeks.get(int(n)) is not None:
-                    problems.append(
-                        f"{eid} [{wk}]: PR #{n} is listed as open but has merged — "
-                        f"move it to `prs`")
+                if wk not in ends:
+                    ends[wk] = week_end(repo, cfg, wk)
+                p = open_pr_problem(eid, wk, n, pr_times.get(int(n)), ends[wk])
+                if p:
+                    problems.append(p)
             for n in (entry.get("prs") or []):
                 if pr_weeks is None:
                     break
@@ -1246,6 +1304,32 @@ def ship_scan(w, cfg):
     return found
 
 
+def print_open_prs(w):
+    """The week's work that has not merged: open PRs with commits authored in it.
+
+    The pull's `commits` are the mainline, so a thread whose week lives on a
+    draft reads as idle -- one outcome carried 26 in-week commits on an open
+    PR and was first rendered "no commits". Listed here so it is carried under
+    `open_prs` before anything is called quiet.
+    """
+    rows = w.get("open_prs_in_week")
+    print("\n## Open PRs with commits authored this week — carry each under `open_prs`\n")
+    if rows is None:
+        print("  NOT CHECKED (gh unavailable, or a pull from before this field). Run")
+        print("  `gh pr list --state open` before calling any thread idle.")
+        return
+    if not rows:
+        print("  none — every commit authored this week is on the mainline or nowhere.")
+        return
+    for p in rows:
+        draft = "draft " if p.get("draft") else ""
+        span = p["first_day"] if p["first_day"] == p["last_day"] else f"{p['first_day']}–{p['last_day']}"
+        print(f"  #{p['number']:<4} {p['commits_in_week']:>3} commits ({span}) "
+              f"{draft}{(p.get('title') or '')[:60]}")
+    print("\n  Not in the mainline count, and not merged: cite each under the owning")
+    print("  entity's `open_prs`, never `prs`. A thread with commits here is not idle.")
+
+
 def cmd_propose(args, repo, cfg, sdir):
     """Cluster the week mechanically, so the theme hypothesis starts from data.
 
@@ -1261,8 +1345,13 @@ def cmd_propose(args, repo, cfg, sdir):
     """
     w = _week_from_pull(args.pull, args.week)
     commits = w.get("commits") or []
+    open_prs = w.get("open_prs_in_week") or []
+    if not commits and not open_prs:
+        die(f"no commits in {args.week}, on the mainline or on an open PR")
     if not commits:
-        die(f"no commits in {args.week}")
+        print(f"# {args.week} — no mainline commits\n")
+        print_open_prs(w)
+        return
 
     dirs, dir_lines = Counter(), Counter()
     for c in commits:
@@ -1294,6 +1383,8 @@ def cmd_propose(args, repo, cfg, sdir):
                       for c in hits for x in c.get("paths", []))
         where = ", ".join(d for d, _ in top.most_common(3)) or "—"
         print(f"  #{p['number']:<3} {p.get('body_chars', 0):>6}ch  {p['title'][:62]:<64} {where}")
+
+    print_open_prs(w)
 
     # Shipped work is a second axis, orthogonal to commit share. See ship_scan.
     shipped = ship_scan(w, cfg)
@@ -1499,6 +1590,20 @@ def cmd_learned(args, repo, cfg, sdir):
               file=sys.stderr)
 
 
+def citation_tail(text, prs):
+    """` (#12, #14)` for the PRs the text does not already END by citing.
+
+    A note written as "... landed (#12)." already carries its citation, and
+    appending the entity's own `(#12)` printed it twice in a row. Only the
+    trailing parenthesised group counts: a PR named mid-sentence is prose, and
+    the tail is where the format puts the citation.
+    """
+    m = re.search(r"\(([^()]*)\)\W*$", (text or "").strip())
+    have = {int(n) for n in re.findall(r"#(\d+)", m.group(1))} if m else set()
+    rest = [p for p in prs if int(p) not in have]
+    return f" ({', '.join(f'#{p}' for p in rest)})" if rest else ""
+
+
 def cmd_render(args, repo, cfg, sdir):
     """The whole summary, derived: Themes, Meetings & Notes, What we learned --
     or whatever sections `summary.layout` declares, in that order.
@@ -1570,18 +1675,10 @@ def cmd_render(args, repo, cfg, sdir):
                     continue
                 mark = " *(correction)*" if k.get("type") == "correction" else ""
                 note = " ".join(here(k).get("note", "").split())
-                # A theme child says what changed, in a line. When it runs long it is
-                # usually because a finding crept in, and the finding belongs in
-                # Learnings -- so the overflow is flagged rather than printed.
-                if len(note) > CHILD_NOTE_CHARS:
-                    # Cut at a sentence, never mid-clause: a note that ended
-                    # "restored and." once dropped the clause that said the
-                    # pages were in production. The lead sentence carries the
-                    # consequence; the trim removes detail, never the outcome.
-                    head = note[:CHILD_NOTE_CHARS]
-                    m = list(re.finditer(r"[.!?](?=\s)", head))
-                    cut = head[:m[-1].end()] if m else head.rsplit(" ", 1)[0]
-                    note = cut + f" …[{len(note) - len(cut)} chars trimmed — if this is a finding, it belongs in Learnings]"
+                # A theme child says what changed, in a line. The cap
+                # (CHILD_NOTE_CHARS) is held by check-summary, by entity id --
+                # trimming here printed a "chars trimmed" marker into the
+                # summary itself, so the render now prints what the store holds.
                 print(f"- **{k['title']}**{mark} — {note}{urls_tail(k)}")
             if kids:
                 print()
@@ -1793,9 +1890,8 @@ def cmd_render(args, repo, cfg, sdir):
             return ms[0] if ms else None
         return None
 
-    def refs_tail(e):
-        refs = ", ".join(f"#{p}" for p in (here(e).get("prs") or []))
-        return f" ({refs})" if refs else ""
+    def refs_tail(e, text=""):
+        return citation_tail(text, here(e).get("prs") or [])
 
     def urls_tail(e):
         # Where the thing is published, as trailing links -- on every line
@@ -1809,7 +1905,7 @@ def cmd_render(args, repo, cfg, sdir):
         a = anchor_of(e)
         if a is None or a["id"] not in section_of or a["id"] == e["id"]:
             return False
-        print(f"{indent}- **{e['title']}** — {one_line(e)}. See *{a['title']}* under {section_of[a['id']]}.{refs_tail(e)}{urls_tail(e)}")
+        print(f"{indent}- **{e['title']}** — {one_line(e)}. See *{a['title']}* under {section_of[a['id']]}.{refs_tail(e, one_line(e))}{urls_tail(e)}")
         return True
 
     def one_line(e):
@@ -1849,7 +1945,7 @@ def cmd_render(args, repo, cfg, sdir):
                              f"{contact(x).replace(' *(', ' (').replace(')*', ')')}"
                              for x in folk)
             note += f" **Who:** {who}."
-        print(note + refs_tail(o) + urls_tail(o))
+        print(note + refs_tail(o, note) + urls_tail(o))
         actions(o, indent)
 
     def emit_meetings(absorb_orgs):
@@ -1929,8 +2025,7 @@ def cmd_render(args, repo, cfg, sdir):
             bits = [w["so_what"].strip()] if w.get("so_what") else []
             if w.get("open") and args.with_open:
                 bits.append("**Open:** " + w["open"].strip())
-            refs = ", ".join(f"#{p}" for p in (w.get("prs") or []))
-            tail = f" ({refs})" if refs else ""
+            tail = citation_tail(" ".join(bits), w.get("prs") or [])
             subj = f"*{w['subject']}* · " if w.get("subject") else ""
             a = anchor_of(e)
             see = (f" See *{a['title']}* under {section_of[a['id']]}."
@@ -2012,8 +2107,9 @@ def cmd_render(args, repo, cfg, sdir):
             # parentless entity lands, and check-summary reads the prose for
             # `#NN`. Without it, a PR the ledger judges major can be rendered
             # in full and still report as never cited.
-            print(f"- **{e['title']}** — {here(e).get('note', '').strip()}"
-                  f"{refs_tail(e)}{urls_tail(e)}")
+            note = here(e).get('note', '').strip()
+            print(f"- **{e['title']}** — {note}"
+                  f"{refs_tail(e, note)}{urls_tail(e)}")
         print()
 
     # A repo may declare its own section layout under `summary.layout` -- a
@@ -2238,6 +2334,75 @@ def cmd_stat_line(args, repo, cfg, sdir):
     print(line)
 
 
+# Words that say the hex run after them is an identifier of something else --
+# a research run, a content hash, a card -- and not a commit. "hash 3f9a1c2e"
+# in prose is a quoted id, and failing it as an uncarried commit forced the
+# writer to describe it instead of quoting it.
+_NOT_A_SHA_BEFORE = re.compile(
+    r"\b(?:hash|hashes|digest|checksum|fingerprint|id|ids|key|token|uuid|nonce|"
+    r"run|bundle|card|sha-?256|md5)\W{0,3}$", re.I)
+_HEX_RUN = re.compile(r"(?<![\w./:#-])[0-9a-f]{7,40}(?![\w/-]|\.\w)")
+
+
+def cited_commit_shas(prose):
+    """Hex runs that read as commit citations, in context.
+
+    A sha needs a digit: `defaced` is seven characters of valid hex. URLs come
+    out first (a published page's hashed address is hex with digits in it).
+    Beyond that, a run counts only when it stands alone: not glued to a path,
+    a dotted name or a hyphenated id (`run-3f9a1c2e`), not inside a quoted
+    string, not inside a backtick span that holds anything but the run itself,
+    and not named by the word before it as some other kind of id.
+    """
+    text = _URL_RE.sub("", prose)
+    # Quoted strings and compound code spans are ids, not citations. A code
+    # span that is exactly a hex run (`a1b2c3d`) is the usual way to cite one.
+    text = re.sub(r'"[^"\n]*"|“[^”\n]*”', " ", text)
+    text = re.sub(r"`([^`\n]*)`",
+                  lambda m: m.group(0) if re.fullmatch(r"[0-9a-f]{7,40}", m.group(1)) else " ",
+                  text)
+    out = set()
+    for m in _HEX_RUN.finditer(text):
+        s = m.group(0)
+        if not any(c.isdigit() for c in s):
+            continue
+        if _NOT_A_SHA_BEFORE.search(text[max(0, m.start() - 24):m.start()].rstrip("`")):
+            continue
+        out.add(s)
+    return out
+
+
+def long_child_notes(ents, week, cfg=None):
+    """Theme children whose note is past the render cap, as problem lines.
+
+    A theme child says what changed, in a line. The renderer used to trim an
+    overflow and print "…[N chars trimmed]" into the summary -- W41 shipped a
+    first render with the marker on all ten children. The note is the writer's
+    to fix, so the overflow is a failure here, named by entity, and the render
+    prints what the store holds. Children rendered as a pointer to an anchor
+    print no note and are exempt, and so is every child in a `summary.layout`
+    with no `themes` section, which renders no theme children at all.
+    """
+    layout = ((cfg or {}).get("summary") or {}).get("layout")
+    if layout and not any(sec.get("section") == "themes" for sec in layout):
+        return []
+    here = {e["id"]: e for e in ents}
+    live = {e["id"] for e in ents if e.get("type") == "theme"
+            and ((e["weeks"][week] or {}).get("disposition", "confirmed") == "confirmed")}
+    out = []
+    for k in sorted(ents, key=lambda e: e["id"]):
+        if k.get("theme") not in live or k["id"] == k.get("theme"):
+            continue
+        if (k.get("anchor") or "").strip() in here:
+            continue
+        note = " ".join((k["weeks"][week].get("note") or "").split())
+        if len(note) > CHILD_NOTE_CHARS:
+            out.append(f"theme child `{k['id']}` has a {len(note)}-char note (cap {CHILD_NOTE_CHARS}) — "
+                       f"write it to fit and move the rest to `evidence` as `detail:`; "
+                       f"if it is a finding, it belongs in Learnings")
+    return out
+
+
 def cmd_check_summary(args, repo, cfg, sdir):
     """Every citation in the week's prose must be carried by some entity.
 
@@ -2260,11 +2425,17 @@ def cmd_check_summary(args, repo, cfg, sdir):
     prose = open(path).read()
 
     ents = [e for e in load_all(sdir) if args.week in (e.get("weeks") or {})]
-    held_prs, held_shas = set(), set()
+    held_prs, held_open, held_shas = set(), set(), set()
     for e in ents:
         entry = e["weeks"][args.week]
         held_prs |= {int(p) for p in (entry.get("prs") or [])}
+        held_open |= {int(p) for p in (entry.get("open_prs") or [])}
         held_shas |= {str(s) for s in (entry.get("commits") or [])}
+    # A PR the store carries as OPEN is cited as open work, not as a merge --
+    # "(draft #90)" is a citation the store backs. Only a PR no entity carries
+    # either way is drift. One carried as open and listed under merged is the
+    # reverse error, and is reported as such.
+    open_only = held_open - held_prs
 
     # Only the citation forms the template defines: `(#NN)` groups, and the
     # `PRs merged:` line. A bare `#NN` mid-sentence is prose -- W35 says a
@@ -2274,20 +2445,21 @@ def cmd_check_summary(args, repo, cfg, sdir):
     cited_prs = set()
     for group in re.findall(r"\(([^()]*)\)", prose):
         cited_prs |= {int(n) for n in re.findall(r"#(\d+)", group)}
+    merged_line = set()
     for line in prose.splitlines():
         if line.strip().lower().startswith("prs merged:"):
-            cited_prs |= {int(n) for n in re.findall(r"#(\d+)", line)}
-    # A sha needs a digit: `defaced` is seven characters of valid hex.
-    # A published page's hashed address is eight hex characters with digits in
-    # it, so URLs come out before the sha scan.
-    cited_shas = {s for s in re.findall(r"\b[0-9a-f]{7,40}\b", _URL_RE.sub("", prose))
-                  if any(c.isdigit() for c in s)}
+            merged_line |= {int(n) for n in re.findall(r"#(\d+)", line)}
+    cited_prs |= merged_line
+    cited_shas = cited_commit_shas(prose)
 
     # Prose citations only -- the `PRs merged:` line lists everything and
-    # proves nothing about coverage.
+    # proves nothing about coverage. Open PRs are not merges, so they never
+    # count toward (or against) merged-PR coverage.
     prose_prs = set()
     for group in re.findall(r"\(([^()]*)\)", prose):
         prose_prs |= {int(n) for n in re.findall(r"#(\d+)", group)}
+    cited_open = (cited_prs & open_only)
+    prose_prs -= open_only
     rec = {}
     rpath = os.path.join(weeks_dir(repo, cfg), f"{args.week}.json")
     if os.path.isfile(rpath):
@@ -2361,8 +2533,12 @@ def cmd_check_summary(args, repo, cfg, sdir):
                     f"and the prose never mentions it — a reader is told what ended "
                     f"and not what now has the attention")
     unmentioned = sorted(merged - prose_prs - set(shipped))
-    for n in sorted(cited_prs - held_prs):
+    for n in sorted(cited_prs - held_prs - held_open):
         problems.append(f"PR #{n} is cited in the summary but carried by no entity")
+    for n in sorted(merged_line & open_only):
+        problems.append(f"PR #{n} is on the `PRs merged:` line but every entity carries it "
+                        f"under `open_prs` — it did not merge this week")
+    problems.extend(long_child_notes(ents, args.week, cfg))
     for s in sorted(cited_shas):
         if not any(h.startswith(s) or s.startswith(h) for h in held_shas):
             problems.append(f"commit {s} is cited in the summary but carried by no entity")
@@ -2374,7 +2550,17 @@ def cmd_check_summary(args, repo, cfg, sdir):
         print("\nAdd the missing entities — do not delete the citations.")
         sys.exit(1)
     print(f"ok — {args.week}: every citation in the summary is carried by an entity "
-          f"({len(cited_prs)} PRs, {len(cited_shas)} shas, {len(ents)} entities)")
+          f"({len(cited_prs - cited_open)} merged PRs, {len(cited_open)} open PRs, "
+          f"{len(cited_shas)} shas, {len(ents)} entities)")
+    # Work on open PRs the pull saw and no entity carries. A warning: a draft
+    # may be noise. But an outcome whose week lives on one reads as idle
+    # without it, which is the failure this exists to catch.
+    active = (rec.get("stats") or {}).get("open_prs_in_week") or []
+    loose = [p for p in active if int(p["number"]) not in held_open | held_prs]
+    if loose:
+        print(f"     open PRs with commits authored this week that no entity carries "
+              f"under `open_prs` ({len(loose)}): "
+              + ", ".join(f"#{p['number']} ({p['commits']} commits)" for p in loose))
     if ledger:
         by = Counter(r.get("consequence") for r in ledger.values())
         sup = sorted(n for n, r in ledger.items() if r.get("consequence") == "supporting" and n not in prose_prs)

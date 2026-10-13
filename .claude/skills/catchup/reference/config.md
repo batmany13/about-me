@@ -235,6 +235,7 @@ work — only a commit that is nothing but bookkeeping is bookkeeping.
 | `card_status` | `"active"` | Must be one of the values the server serves |
 | `card_types{}` | built-in map | Override entity-type → DeepVista card_type |
 | `databases[]` | `[]` | Database cards this repo fills the rows of — see below |
+| `related_rel_type` | `"related"` | The `rel_type` generic graph edges are sent with, in `relations: [{card_id, rel_type}]`. Override only if the served schema names the generic edge differently |
 
 **`card_status` is checked against the served enum** — `pending`,
 `not_started`, `in_progress`, `completed`, `for_review`, `active`, `archived` —
@@ -371,6 +372,39 @@ moved, so the read is a checklist rather than a reminder. Declare none and the
 command says so — a repo with no declared artifacts will get a catchup written
 from commit messages, which is a catchup of what changed rather than what was
 found.
+
+## `calendar` — correlate the week's calendar against the repo's notes
+
+Optional, and **off unless declared**. A repo whose conversations land as notes
+(meeting notes, partner notes, an event registry) can ask the catchup to read
+the week's calendar beside the repo. A repo that does not keep meeting notes
+leaves this out, and its catchup never reads a calendar: a calendar belongs to
+the one repo where its notes are written.
+
+```json
+"calendar": {
+  "correlate": true,
+  "source": "<an explicit calendar id, never the connector's default>",
+  "notes": ["notes/meetings/**", "network/events/**"],
+  "match_open_prs": true,
+  "drop_keywords": ["personal", "out of office"],
+  "gap_entity": "conversation-capture-gaps"
+}
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `correlate` | `false` | Run the calendar pass in this repo's catchup |
+| `source` | — | Which calendar to read, **by explicit id**. A connector's "primary" is whichever account it was set up with, and that can change underneath you |
+| `notes[]` | the `meeting` category paths | Globs for where a note that evidences a meeting can live |
+| `match_open_prs` | `true` | Also match against the week's `open_prs_in_week`. Notes written inside the week often sit on a PR that has not merged yet |
+| `drop_keywords[]` | `[]` | Event-title words that mark an entry as outside this repo's lane, dropped before matching (personal, household) |
+| `gap_entity` | `conversation-capture-gaps` | The entity that holds the unanswered check-in list across weeks |
+
+Nothing about a calendar is compiled into the skill, and the ids, addresses
+and attendee names stay in the repo that declares this block. The block only
+says that the pass is wanted and where its evidence lives. The pass itself is
+in SKILL.md, Step 2c.
 
 ## `method_notes` — what this repo learned about its own catchups
 

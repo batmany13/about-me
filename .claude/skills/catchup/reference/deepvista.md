@@ -118,6 +118,12 @@ Each plan item carries `action`:
 | `update` | entity has a `card_id` and its content changed | one call |
 | `skip` | content hash matches the last push | **nothing** |
 
+An entity marked `confidential: true` in any week is not planned at all. It
+is counted under `counts.confidential` and named in `confidential_held_back`.
+`confidential` marks a privileged channel, and a card is a copy of the entity
+in someone else's product, so it stays out unless `--include-confidential`
+asks for it. `fetch` reports these apart from `unpushed`.
+
 The free tier is 100 credits a month, so `skip` is load-bearing, not an
 optimization. Re-pushing an unchanged card spends a credit to change nothing.
 `--force` overrides it; use it when a card was edited or deleted on the
@@ -195,8 +201,8 @@ relation. From `upsert_context_card`'s served schema:
 > `related_context_card_ids` mean only 'generally related' and will NOT appear
 > in the database's grid
 
-The push emits `related_context_card_ids` and nothing else, so every card it
-has ever written is *related to* things and a *row of* nothing. A database card
+The push emits generic edges and nothing else, so every card it has ever
+written is *related to* things and a *row of* nothing. A database card
 pointed at them renders empty — which is exactly what a tracker built by hand
 in the product did, with a working push behind it and no rows in the grid.
 
@@ -260,13 +266,13 @@ it found. Everything above the `plan` output is now exercised.
 
 | Question | Answer |
 |---|---|
-| Tool name and shape | `upsert_context_card` — `card_id` (null to create), `properties` (`type`, `title`, `description`, `tags`, `status`), `related_context_card_ids`. One tool for create and update. |
+| Tool name and shape | `upsert_context_card` — `card_id` (null to create), `properties` (`type`, `title`, `description`, `tags`, `status`), `relations` (`[{card_id, rel_type}]`). One tool for create and update. The older `related_context_card_ids` argument was rejected as unexpected in W40; generic edges now go as `relations` with `rel_type` `related` (override with `deepvista.related_rel_type` if the served schema names it otherwise). `doctor` does not read the tool schema, so dump it before the first push after a server change. |
 | `card_type` key | Wrong: the key is `type`, and unknown keys are silently ignored. The values (`note`, `topic`, `keypoint`, `person`, `organization`) were right. |
 | `status: confirmed` | Not in the enum. `active` is, and it is searchable. |
 | Card renders | Markdown body, timeline and all, returned byte-for-byte on create. |
 | Findable by search | The pushed card was the top hit for a paraphrase of its own summary. |
 | `record` → `skip` | Held: after `record`, `plan --include-skipped` showed the entity as `skip` and a full run reported `create: 0, update: 0, skip: 54`. |
-| Graph edges | `related_context_card_ids` is mirrored by the server: `list_related_context_cards` on a meeting card returns the company, the people met, and the owed-follow-up thread, each tagged `RELATED`. |
+| Graph edges | Generic edges (formerly `related_context_card_ids`, now `relations` with the generic `rel_type`) are mirrored by the server: `list_related_context_cards` on a meeting card returns the company, the people met, and the owed-follow-up thread, each tagged `RELATED`. |
 | Credit cost | Not measurable from the MCP surface — there is no balance tool. The account was on a 2,000-credit tier for this run; 54 creates plus 42 link passes plus 41 repairs went through without a refusal. Check the balance in the product. |
 
 What surprised: the links-only pass (see the gotchas). What the first push of

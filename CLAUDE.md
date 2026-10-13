@@ -193,11 +193,13 @@ start disagreeing.
 |---|---|---|---|
 | Per repo | `catchup` | that repo's git log + merged PRs | `<output.dir>/entities/*.json`, `weeks/<W>.json`, `<W>.md` — **in that repo**, top level by default |
 | Across repos | `rollup` | each repo's week records + entities | `fnr/.private/rollups/<W>.md`, with the sources snapshotted under `rollups/<W>/<repo>/` — **private** |
-| Control | `rollup --control deepvista` | each syncing repo's entities, read **back** from DeepVista as cards | `rollups/<W>/<repo>/deepvista-{cards,compare}.json`, and the readable output in `drafts/<W>.deepvista.<repo>.md` + `drafts/<W>.deepvista-draft1.md` — **private** |
+| Control (paused) | `rollup --control deepvista` | each syncing repo's entities, read **back** from DeepVista as cards | `rollups/<W>/<repo>/deepvista-{cards,compare}.json`, and the readable output in `drafts/<W>.deepvista.<repo>.md` + `drafts/<W>.deepvista-draft1.md` — **private** |
 | Public | `fnr` | the rollup, under the scrub policy | `fnr/<W>.md` — public |
 
-**The aggregator uses both: the skills here are the record, DeepVista is the
-control.** Each syncing repo pushes its entities to DeepVista as context cards
+**The aggregator can use both: the skills here are the record, DeepVista is the
+control.** The sync is **paused since 2026-10-12** while how the notes should
+feed DeepVista is rethought: every repo sets `deepvista.enabled: false`, so
+neither the push nor the control runs. When on, each syncing repo pushes its entities to DeepVista as context cards
 (catchup Step 5); the rollup reads them back headlessly, has a second summary
 written from the cards alone, and diffs coverage against the local one. What
 both leave out is a shared blind spot; what only the cards carry is an

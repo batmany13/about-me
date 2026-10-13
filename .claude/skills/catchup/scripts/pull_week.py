@@ -32,7 +32,9 @@ Three things about the week, because they decide what gets written:
     sha, and the branch copy is reachable from nothing once the PR merges -- it
     lives in one clone until git prunes it. What is dropped is reported by count
     and reason. `commit_count_all_refs` is the all-refs figure, kept as a stat
-    because it is machine-specific and is not the number to publish.
+    because it is machine-specific and is not the number to publish. Work
+    authored in the week on a PR that is still OPEN is listed apart, under
+    `open_prs_in_week`, so it is carried rather than invisible.
 
 Usage:
     pull_week.py                      # last closed week, cwd repo
@@ -572,6 +574,90 @@ def gh_pr_counts(path, win):
         return None, None
 
 
+def open_prs_in_week(prs, commits_of, win, ign=None):
+    """Open PRs with commits AUTHORED inside the week, largest first.
+
+    `commits` reads the mainline only, so a week whose work lives on a branch
+    that has not merged reads as idle: an outcome with 26 commits authored on a
+    draft PR and 6 on main was once rendered as "no commits". These are the
+    PRs the extraction must open and carry under `open_prs`, not a stat.
+
+    Pure: `prs` is `gh pr list` JSON, `commits_of(number)` returns that PR's
+    `gh pr view --json commits` list. Commits are placed by `authoredDate` in
+    the declared zone, the same rule the mainline uses. A merge-from-base
+    commit is bookkeeping here as everywhere, so it is counted apart.
+    """
+    out = []
+    for pr in prs:
+        n = pr.get("number")
+        # A PR not touched since the week opened cannot carry a commit authored
+        # in it -- skip the per-PR call. `updatedAt` only moves forward.
+        upd = week_zone.parse(pr.get("updatedAt"))
+        if upd is not None and upd < win.start:
+            continue
+        commits = commits_of(n) or []
+        hit, skipped = [], 0
+        for c in commits:
+            if not win.contains(c.get("authoredDate")):
+                continue
+            subject = c.get("messageHeadline") or ""
+            if ign and any(rx.search(subject) for _, rx in ign["subjects"]):
+                skipped += 1
+                continue
+            hit.append(c)
+        if not hit:
+            continue
+        days = sorted({week_zone.local_date(c["authoredDate"], win.tz).isoformat() for c in hit})
+        out.append({
+            "number": n,
+            "title": pr.get("title"),
+            "url": pr.get("url"),
+            "draft": bool(pr.get("isDraft")),
+            "head": pr.get("headRefName"),
+            "base": pr.get("baseRefName"),
+            "commits_in_week": len(hit),
+            "commits_total": len(commits),
+            "bookkeeping_in_week": skipped,
+            "first_day": days[0],
+            "last_day": days[-1],
+            "shas": [str(c.get("oid") or "")[:9] for c in hit],
+            "subjects": [c.get("messageHeadline") for c in hit][:15],
+        })
+    out.sort(key=lambda p: (-p["commits_in_week"], p["number"] or 0))
+    return out
+
+
+def gh_open_prs_in_week(path, win, ign=None):
+    """`open_prs_in_week` against GitHub, or None without gh (never raises).
+
+    None means "could not look", which a reader must not take for "no work
+    off the mainline".
+    """
+    raw = run(["gh", "pr", "list", "--state", "open", "--limit", "200", "--json",
+               "number,title,url,isDraft,headRefName,baseRefName,updatedAt"],
+              cwd=path, timeout=60)
+    if not raw.strip():
+        return None
+    try:
+        prs = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(prs, list):
+        return None
+    prs = [p for p in prs if isinstance(p, dict)]
+
+    def commits_of(n):
+        got = run(["gh", "pr", "view", str(n), "--json", "commits"], cwd=path, timeout=45)
+        try:
+            blob = json.loads(got) if got.strip() else {}
+        except json.JSONDecodeError:
+            return []
+        commits = blob.get("commits") if isinstance(blob, dict) else None
+        return [c for c in (commits or []) if isinstance(c, dict)]
+
+    return open_prs_in_week(prs, commits_of, win, ign)
+
+
 def read_log(path, since, until):
     """One pass over the padded window returning [(sha, iso, email, subject, files, adds, dels)].
 
@@ -759,6 +845,7 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
         "prs": [],
         "prs_merged": None,
         "prs_open_now": None,
+        "open_prs_in_week": None,
         "authors": {},
         "categories": {},
         "top_dirs": [],
@@ -940,6 +1027,12 @@ def collect(path, year, week, cfg, matchers, keep_ignored=False,
     merged, opened = gh_pr_counts(path, win)
     out["prs_merged"] = merged
     out["prs_open_now"] = opened
+
+    # Work authored this week on branches that have not merged. Not counted in
+    # `commits` -- that stays the mainline -- but listed, so a thread whose
+    # week lives on an open PR is carried under `open_prs` instead of reading
+    # as idle. None when gh is unavailable.
+    out["open_prs_in_week"] = gh_open_prs_in_week(path, win, ign)
 
     out["pr_details"] = (gh_pr_details(path, win, pr_body_limit)
                          if pr_bodies else [])

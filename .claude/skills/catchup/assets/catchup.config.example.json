@@ -99,6 +99,18 @@
     "read_first": "The summary or headline field those artifacts carry — someone's considered one-sentence answer, written with the whole subject in front of them."
   },
 
+  "calendar": {
+    "$comment": "Optional, off unless declared. Only for a repo whose conversations land as notes here. Read the week's calendar by EXPLICIT id, match each work event to a note (or an open PR carrying one), and turn every miss into a manual check-in question asked once at the end of the run. A miss is never recorded as a meeting. Calendar ids and names stay in this repo's config, never in the skill.",
+    "correlate": false,
+    "source": "<explicit calendar id>",
+    "notes": [
+      "notes/meetings/**"
+    ],
+    "match_open_prs": true,
+    "drop_keywords": [],
+    "gap_entity": "conversation-capture-gaps"
+  },
+
   "method_notes": {
     "$comment": "Where this repo keeps what it has learned about running its own catchups: which themes recur, which past summary went wrong and why. Lives beside the output rather than inside the skill, so the skill stays portable and the hard-won specifics stay with the repo.",
     "path": "catchup/method-notes.md"

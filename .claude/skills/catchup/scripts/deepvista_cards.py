@@ -588,6 +588,31 @@ def cmd_doctor(args, repo, cfg, sdir):
     return 0 if ok else 1
 
 
+# The generic edge type. The server rejected `related_context_card_ids` in
+# W40 ("Unexpected keyword argument"); edges now go as typed `relations`, the
+# same shape `rows` already sends with `row_of`. `deepvista.related_rel_type`
+# overrides it if the served schema names the generic edge differently --
+# `doctor` does not read the tool schema, so check it before a first push.
+RELATED_REL_TYPE = "related"
+
+
+def relations_for(card_ids, dv_cfg=None):
+    """`[{card_id, rel_type}]` for the generic graph edges of one card."""
+    rel = ((dv_cfg or {}).get("related_rel_type") or RELATED_REL_TYPE).strip()
+    return [{"card_id": c, "rel_type": rel} for c in card_ids]
+
+
+def is_confidential(e):
+    """True when the entity, or any week of it, is marked `confidential`.
+
+    Any week, not just the selected one: a card body renders the entity's
+    history, so one privileged week makes the whole card privileged.
+    """
+    if e.get("confidential") is True:
+        return True
+    return any((w or {}).get("confidential") is True for w in (e.get("weeks") or {}).values())
+
+
 def build_plan(args, repo, cfg, sdir):
     ents = load_all(sdir)
     # Contact state is derived from the meeting entities, so derivation must see
@@ -621,9 +646,18 @@ def build_plan(args, repo, cfg, sdir):
                for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
 
     by_id = {x["id"]: x.get("title") for x in all_ents if x.get("title")}
-    plan, counts = [], {"create": 0, "update": 0, "skip": 0}
+    plan, counts = [], {"create": 0, "update": 0, "skip": 0, "confidential": 0}
+    held_back = []
     for e in sorted(ents, key=lambda x: (CATEGORY_ORDER.index(x.get("category", "other"))
                                          if x.get("category") in CATEGORY_ORDER else 9, x["id"])):
+        # A confidential entity stays out of a card unless asked for by name.
+        # `confidential` marks a privileged CHANNEL -- the substance may be
+        # harmless and the source still not -- and a card is a copy of the
+        # entity in someone else's product. Counted and listed, never silent.
+        if is_confidential(e) and not getattr(args, "include_confidential", False):
+            counts["confidential"] += 1
+            held_back.append(e["id"])
+            continue
         dv = e.get("deepvista") or {}
         h = content_hash(e)
         if dv.get("card_id") and dv.get("content_hash") == h and not args.force:
@@ -670,8 +704,8 @@ def build_plan(args, repo, cfg, sdir):
                 "tags": build_tags(e, cfg, repo_label, all_ents),
                 "status": card_status(dv_cfg),
             },
-            # Graph edges, passed as the tool's `related_context_card_ids` IN THE
-            # SAME CALL as `properties`. Never as a second, links-only call: on
+            # Graph edges, sent as the tool's `relations` ({card_id, rel_type})
+            # IN THE SAME CALL as `properties` -- see `relations_for`. Never as a second, links-only call: on
             # the 2026-09-02 first live push a links-only upsert re-saved the
             # existing description through an HTML-escaping pass -- `&` became
             # `&amp;` and the `<!-- catchup-entity -->` tracer became literal
@@ -710,6 +744,7 @@ def build_plan(args, repo, cfg, sdir):
         "project_id": dv_cfg.get("project_id"),
         "enabled": dv_cfg.get("enabled", False),
         "counts": counts,
+        "confidential_held_back": held_back,
         "pushable": ready,
         "plan": plan,
         "next": (
@@ -803,12 +838,13 @@ def cmd_push(args, repo, cfg, sdir):
     applied = []
     try:
         for item in result["plan"]:
-            response = client.call(
-                "upsert_context_card",
-                card_id=item["card_id"],
-                properties=item["card"],
-                related_context_card_ids=item["related_card_ids"],
-            )
+            call = {"card_id": item["card_id"], "properties": item["card"]}
+            rels = relations_for(item["related_card_ids"], dv_cfg)
+            # Omitted when empty: relations replace per rel_type, so an empty
+            # list would be an instruction to clear, not the absence of edges.
+            if rels:
+                call["relations"] = rels
+            response = client.call("upsert_context_card", **call)
             if isinstance(response, dict) and response.get("_error"):
                 die(f"upsert_context_card for {item['entity_id']}: {response['_error']}")
             card_id = _returned_card_id(response)
@@ -1241,12 +1277,13 @@ def cmd_fetch(args, repo, cfg, sdir):
         known = {(x.get("deepvista") or {}).get("card_id"): x["id"]
                  for x in all_ents if (x.get("deepvista") or {}).get("card_id")}
 
-        cards, not_found, unpushed = [], [], []
+        cards, not_found, unpushed, withheld = [], [], [], []
         for e in sorted(ents, key=lambda x: (x.get("category", ""), x["id"])):
             dv = e.get("deepvista") or {}
             cid = dv.get("card_id")
             if not cid:
-                unpushed.append(e["id"])
+                # Held back by `push` on purpose -- not a fidelity gap.
+                (withheld if is_confidential(e) else unpushed).append(e["id"])
                 continue
             card = client.call("read_context_card", card_id=cid)
             if not isinstance(card, dict) or card.get("_error") or not card.get("id"):
@@ -1299,6 +1336,7 @@ def cmd_fetch(args, repo, cfg, sdir):
             "entities": len(ents),
             "fetched": len(cards),
             "unpushed": len(unpushed),
+            "confidential": len(withheld),
             "not_found": len(not_found),
             "orphans": len(orphans),
             "tracer": dict(sorted(
@@ -1311,6 +1349,7 @@ def cmd_fetch(args, repo, cfg, sdir):
         },
         "cards": cards,
         "unpushed": unpushed,
+        "confidential": withheld,
         "not_found": not_found,
         "orphans": orphans,
     }
@@ -1356,6 +1395,8 @@ def main():
     p.add_argument("--force", action="store_true", help="re-push even if unchanged")
     p.add_argument("--show-body", action="store_true", help="full markdown, not truncated")
     p.add_argument("--include-skipped", action="store_true")
+    p.add_argument("--include-confidential", action="store_true",
+                   help="plan entities marked `confidential: true` too (held back by default)")
     p.add_argument("--limit", type=int, default=0,
                    help="plan at most N items — use --limit 1 for a first live push")
     p.set_defaults(fn=cmd_plan)
@@ -1398,6 +1439,8 @@ def main():
     p.add_argument("--apply", action="store_true", help="make the DeepVista calls; omitted means local preview")
     p.add_argument("--npx", default=None, help="npx to run the mcp-remote proxy with")
     p.add_argument("--timeout", type=int, default=90, help="seconds to wait per call")
+    p.add_argument("--include-confidential", action="store_true",
+                   help="push entities marked `confidential: true` too (held back by default)")
     p.set_defaults(fn=cmd_push)
 
     p = sub.add_parser("rows", parents=[common],
