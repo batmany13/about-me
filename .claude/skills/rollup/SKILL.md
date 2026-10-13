@@ -137,6 +137,11 @@ its provenance. `--recapture` is the deliberate act of taking a new one.
 
 ## Step 2b: The control — DeepVista
 
+**Paused since 2026-10-12.** How the notes should feed DeepVista is being
+rethought, so every repo now sets `deepvista.enabled: false`. The control reads
+only repos where the sync is on, so while it is paused there is nothing to read
+back, and a weekly rollup runs without `--control deepvista`.
+
 The skills here produce the record. DeepVista is the **control**: each syncing
 repo has pushed its entities there as cards, and reading those cards back
 gives a second reader of the same evidence. The aggregator runs that read for

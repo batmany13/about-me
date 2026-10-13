@@ -865,6 +865,11 @@ week is a bullet that failed.
 
 ## Step 5 (optional): Sync entities to DeepVista
 
+**Paused since 2026-10-12.** How the notes should feed DeepVista is being
+rethought, so the repos that synced now set `deepvista.enabled: false` and
+this step does not run. The switch is the gate. Turn it back on in config
+when the sync resumes.
+
 Only when config sets `deepvista.enabled: true`. See
 [`reference/deepvista.md`](reference/deepvista.md) for the full runbook —
 endpoint, auth, and the one gotcha that makes cards invisible if you miss it.
@@ -927,7 +932,8 @@ the product survives. See `reference/deepvista.md`.
 
 ## Step 5b (optional): Read the week back from DeepVista — the control
 
-Only where the sync is on and the week has been pushed. The cards hold the same
+Only where the sync is on and the week has been pushed — so, like Step 5,
+not while the sync is paused. The cards hold the same
 entities, so DeepVista is a second reader of the same evidence. Reading them
 back is scripted and **headless**: once the `mcp-remote` proxy has cached a
 sign-in, `fetch` spawns it and pulls the week's cards into one file, with a
