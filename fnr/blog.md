@@ -13,6 +13,16 @@ A running tally of topics that could grow into longer posts — the start of a S
 
 ## Published
 
-| Series | Posts | Seeded in |
-|---|---|---|
-| **Better Software** (co-written with a founder I advise, on Graphify's blog) | [Agents Took Over Your SDLC. Now What?](https://graphify.com/blog/agents-took-over-your-sdlc) (Nov 3) · [Fundamentals Matter](https://graphify.com/blog/fundamentals-matter) (Nov 6) · [Why Are You Shipping So Much?](https://graphify.com/blog/why-are-you-shipping-so-much) (Nov 12) | [W45](2026-W45.md), [W46](2026-W46.md) |
+### Better Software
+
+A series co-written with a founder I advise, on [Graphify's blog](https://graphify.com/blog/series/better-software).  It asks what good engineering looks like once agents write most of the code: teams have scaled how fast software gets written, but not how fast it gets understood.  Each post starts from something people are arguing about now and ties it to a fundamental that should still hold in five years, written for startup-sized teams.  Five topics, one per post, moving from the individual to the team and its culture.
+
+| # | Topic | Post | What it covers |
+|---|---|---|---|
+| 1 | Attention | [Agents Took Over Your SDLC. Now What?](https://graphify.com/blog/agents-took-over-your-sdlc) (Nov 3) | Agents produce more than people can read, so attention is the scarce resource.  The move from supervising agents to collaborating with them. |
+| 2 | Fundamentals | [Fundamentals Matter](https://graphify.com/blog/fundamentals-matter) (Nov 6) | Cognitive surrender, taking an AI's answer as your own, and the engineering fundamentals that keep judgement with each person. |
+| 3 | Purpose | [Why Are You Shipping So Much?](https://graphify.com/blog/why-are-you-shipping-so-much) (Nov 12) | Output counts can't tell you whether the work mattered.  A stated purpose decides what's worth building, for people and agents alike. |
+| 4 | Teams | [Nobody Cares That Your Agent Did It](https://graphify.com/blog/nobody-cares-that-your-agent-did-it) (Nov 18) | When agents write the code and something breaks, the team still answers for it.  Context is a team sport, and so is accountability. |
+| 5 | Learning | Planned | A culture where what the team learns stays and compounds, so it keeps getting better. |
+
+Seeded in [W45](2026-W45.md) and [W46](2026-W46.md).
